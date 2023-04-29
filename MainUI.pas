@@ -337,7 +337,6 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure Action_NextExecute(Sender: TObject);
     procedure Action_PreviousExecute(Sender: TObject);
-    procedure Setting_GraphChange(Sender: CCheckBox; State: TCheckBoxState);
     procedure CButton16Click(Sender: TObject);
     procedure Button_MiniPlayerClick(Sender: TObject);
     procedure SearchDrawPaint(Sender: TObject);
@@ -350,6 +349,7 @@ type
     procedure LoginItemsBeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
       ARect: TRect; AState: TOwnerDrawState);
     procedure CButton19Click(Sender: TObject);
+    procedure SettingsApplyes(Sender: CCheckBox; State: TCheckBoxState);
   private
     { Private declarations }
     // Items
@@ -427,6 +427,8 @@ type
 
     // Extra Forms
     procedure UpdateMiniPlayer;
+
+    procedure ApplySettings;
 
     // Font
     function GetSegoeIconFont: string;
@@ -640,6 +642,12 @@ begin
     end;
 end;
 
+procedure TUIForm.ApplySettings;
+begin
+  Button_Performance.Visible := Setting_Graph.Checked;
+  Button_Performance.Left := Button_Volume.Left + Button_Performance.Width;
+end;
+
 procedure TUIForm.Button_ExtendClick(Sender: TObject);
 begin
   if EqualApprox(DestQueuePopup, Queue_Extend.Constraints.MaxHeight, 10) then
@@ -663,7 +671,7 @@ begin
   MiniPlayer.PreparePosition;
 
   // Get data
-  UpdateMiniPlayer
+  UpdateMiniPlayer;
 end;
 
 procedure TUIForm.Button_NextClick(Sender: TObject);
@@ -1371,6 +1379,9 @@ begin
 
   // Data
   ProgramSettings(true);
+
+  // Apply Loaded Settings
+  UIForm.ApplySettings;
 
   // UI Preparation
   Queue_Extend.Height := 0;
@@ -2645,7 +2656,6 @@ begin
             AddView(ViewCompatibile[I], TViewStyle(OPT.ReadInteger('Views', ViewCompatibile[I], 0)) );
 
           Setting_Graph.Checked := OPT.ReadBool('GeneralSettins', 'Enable Graph', true);
-          Setting_GraphChange(Setting_Graph, Setting_Graph.State);
           SplitView1.Opened := OPT.ReadBool('GeneralSettins', 'Menu Opened', true);
 
           TransparentIndex := OPT.ReadInteger('MiniPlayer', 'Opacity', 0);
@@ -3112,10 +3122,9 @@ begin
   Sort;
 end;
 
-procedure TUIForm.Setting_GraphChange(Sender: CCheckBox; State: TCheckBoxState);
+procedure TUIForm.SettingsApplyes(Sender: CCheckBox; State: TCheckBoxState);
 begin
-  Button_Performance.Visible := State = cbChecked;
-  Button_Performance.Left := Button_Volume.Left + Button_Performance.Width;
+  ApplySettings;
 end;
 
 procedure TUIForm.SetView(View: TViewStyle; NoAdd : boolean);
