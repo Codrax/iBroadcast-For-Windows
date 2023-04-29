@@ -2,6 +2,7 @@ program iBroadcast;
 
 uses
   Vcl.Forms,
+  Cod.Instances,
   Cod.SysUtils,
   MainUI in 'MainUI.pas' {UIForm},
   BroadcastAPI in 'BroadcastAPI.pas',
@@ -18,6 +19,10 @@ var
   Param: string;
 begin
   Application.Initialize;
+
+  // Close if Other instance
+  TerminateIfOtherInstanceExists;
+
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TUIForm, UIForm);
   Application.CreateForm(TDebugUI, DebugUI);

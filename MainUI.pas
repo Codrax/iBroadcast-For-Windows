@@ -3476,6 +3476,11 @@ begin
         Mini_Song.Caption := Song_Name.Caption;
         Mini_Artist.Caption := Song_Artist.Caption;
 
+        if QueuePos + 1 < PlayQueue.Count then
+          Mini_NextSong.Caption := Tracks[PlayQueue[QueuePos + 1]].Title
+        else
+          Mini_NextSong.Caption := 'Queue End';
+
         if Song_Cover.Picture <> nil then
           Mini_Cover.Picture := Song_Cover.Picture;
 

@@ -152,19 +152,15 @@
         </DCCReference>
         <DCCReference Include="VolumePopup.pas">
             <Form>VolumePop</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Performance.pas">
             <Form>PerfForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="MiniPlay.pas">
             <Form>MiniPlayer</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="InfoForm.pas">
             <Form>InfoBox</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>

@@ -13,6 +13,7 @@ object MiniPlayer: TMiniPlayer
   Font.Height = -16
   Font.Name = 'Segoe UI'
   Font.Style = []
+  OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnMouseDown = MoveMoveDown
   TextHeight = 21
@@ -27,7 +28,6 @@ object MiniPlayer: TMiniPlayer
     ShowCaption = False
     TabOrder = 0
     OnMouseDown = MoveMoveDown
-    ExplicitTop = -2
     object Mini_Song: TLabel
       Left = 96
       Top = 16
@@ -422,8 +422,6 @@ object MiniPlayer: TMiniPlayer
       Alignment = taCenter
       Caption = 'Seek'
       OnMouseDown = MoveMoveDown
-      ExplicitLeft = 0
-      ExplicitTop = 0
       ExplicitWidth = 33
     end
     object Label4: TLabel
@@ -438,10 +436,9 @@ object MiniPlayer: TMiniPlayer
       Alignment = taCenter
       Caption = 'Next Up:'
       OnMouseDown = MoveMoveDown
-      ExplicitTop = 3
       ExplicitWidth = 59
     end
-    object Label5: TLabel
+    object Mini_NextSong: TLabel
       AlignWithMargins = True
       Left = 3
       Top = 24
@@ -451,14 +448,15 @@ object MiniPlayer: TMiniPlayer
       Align = alTop
       Alignment = taCenter
       Caption = 'Song Name'
+      Color = 2886677
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
       Font.Height = -19
       Font.Name = 'Segoe UI Semibold'
       Font.Style = []
+      ParentColor = False
       ParentFont = False
       OnMouseDown = MoveMoveDown
-      ExplicitTop = 27
       ExplicitWidth = 100
     end
     object Mini_Seek: CSlider
@@ -479,9 +477,9 @@ object MiniPlayer: TMiniPlayer
       ParentColor = False
       AccentColor = acAccentAdjust
       Presets = cslNone
-      Foreground.Enter = 6914986
-      Foreground.Leave = 5270161
-      Foreground.Down = 3625336
+      Foreground.Enter = 7635871
+      Foreground.Leave = 5991046
+      Foreground.Down = 4346221
       Foreground.Border = clGray
       Foreground.BorderThick = 0
       Foreground.MultiColor = False
@@ -511,9 +509,6 @@ object MiniPlayer: TMiniPlayer
       Max = 100
       Min = 0
       Position = 0
-      ExplicitLeft = 112
-      ExplicitTop = 40
-      ExplicitWidth = 250
     end
     object Mini_Shuffle: CButton
       AlignWithMargins = True
@@ -723,7 +718,6 @@ object MiniPlayer: TMiniPlayer
     Width = 309
     Height = 1
     CustomButtons = <>
-    ExplicitTop = 0
   end
   object AnimTo: TTimer
     Enabled = False

@@ -25,7 +25,7 @@ type
     Label3: TLabel;
     Mini_Seek: CSlider;
     Label4: TLabel;
-    Label5: TLabel;
+    Mini_NextSong: TLabel;
     Mini_Shuffle: CButton;
     Mini_Repeat: CButton;
     Mini_Transparent: CButton;
@@ -46,6 +46,7 @@ type
     procedure Mini_SeekMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Mini_SeekChange(Sender: CSlider; Position, Max, Min: Integer);
+    procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   private
@@ -196,6 +197,14 @@ procedure TMiniPlayer.CreateParams(var Params: TCreateParams);
 begin
   inherited;
   Params.ExStyle := Params.ExStyle or WS_EX_APPWINDOW;
+end;
+
+procedure TMiniPlayer.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+begin
+  if Visible then
+    begin
+      Mini_CloseClick(Mini_Close);
+    end;
 end;
 
 procedure TMiniPlayer.FormCreate(Sender: TObject);
