@@ -17,7 +17,7 @@ uses
   Cod.Audio, UITypes, Types, VolumePopup, Math, Performance,
   Cod.Math, System.IniFiles, System.Generics.Collections, Web.HTTPApp,
   Bass, System.Win.TaskbarCore, Vcl.Taskbar, Cod.Visual.CheckBox, MiniPlay,
-  InfoForm;
+  InfoForm, Vcl.ControlList;
 
 type
   // Cardinals
@@ -197,7 +197,6 @@ type
     Panel5: TPanel;
     Player_Position: CSlider;
     Time_Pass: TLabel;
-    Button_ReloadLib: CButton;
     QueueDraw: TPaintBox;
     QueueScroll: TScrollBar;
     Panel14: TPanel;
@@ -264,6 +263,13 @@ type
     Label32: TLabel;
     CCheckBox2: CCheckBox;
     CCheckBox3: CCheckBox;
+    Label33: TLabel;
+    CButton1: CButton;
+    CButton18: CButton;
+    LoginItems: TControlList;
+    Label34: TLabel;
+    Label35: TLabel;
+    Label36: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -336,6 +342,8 @@ type
     procedure Quick_SearchChange(Sender: TObject);
     procedure Quick_SearchKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
+    procedure LoginItemsBeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
+      ARect: TRect; AState: TOwnerDrawState);
   private
     { Private declarations }
     // Items
@@ -757,6 +765,7 @@ begin
     2: URL  := 'https://www.youtube.com/LavaTechnology/';
     3: URL  := 'https://www.twitter.com/LAVAplanks/';
     4: URL  := 'mailto:petculescucodrut@outlook.com';
+    5: URL  := 'https://www.paypal.me/codrutpetcu/';
   end;
 
   ShellRun(URL, false);
@@ -839,6 +848,28 @@ end;
 procedure TUIForm.Complete_EmailClick(Sender: TObject);
 begin
   Complete_Email.Caption := Complete_Email.Hint;
+end;
+
+procedure TUIForm.LoginItemsBeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
+  ARect: TRect; AState: TOwnerDrawState);
+var
+  Connect, Join, Location: string;
+begin
+  if Sessions[AIndex].Connected then
+    Connect := 'Connected'
+  else
+    Connect := 'Disconnected';
+  if Sessions[AIndex].Joinable then
+    Join := 'Joinable'
+  else
+    Join := 'Unjoinable';
+  if Sessions[AIndex].Location <> '' then
+    Location := Sessions[AIndex].Location
+  else
+    Location := 'Unknown location';
+
+  Label34.Caption := Sessions[AIndex].DeviceName + ' (' + Location + ')';
+  Label35.Caption := Connect + ', ' + Join + ', Last Login:' + DateTimeToStr(Sessions[AIndex].LastLogin);
 end;
 
 procedure TUIForm.DeleteQueue(MusicIndex: integer);
@@ -2765,6 +2796,10 @@ begin
     Complete_Premium.Caption := CAPTION_PREMIUM
   else
     Complete_Premium.Caption := CAPTION_NOTPREMIUM;
+
+  // Items
+  LoginItems.ItemCount := Length(Sessions);
+  LoginItems.Height := LoginItems.ItemCount * LoginItems.ItemHeight;
 end;
 
 procedure TUIForm.ReselectPage;

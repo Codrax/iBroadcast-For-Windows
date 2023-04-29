@@ -183,11 +183,25 @@ interface
       procedure LoadFrom(JSONPair: TJSONPair);
     end;
 
+    TSession = record
+      DeviceName: string;
+
+      Joinable: boolean;
+      Connected: boolean;
+
+      Client: string;
+      LastLogin: TDateTime;
+      Location: string;
+
+      procedure LoadFrom(JSON: TJSONValue);
+    end;
+
     // Arrays
     TArtists = TArray<TArtistItem>;
     TAlbums = TArray<TAlbumItem>;
     TTracks = TArray<TTrackItem>;
     TPlaylists = TArray<TPlaylistItem>;
+    TSessions = TArray<TSession>;
 
   // Get Data
   function GetTrack(ID: integer): integer;
@@ -284,6 +298,7 @@ var
   // Library
   LibraryStatus: TLibraryStatus;
   Account: TAccount;
+  Sessions: TSessions;
 
   Tracks: TTracks;
   Albums: TAlbums;
@@ -435,7 +450,9 @@ var
   SResult: ResultType;
 
   JSONValue: TJSONValue;
-  JSONLibrary, JSONAccount, JSONItem: TJSONObject;
+  JSONLibrary, JSONAccount,
+  JSONItem: TJSONObject;
+  JSONSessions: TJSONArray;
   JSONPair: TJSONPair;
   I, Index: Integer;
 begin
@@ -533,6 +550,16 @@ begin
     JSONAccount := JSONValue.GetValue<TJSONObject>('user');
 
     Account.LoadFrom( JSONAccount );
+
+    // Sessions
+    JSONSessions := JSONAccount.GetValue<TJSONObject>('session').GetValue<TJSONArray>('sessions');
+
+    SetLength( Sessions, JSONSessions.Count );
+
+    for I := 0 to JSONSessions.Count - 1 do
+      begin
+        Sessions[I].LoadFrom( JSONSessions.Items[I] );
+      end;
   finally
     JSONValue.Free;
   end;
@@ -1042,6 +1069,24 @@ begin
     end;
 
   // ?
+end;
+
+{ TSession }
+
+procedure TSession.LoadFrom(JSON: TJSONValue);
+var
+  A: TJSONString;
+begin
+  DeviceName := JSON.GetValue<TJSONString>('device_name').Value;
+
+  Joinable := JSON.GetValue<TJSONBool>('joinable').Value.ToBoolean;
+  Connected := JSON.GetValue<TJSONBool>('connected').Value.ToBoolean;
+
+  Client := JSON.GetValue<TJSONString>('client').Value;
+
+  LastLogin := StringToDateTime(JSON.GetValue<TJSONString>('last_login').Value);
+
+  JSON.TryGetValue<string>('location', Location);
 end;
 
 end.
