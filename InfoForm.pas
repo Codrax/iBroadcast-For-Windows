@@ -35,8 +35,8 @@ implementation
 procedure TInfoBox.FixUI;
 begin
   // Fix Sizing
-  Self.Constraints.MinHeight := Panel1.Top + Song_Name.Top + Song_Name.Height
-    + Song_Info.Top + Song_Info.Height + Panel1.Margins.Bottom * 2;
+  Self.ClientHeight := Panel1.Top + Song_Name.Top + Song_Name.Height
+    + Song_Info.Top + Song_Info.Height + Panel1.Margins.Bottom;
 end;
 
 procedure TInfoBox.FormCreate(Sender: TObject);

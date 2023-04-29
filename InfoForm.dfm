@@ -4,9 +4,10 @@ object InfoBox: TInfoBox
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Song title here'
-  ClientHeight = 328
+  ClientHeight = 321
   ClientWidth = 784
   Color = 2886678
+  Constraints.MinHeight = 360
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
   Font.Height = -16
@@ -20,15 +21,13 @@ object InfoBox: TInfoBox
     Width = 784
     Height = 25
     CustomButtons = <>
-    ExplicitLeft = -425
-    ExplicitWidth = 709
   end
   object Panel1: TPanel
     AlignWithMargins = True
     Left = 325
     Top = 50
     Width = 434
-    Height = 253
+    Height = 246
     Margins.Left = 25
     Margins.Top = 25
     Margins.Right = 25
@@ -38,15 +37,13 @@ object InfoBox: TInfoBox
     Caption = 'Panel1'
     ShowCaption = False
     TabOrder = 1
-    ExplicitLeft = 25
-    ExplicitWidth = 448
-    ExplicitHeight = 402
+    ExplicitHeight = 253
     object Song_Name: TLabel
       AlignWithMargins = True
       Left = 25
       Top = 5
       Width = 384
-      Height = 74
+      Height = 37
       Margins.Left = 25
       Margins.Top = 5
       Margins.Right = 25
@@ -60,14 +57,14 @@ object InfoBox: TInfoBox
       Font.Style = []
       ParentFont = False
       WordWrap = True
-      ExplicitWidth = 145
+      ExplicitWidth = 199
     end
     object Song_Info: TLabel
       AlignWithMargins = True
       Left = 25
-      Top = 89
+      Top = 52
       Width = 384
-      Height = 63
+      Height = 21
       Margins.Left = 25
       Margins.Top = 5
       Margins.Right = 25
@@ -81,8 +78,8 @@ object InfoBox: TInfoBox
       Font.Style = []
       ParentFont = False
       WordWrap = True
-      ExplicitTop = 274
-      ExplicitWidth = 82
+      ExplicitTop = 89
+      ExplicitWidth = 195
     end
   end
   object Panel2: TPanel
@@ -90,7 +87,7 @@ object InfoBox: TInfoBox
     Left = 25
     Top = 50
     Width = 250
-    Height = 253
+    Height = 246
     Margins.Left = 25
     Margins.Top = 25
     Margins.Right = 25
@@ -100,7 +97,7 @@ object InfoBox: TInfoBox
     Caption = 'Panel1'
     ShowCaption = False
     TabOrder = 2
-    ExplicitHeight = 402
+    ExplicitHeight = 253
     object Song_Cover: CImage
       AlignWithMargins = True
       Left = 25

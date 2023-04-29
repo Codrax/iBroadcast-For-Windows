@@ -63,6 +63,9 @@ type
     Bounds: TRect;
     Source: TDataSource;
 
+    (* Other data *)
+    OnlyQueue: boolean;
+
     (* Mix data *)
     function Hidden: boolean;
 
@@ -258,11 +261,6 @@ type
     SearchBox1: TSearchBox;
     SearchDraw: TPaintBox;
     ScrollBar_4: TScrollBar;
-    Label31: TLabel;
-    CCheckBox1: CCheckBox;
-    Label32: TLabel;
-    CCheckBox2: CCheckBox;
-    CCheckBox3: CCheckBox;
     Label33: TLabel;
     CButton1: CButton;
     CButton18: CButton;
@@ -270,6 +268,13 @@ type
     Label34: TLabel;
     Label35: TLabel;
     Label36: TLabel;
+    Search_Filters: TPanel;
+    Label32: TLabel;
+    Label31: TLabel;
+    CCheckBox2: CCheckBox;
+    CCheckBox3: CCheckBox;
+    CCheckBox1: CCheckBox;
+    CButton19: CButton;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -344,6 +349,7 @@ type
       Shift: TShiftState);
     procedure LoginItemsBeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
       ARect: TRect; AState: TOwnerDrawState);
+    procedure CButton19Click(Sender: TObject);
   private
     { Private declarations }
     // Items
@@ -771,6 +777,11 @@ begin
   ShellRun(URL, false);
 end;
 
+procedure TUIForm.CButton19Click(Sender: TObject);
+begin
+  Search_Filters.Visible := not Search_Filters.Visible;
+end;
+
 procedure TUIForm.Button_ToggleMenuClick(Sender: TObject);
 begin
   if not SplitView1.Locked then
@@ -1090,6 +1101,8 @@ begin
       Y := -ScrollPosition.Position;
 
       FitX := (AWidth div (CoverWidth + CoverSpacing));
+      if FitX = 0 then
+        Exit;
       ExtraSpacing := round((AWidth - FitX * (CoverWidth + CoverSpacing)) / FitX);
 
       for I := 0 to ItemsCount - 1 do
@@ -1201,10 +1214,18 @@ var
 begin
   Index := GetSort(IndexHover);
 
-  if ssAlt in Shift then
-    DrawItems[Index].OpenInformation
-  else
-    DrawItems[Index].Execute;
+  with DrawItems[Index] do
+    begin
+      if ssCtrl in Shift then
+        OnlyQueue := true;
+
+      if ssAlt in Shift then
+        OpenInformation
+      else
+        Execute;
+
+      OnlyQueue := false;
+    end;
 end;
 
 procedure TUIForm.FiltrateSearch(Term: string; Flags: TSearchFlags);
@@ -2956,6 +2977,9 @@ begin
       AWidth := SearchDraw.Width;
 
       FitX := (AWidth div (CoverWidth + CoverSpacing));
+      if FitX = 0 then
+        Exit;
+
       ExtraSpacing := round((AWidth - FitX * (CoverWidth + CoverSpacing)) / FitX);
 
       // Sources
@@ -3475,6 +3499,19 @@ begin
     TDataSource.Tracks: begin
       if (IndexHoverID <> PlayIndex) or (Player.PlayStatus <> psPlaying) then
         begin
+          // Add to queue ONLY
+          if OnlyQueue then
+            begin
+              PlayQueue.Add( Index );
+
+              // Draw
+              UIForm.QueueUpdated;
+
+              // Exit
+              Exit
+            end;
+
+          // Create new queue
           UIForm.QueueClear;
 
           for I := 0 to High(SortingList) do
@@ -3740,6 +3777,7 @@ procedure TDrawableItem.OpenInformation;
 begin
   with InfoBox do
     begin
+      Caption := Title;
       Song_Name.Caption := Title;
       Song_Info.Caption := GetPremadeInfoList;
 
