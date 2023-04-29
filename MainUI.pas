@@ -267,7 +267,7 @@ type
     LoginItems: TControlList;
     Label34: TLabel;
     Label35: TLabel;
-    Label36: TLabel;
+    ICON_CONNECT: TLabel;
     Search_Filters: TPanel;
     Label32: TLabel;
     Label31: TLabel;
@@ -1372,8 +1372,9 @@ begin
   // Data
   ProgramSettings(true);
 
-  // Queue UI
+  // UI Preparation
   Queue_Extend.Height := 0;
+  ICON_CONNECT.Font.Name := GetSegoeIconFont;
 
   // Get login info
   try
@@ -1490,9 +1491,9 @@ end;
 function TUIForm.GetSegoeIconFont: string;
 begin
   if (Screen.Fonts.IndexOf(FONT_SEGOE_FLUENT) <> -1) then
-    Font.Name := FONT_SEGOE_FLUENT
+    Result := FONT_SEGOE_FLUENT
   else
-    Font.Name := FONT_SEGOE_METRO;
+    Result := FONT_SEGOE_METRO;
 end;
 
 function TUIForm.GetSort(Index: integer): integer;
@@ -2426,7 +2427,7 @@ begin
             ColonLeft + (I+1) * ColonAlloc, TopDraw);
 
           case I of
-            0: S := 'Title' + IndexHover.ToString;
+            0: S := 'Title';
             1: S := 'Album';
             2: S := 'Artist';
             3: S := 'Length';
