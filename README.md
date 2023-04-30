@@ -4,8 +4,13 @@
 ### Description
 This is a native Windows client for the [iBroadcast](https://ibroadcast.com) music uploading platform. The application is made for Delphi 11 Comunity Edition. This app connects to your account via a access token.
 
-To obtain this token:
+## To obtain this token:
 Go to media.ibroadcast.com -> Account -> Apps, and create a token from the Developer settings. Currently this app as it's not official, It can only connect to your account this way.
+
+Step 1            |  Step 2     | Step 3
+:-------------------------:|:-------------------------:|:-------------------------:
+![Screenshot_1](https://user-images.githubusercontent.com/68193064/235357872-fc1900b2-bb1c-410d-b47f-14a574c27b31.png) | ![Screenshot_2](https://user-images.githubusercontent.com/68193064/235357878-f5db207a-31d2-4686-acb4-9ad31a13a344.png) | ![Screenshot_3](https://user-images.githubusercontent.com/68193064/235357886-9452946e-81d6-4f27-87ba-c0b987f69752.png)
+
  
 ## Main Features
 - Browse library songs, albums, artists, playlists
