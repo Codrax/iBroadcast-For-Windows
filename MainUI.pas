@@ -2184,8 +2184,6 @@ begin
   TitlebarCompare.Show;
   PrimaryUIContainer.Show;
 
-  NavigatePath('songs');
-
   // Hide UX
   CButton3.Hide;
   CButton7.Hide;
@@ -2248,6 +2246,9 @@ begin
           else
             Tracks[I].CachedImage := DefaultPicture;
     end;
+
+  // Navigate
+  NavigatePath('songs');
 end;
 
 procedure TUIForm.LoadingUIContainerResize(Sender: TObject);
