@@ -328,7 +328,7 @@ type
     CButton22: CButton;
     Download_Album: CButton;
     CButton23: CButton;
-    CButton24: CButton;
+    Download_Playlist: CButton;
     Download_Status: TLabel;
     UpdateHold: TPanel;
     Version_Check: TWebBrowser;
@@ -3092,10 +3092,7 @@ begin
 
 
   // Song Info
-  if Local then
-    Song_Name.Caption := '☑️ ' + Tracks[Index].Title
-  else
-    Song_Name.Caption := Tracks[Index].Title;
+  Song_Name.Caption := Tracks[Index].Title;
   A := GetArtist(Tracks[Index].ArtistID);
   if A <> -1 then
     Song_Artist.Caption := Artists[A].ArtistName;
@@ -4625,7 +4622,6 @@ begin
               Download_Album.OnEnter(Download_Album);
             end;
 
-
           UIForm.Page_Title.Caption := AlbumName;
         end;
 
@@ -4668,8 +4664,8 @@ begin
           // Download button
           with UIForm do
             begin
-              Download_Album.Tag := (DownloadedAlbums.IndexOf( ItemID.ToString ) <> -1).ToInteger;
-              Download_Album.OnEnter(Download_Album);
+              Download_Playlist.Tag := (DownloadedPlaylists.IndexOf( ItemID.ToString ) <> -1).ToInteger;
+              Download_Playlist.OnEnter(Download_Playlist);
             end;
 
           UIForm.Page_Title.Caption := Name;

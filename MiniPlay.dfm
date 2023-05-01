@@ -463,9 +463,9 @@ object MiniPlayer: TMiniPlayer
       ParentColor = False
       AccentColor = acAccentAdjust
       Presets = cslNone
-      Foreground.Enter = 6914986
-      Foreground.Leave = 5270161
-      Foreground.Down = 3625336
+      Foreground.Enter = 6525346
+      Foreground.Leave = 4880521
+      Foreground.Down = 3235696
       Foreground.Border = clGray
       Foreground.BorderThick = 0
       Foreground.MultiColor = False
