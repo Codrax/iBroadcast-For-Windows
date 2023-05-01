@@ -27,7 +27,8 @@ Step 1            |  Step 2     | Step 3
 ### Dependencies
 - Codrut Visual Library - https://github.com/Codrax/CodrutsVisualLibrary/
 - Codrut Fluent Design System - https://github.com/Codrax/CodrutFluentDesignSystem
-- A few other units
+- Delphi BASS Audio Library - https://github.com/TDDung/Delphi-BASS
+- Units in the Dependencies folder
 
 ## Screenshots
 
