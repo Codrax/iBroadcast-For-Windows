@@ -1,5 +1,7 @@
 program iBroadcast;
 
+{$R *.dres}
+
 uses
   Vcl.Forms,
   Cod.Instances,
@@ -10,7 +12,9 @@ uses
   VolumePopup in 'VolumePopup.pas' {VolumePop},
   Performance in 'Performance.pas' {PerfForm},
   MiniPlay in 'MiniPlay.pas' {MiniPlayer},
-  InfoForm in 'InfoForm.pas' {InfoBox};
+  InfoForm in 'InfoForm.pas' {InfoBox},
+  HelpForm in 'HelpForm.pas' {HelpUI},
+  NewVersionForm in 'NewVersionForm.pas' {NewVersion};
 
 {$R *.res}
 
@@ -30,6 +34,7 @@ begin
   Application.CreateForm(TPerfForm, PerfForm);
   Application.CreateForm(TMiniPlayer, MiniPlayer);
   Application.CreateForm(TInfoBox, InfoBox);
+  Application.CreateForm(TNewVersion, NewVersion);
   // Parameter String
   for I := 1 to ParamCount do
     begin

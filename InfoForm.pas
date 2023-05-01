@@ -5,7 +5,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.SysUtils, Vcl.TitleBarCtrls,
-  Cod.Visual.Image, Vcl.StdCtrls, Vcl.ExtCtrls;
+  Cod.Visual.Image, Vcl.StdCtrls, Vcl.ExtCtrls, Cod.Visual.Button, Cod.Dialogs,
+  MainUI;
 
 type
   TInfoBox = class(TForm)
@@ -15,7 +16,10 @@ type
     Song_Info: TLabel;
     Panel2: TPanel;
     Song_Cover: CImage;
+    CButton24: CButton;
     procedure FormCreate(Sender: TObject);
+    procedure CButton24Enter(Sender: TObject);
+    procedure CButton24Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -27,10 +31,68 @@ var
   InfoBox: TInfoBox;
 
   InfoBoxIndex: integer;
+  InfoBoxID: integer;
+  InfoBoxType: TDataSource;
 
 implementation
 
 {$R *.dfm}
+
+procedure TInfoBox.CButton24Click(Sender: TObject);
+var
+  ListIndex: integer;
+  LastValue: string;
+
+  List: ^TStringList;
+  PageSource: TDataSource;
+begin
+  LastValue := InfoBoxID.ToString;
+
+  // Source
+  PageSource := InfoBoxType;
+
+  // Index
+  case PageSource of
+    TDataSource.Tracks: List := @DownloadedTracks;
+    TDataSource.Albums: List := @DownloadedAlbums;
+    TDataSource.Artists: List := @DownloadedArtists;
+    TDataSource.Playlists: List := @DownloadedPlaylists;
+    else Exit;
+  end;
+
+  ListIndex := List.IndexOf(LastValue);
+
+  // Download / Delete
+  if ListIndex = -1 then
+    List.Add( LastValue )
+      else
+        if OpenDialog('Are you sure?', 'Are you sure you wish to delete this from your downloads?', ctQuestion, [mbNo, mbYes]) = mrYes then
+          List.Delete( ListIndex )
+            else
+              Exit;
+
+  // Button Update
+  CButton(Sender).Tag := (ListIndex = -1).ToInteger;
+  CButton(Sender).OnEnter(Sender);
+
+  // Update
+  UIForm.UpdateDownloads;
+end;
+
+procedure TInfoBox.CButton24Enter(Sender: TObject);
+begin
+  with CButton(Sender) do
+    if Tag <> 0 then
+      begin
+        Text := CAPTION_DOWNLOADED;
+        BSegoeIcon := ICON_DOWNLOADED;
+      end
+    else
+      begin
+        Text := CAPTION_DOWNLOAD;
+        BSegoeIcon := ICON_DOWNLOAD;
+      end;
+end;
 
 procedure TInfoBox.FixUI;
 begin

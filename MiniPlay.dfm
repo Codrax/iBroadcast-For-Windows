@@ -25,6 +25,7 @@ object MiniPlayer: TMiniPlayer
     Align = alTop
     BevelOuter = bvNone
     Caption = 'Panel1'
+    ParentColor = True
     ShowCaption = False
     TabOrder = 0
     OnMouseDown = MoveMoveDown
@@ -70,7 +71,7 @@ object MiniPlayer: TMiniPlayer
     end
     object Mini_Close: CButton
       AlignWithMargins = True
-      Left = 25
+      Left = 23
       Top = 114
       Width = 40
       Height = 30
@@ -78,8 +79,6 @@ object MiniPlayer: TMiniPlayer
       Margins.Right = 10
       OnClick = Mini_CloseClick
       TabOrder = 0
-      Color = 4919115
-      ParentColor = False
       BSegoeIcon = #60999
       ButtonIcon = cicSegoeFluent
       UseAccentColor = acNone
@@ -104,11 +103,10 @@ object MiniPlayer: TMiniPlayer
       Text = ''
       SubText = 'Hello World!'
       State = mbsLeave
-      FlatButton = True
-      Colors.Enter = clWhite
-      Colors.Leave = clWhite
-      Colors.Down = clWhite
-      Colors.BLine = clWhite
+      Colors.Enter = 5771359
+      Colors.Leave = 4853328
+      Colors.Down = 3539258
+      Colors.BLine = 3539258
       Preset.Color = clBlue
       Preset.Kind = cbprCustom
       Preset.PenColorAuto = True
@@ -121,7 +119,7 @@ object MiniPlayer: TMiniPlayer
       TextColors.Leave = clWhite
       TextColors.Down = clWhite
       TextColors.BLine = clBlack
-      Pen.Color = 4788293
+      Pen.Color = 2886676
       Pen.Width = 0
       Pen.EnableAlternativeColors = False
       Pen.FormSyncedColor = False
@@ -137,14 +135,12 @@ object MiniPlayer: TMiniPlayer
     end
     object Button_Prev: CButton
       AlignWithMargins = True
-      Left = 76
+      Left = 75
       Top = 111
       Width = 50
       Height = 37
       OnClick = Button_PrevClick
       TabOrder = 1
-      Color = 4853831
-      ParentColor = False
       BSegoeIcon = #59538
       ButtonIcon = cicSegoeFluent
       UseAccentColor = acNone
@@ -169,11 +165,10 @@ object MiniPlayer: TMiniPlayer
       Text = ''
       SubText = 'Hello World!'
       State = mbsLeave
-      FlatButton = True
-      Colors.Enter = clWhite
-      Colors.Leave = clWhite
-      Colors.Down = clWhite
-      Colors.BLine = clWhite
+      Colors.Enter = 5771359
+      Colors.Leave = 4853328
+      Colors.Down = 3539258
+      Colors.BLine = 3539258
       Preset.Color = clBlue
       Preset.Kind = cbprCustom
       Preset.PenColorAuto = True
@@ -186,7 +181,7 @@ object MiniPlayer: TMiniPlayer
       TextColors.Leave = clWhite
       TextColors.Down = clWhite
       TextColors.BLine = clBlack
-      Pen.Color = 4788293
+      Pen.Color = 2886676
       Pen.Width = 0
       Pen.EnableAlternativeColors = False
       Pen.FormSyncedColor = False
@@ -201,14 +196,12 @@ object MiniPlayer: TMiniPlayer
       Animations.FASpeed = 10
     end
     object MiniButton_Play: CButton
-      Left = 129
+      Left = 128
       Top = 108
       Width = 50
       Height = 43
       OnClick = MiniButton_PlayClick
       TabOrder = 2
-      Color = 4919112
-      ParentColor = False
       BSegoeIcon = #59240
       ButtonIcon = cicSegoeFluent
       UseAccentColor = acNone
@@ -233,11 +226,10 @@ object MiniPlayer: TMiniPlayer
       Text = ''
       SubText = 'Hello World!'
       State = mbsLeave
-      FlatButton = True
-      Colors.Enter = clWhite
-      Colors.Leave = clWhite
-      Colors.Down = clWhite
-      Colors.BLine = clWhite
+      Colors.Enter = 5771359
+      Colors.Leave = 4853328
+      Colors.Down = 3539258
+      Colors.BLine = 3539258
       Preset.Color = clBlue
       Preset.Kind = cbprCustom
       Preset.PenColorAuto = True
@@ -250,7 +242,7 @@ object MiniPlayer: TMiniPlayer
       TextColors.Leave = clWhite
       TextColors.Down = clWhite
       TextColors.BLine = clBlack
-      Pen.Color = 4788293
+      Pen.Color = 2886676
       Pen.Width = 0
       Pen.EnableAlternativeColors = False
       Pen.FormSyncedColor = False
@@ -272,8 +264,6 @@ object MiniPlayer: TMiniPlayer
       Height = 37
       OnClick = Button_NextClick
       TabOrder = 3
-      Color = 4853831
-      ParentColor = False
       BSegoeIcon = #59539
       ButtonIcon = cicSegoeFluent
       UseAccentColor = acNone
@@ -298,11 +288,10 @@ object MiniPlayer: TMiniPlayer
       Text = ''
       SubText = 'Hello World!'
       State = mbsLeave
-      FlatButton = True
-      Colors.Enter = clWhite
-      Colors.Leave = clWhite
-      Colors.Down = clWhite
-      Colors.BLine = clWhite
+      Colors.Enter = 5771359
+      Colors.Leave = 4853328
+      Colors.Down = 3539258
+      Colors.BLine = 3539258
       Preset.Color = clBlue
       Preset.Kind = cbprCustom
       Preset.PenColorAuto = True
@@ -315,7 +304,7 @@ object MiniPlayer: TMiniPlayer
       TextColors.Leave = clWhite
       TextColors.Down = clWhite
       TextColors.BLine = clBlack
-      Pen.Color = 4788293
+      Pen.Color = 2886676
       Pen.Width = 0
       Pen.EnableAlternativeColors = False
       Pen.FormSyncedColor = False
@@ -339,8 +328,6 @@ object MiniPlayer: TMiniPlayer
       Margins.Right = 10
       OnClick = Mini_ExpandClick
       TabOrder = 4
-      Color = 4919115
-      ParentColor = False
       BSegoeIcon = #57676
       ButtonIcon = cicSegoeFluent
       UseAccentColor = acNone
@@ -365,11 +352,10 @@ object MiniPlayer: TMiniPlayer
       Text = ''
       SubText = 'Hello World!'
       State = mbsLeave
-      FlatButton = True
-      Colors.Enter = clWhite
-      Colors.Leave = clWhite
-      Colors.Down = clWhite
-      Colors.BLine = clWhite
+      Colors.Enter = 5771359
+      Colors.Leave = 4853328
+      Colors.Down = 3539258
+      Colors.BLine = 3539258
       Preset.Color = clBlue
       Preset.Kind = cbprCustom
       Preset.PenColorAuto = True
@@ -382,7 +368,7 @@ object MiniPlayer: TMiniPlayer
       TextColors.Leave = clWhite
       TextColors.Down = clWhite
       TextColors.BLine = clBlack
-      Pen.Color = 4788293
+      Pen.Color = 2886676
       Pen.Width = 0
       Pen.EnableAlternativeColors = False
       Pen.FormSyncedColor = False
@@ -477,9 +463,9 @@ object MiniPlayer: TMiniPlayer
       ParentColor = False
       AccentColor = acAccentAdjust
       Presets = cslNone
-      Foreground.Enter = 7635871
-      Foreground.Leave = 5991046
-      Foreground.Down = 4346221
+      Foreground.Enter = 6914986
+      Foreground.Leave = 5270161
+      Foreground.Down = 3625336
       Foreground.Border = clGray
       Foreground.BorderThick = 0
       Foreground.MultiColor = False
@@ -520,8 +506,6 @@ object MiniPlayer: TMiniPlayer
       Margins.Right = 10
       OnClick = Mini_ShuffleClick
       TabOrder = 1
-      Color = 4919115
-      ParentColor = False
       BSegoeIcon = #57680
       ButtonIcon = cicSegoeFluent
       UseAccentColor = acNone
@@ -546,11 +530,10 @@ object MiniPlayer: TMiniPlayer
       Text = ''
       SubText = 'Hello World!'
       State = mbsLeave
-      FlatButton = True
-      Colors.Enter = clWhite
-      Colors.Leave = clWhite
-      Colors.Down = clWhite
-      Colors.BLine = clWhite
+      Colors.Enter = 5771359
+      Colors.Leave = 4853328
+      Colors.Down = 3539258
+      Colors.BLine = 3539258
       Preset.Color = clBlue
       Preset.Kind = cbprCustom
       Preset.PenColorAuto = True
@@ -563,7 +546,7 @@ object MiniPlayer: TMiniPlayer
       TextColors.Leave = clWhite
       TextColors.Down = clWhite
       TextColors.BLine = clBlack
-      Pen.Color = 4788293
+      Pen.Color = 2886676
       Pen.Width = 0
       Pen.EnableAlternativeColors = False
       Pen.FormSyncedColor = False
@@ -587,8 +570,6 @@ object MiniPlayer: TMiniPlayer
       Margins.Right = 10
       OnClick = Mini_RepeatClick
       TabOrder = 2
-      Color = 4919115
-      ParentColor = False
       BSegoeIcon = #59630
       ButtonIcon = cicSegoeFluent
       UseAccentColor = acNone
@@ -613,11 +594,10 @@ object MiniPlayer: TMiniPlayer
       Text = ''
       SubText = 'Hello World!'
       State = mbsLeave
-      FlatButton = True
-      Colors.Enter = clWhite
-      Colors.Leave = clWhite
-      Colors.Down = clWhite
-      Colors.BLine = clWhite
+      Colors.Enter = 5771359
+      Colors.Leave = 4853328
+      Colors.Down = 3539258
+      Colors.BLine = 3539258
       Preset.Color = clBlue
       Preset.Kind = cbprCustom
       Preset.PenColorAuto = True
@@ -630,7 +610,7 @@ object MiniPlayer: TMiniPlayer
       TextColors.Leave = clWhite
       TextColors.Down = clWhite
       TextColors.BLine = clBlack
-      Pen.Color = 4788293
+      Pen.Color = 2886676
       Pen.Width = 0
       Pen.EnableAlternativeColors = False
       Pen.FormSyncedColor = False
@@ -654,8 +634,6 @@ object MiniPlayer: TMiniPlayer
       Margins.Right = 10
       OnClick = Mini_TransparentClick
       TabOrder = 3
-      Color = 4919115
-      ParentColor = False
       BSegoeIcon = #60770
       ButtonIcon = cicSegoeFluent
       UseAccentColor = acNone
@@ -680,11 +658,10 @@ object MiniPlayer: TMiniPlayer
       Text = ''
       SubText = 'Hello World!'
       State = mbsLeave
-      FlatButton = True
-      Colors.Enter = clWhite
-      Colors.Leave = clWhite
-      Colors.Down = clWhite
-      Colors.BLine = clWhite
+      Colors.Enter = 5771359
+      Colors.Leave = 4853328
+      Colors.Down = 3539258
+      Colors.BLine = 3539258
       Preset.Color = clBlue
       Preset.Kind = cbprCustom
       Preset.PenColorAuto = True
@@ -697,7 +674,7 @@ object MiniPlayer: TMiniPlayer
       TextColors.Leave = clWhite
       TextColors.Down = clWhite
       TextColors.BLine = clBlack
-      Pen.Color = 4788293
+      Pen.Color = 2886676
       Pen.Width = 0
       Pen.EnableAlternativeColors = False
       Pen.FormSyncedColor = False

@@ -4,7 +4,7 @@ object InfoBox: TInfoBox
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Song title here'
-  ClientHeight = 321
+  ClientHeight = 374
   ClientWidth = 784
   Color = 2886678
   Constraints.MinHeight = 360
@@ -27,7 +27,7 @@ object InfoBox: TInfoBox
     Left = 325
     Top = 50
     Width = 434
-    Height = 246
+    Height = 299
     Margins.Left = 25
     Margins.Top = 25
     Margins.Right = 25
@@ -37,7 +37,7 @@ object InfoBox: TInfoBox
     Caption = 'Panel1'
     ShowCaption = False
     TabOrder = 1
-    ExplicitHeight = 253
+    ExplicitHeight = 246
     object Song_Name: TLabel
       AlignWithMargins = True
       Left = 25
@@ -78,7 +78,6 @@ object InfoBox: TInfoBox
       Font.Style = []
       ParentFont = False
       WordWrap = True
-      ExplicitTop = 89
       ExplicitWidth = 195
     end
   end
@@ -87,7 +86,7 @@ object InfoBox: TInfoBox
     Left = 25
     Top = 50
     Width = 250
-    Height = 246
+    Height = 299
     Margins.Left = 25
     Margins.Top = 25
     Margins.Right = 25
@@ -95,9 +94,10 @@ object InfoBox: TInfoBox
     Align = alLeft
     BevelOuter = bvNone
     Caption = 'Panel1'
+    ParentColor = True
     ShowCaption = False
     TabOrder = 2
-    ExplicitHeight = 253
+    ExplicitHeight = 246
     object Song_Cover: CImage
       AlignWithMargins = True
       Left = 25
@@ -115,6 +115,77 @@ object InfoBox: TInfoBox
       GifSettings.AnimationSpeed = 100
       DrawMode = dmCenterFit
       ExplicitWidth = 372
+    end
+    object CButton24: CButton
+      AlignWithMargins = True
+      Left = 15
+      Top = 235
+      Width = 220
+      Height = 38
+      Margins.Left = 15
+      Margins.Top = 5
+      Margins.Right = 15
+      Margins.Bottom = 0
+      OnEnter = CButton24Enter
+      OnClick = CButton24Click
+      TabOrder = 0
+      Align = alTop
+      BSegoeIcon = #59542
+      ButtonIcon = cicSegoeFluent
+      UseAccentColor = acNone
+      GradientOptions.Enabled = False
+      GradientOptions.Enter = clFuchsia
+      GradientOptions.Leave = clRed
+      GradientOptions.Down = clMaroon
+      ControlStyle = []
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = 14123546
+      Font.Height = -16
+      Font.Name = 'Segoe UI Semibold'
+      Font.Style = []
+      SubTextFont.Charset = DEFAULT_CHARSET
+      SubTextFont.Color = 14123546
+      SubTextFont.Height = -13
+      SubTextFont.Name = 'Segoe UI'
+      SubTextFont.Style = []
+      FontAutoSize.Enabled = False
+      FontAutoSize.Max = -1
+      FontAutoSize.Min = -1
+      Text = 'Download'
+      SubText = 'Hello World!'
+      State = mbsLeave
+      Colors.Enter = 5771359
+      Colors.Leave = 4853328
+      Colors.Down = 3539258
+      Colors.BLine = 3539258
+      Preset.Color = clBlue
+      Preset.Kind = cbprCustom
+      Preset.PenColorAuto = True
+      Preset.ApplyOnce = False
+      Preset.IgnoreGlobalSync = False
+      UnderLine.Enable = True
+      UnderLine.UnderLineRound = True
+      UnderLine.UnderLineThicknes = 6
+      TextColors.Enter = clWhite
+      TextColors.Leave = clWhite
+      TextColors.Down = clWhite
+      TextColors.BLine = clBlack
+      Pen.Color = 2886678
+      Pen.Width = 0
+      Pen.EnableAlternativeColors = False
+      Pen.FormSyncedColor = False
+      Pen.AltHoverColor = clBlack
+      Pen.AltPressColor = clBlack
+      Pen.GlobalPresetExcept = False
+      Animations.PressAnimation = True
+      Animations.PADelay = 2
+      Animations.PAShrinkAmount = 4
+      Animations.PAAnimateEngine = cbneAtDraw
+      Animations.FadeAnimation = True
+      Animations.FASpeed = 10
+      ExplicitLeft = 0
+      ExplicitTop = 242
+      ExplicitWidth = 240
     end
   end
 end

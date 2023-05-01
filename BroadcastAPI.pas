@@ -1074,8 +1074,6 @@ end;
 { TSession }
 
 procedure TSession.LoadFrom(JSON: TJSONValue);
-var
-  A: TJSONString;
 begin
   DeviceName := JSON.GetValue<TJSONString>('device_name').Value;
 
