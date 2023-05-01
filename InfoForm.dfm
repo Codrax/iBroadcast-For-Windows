@@ -42,7 +42,7 @@ object InfoBox: TInfoBox
       AlignWithMargins = True
       Left = 25
       Top = 5
-      Width = 384
+      Width = 199
       Height = 37
       Margins.Left = 25
       Margins.Top = 5
@@ -57,13 +57,12 @@ object InfoBox: TInfoBox
       Font.Style = []
       ParentFont = False
       WordWrap = True
-      ExplicitWidth = 199
     end
     object Song_Info: TLabel
       AlignWithMargins = True
       Left = 25
       Top = 52
-      Width = 384
+      Width = 195
       Height = 21
       Margins.Left = 25
       Margins.Top = 5
@@ -78,7 +77,6 @@ object InfoBox: TInfoBox
       Font.Style = []
       ParentFont = False
       WordWrap = True
-      ExplicitWidth = 195
     end
   end
   object Panel2: TPanel

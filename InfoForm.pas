@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.SysUtils, Vcl.TitleBarCtrls,
   Cod.Visual.Image, Vcl.StdCtrls, Vcl.ExtCtrls, Cod.Visual.Button, Cod.Dialogs,
-  MainUI;
+  BroadcastAPI;
 
 type
   TInfoBox = class(TForm)
@@ -35,6 +35,9 @@ var
   InfoBoxType: TDataSource;
 
 implementation
+
+uses
+  MainUI;
 
 {$R *.dfm}
 

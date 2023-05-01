@@ -51,6 +51,8 @@ begin
 
       PrepareCustomTitleBar( TForm(Self), Color, clWhite);
 
+      Self.Height := Self.Height - Height;
+
       InactiveBackgroundColor := BackgroundColor;
       ButtonInactiveBackgroundColor := BackgroundColor;
     end;

@@ -1,5 +1,7 @@
 unit BroadcastAPI;
 
+{$SCOPEDENUMS ON}
+
 interface
   uses
     // Required Units
@@ -13,6 +15,10 @@ interface
     TArtSize = (Small, Medium, Large);
     TWorkItem = (DownloadingImage);
     TWorkItems = set of TWorkItem;
+
+    // Source
+    TDataSource = (None, Tracks, Albums, Artists, Playlists);
+    TDataSources = set of TDataSource;
 
     // Recors
     ResultType = record
@@ -229,6 +235,14 @@ interface
   // Memory
   procedure APIFreeMemory;
 
+  // Artwork Store
+  procedure AddToArtworkStore(ID: integer; Cache: TJpegImage; AType: TDataSource);
+  function ExistsInStore(ID: integer; AType: TDataSource): boolean;
+  function GetArtStoreCache(ID: integer; AType: TDataSource): TJpegImage;
+  function GetArtworkStore(AType: TDataSource = TDataSource.None): string;
+  procedure ClearArtworkStore;
+  procedure InitiateArtworkStore;
+
   // Library
   procedure LoadLibrary;
 
@@ -249,6 +263,9 @@ const
   STREAMING_ENDPOINT = 'https://streaming.ibroadcast.com';
 
   API_VERSION = '1.0.0';
+
+  // Artwork Store
+  ART_EXT = '.jpeg';
 
   // Request Formats
   REQUEST_LOGIN = '{'
@@ -289,6 +306,10 @@ var
   // Login Information
   VERSION: string;
   DEVICE_NAME: string;
+
+  // Artwork Store
+  ArtworkStore: boolean = true;
+  MediaStoreLocation: string;
 
   // Server Login Output
   TOKEN: string;
@@ -442,6 +463,79 @@ begin
       if Tracks[I].CachedImageLarge <> nil then
         Tracks[I].CachedImageLarge.Free;
     end;
+end;
+
+procedure AddToArtworkStore(ID: integer; Cache: TJpegImage; AType: TDataSource);
+var
+  Path: string;
+begin
+  Path := GetArtworkStore(AType) + ID.ToString + ART_EXT;
+
+  Cache.SaveToFile(Path);
+end;
+
+function ExistsInStore(ID: integer; AType: TDataSource): boolean;
+var
+  Path: string;
+begin
+  if not ArtworkStore then
+    Exit(false);
+
+  Path := GetArtworkStore(AType) + ID.ToString + ART_EXT;
+
+  Result := TFile.Exists( Path );
+end;
+
+function GetArtStoreCache(ID: integer; AType: TDataSource): TJpegImage;
+var
+  Path: string;
+begin
+  Path := GetArtworkStore(AType) + ID.ToString + ART_EXT;
+
+  Result := TJpegImage.Create;
+  Result.LoadFromFile(Path);
+end;
+
+function GetArtworkStore(AType: TDataSource): string;
+begin
+  Result := IncludeTrailingPathDelimiter(MediaStoreLocation);
+  case AType of
+    TDataSource.Tracks: Result := Result + 'Tracks';
+    TDataSource.Albums: Result := Result + 'Albums';
+    TDataSource.Artists: Result := Result + 'Artists';
+    TDataSource.Playlists: Result := Result + 'Playlists';
+  end;
+
+  Result := IncludeTrailingPathDelimiter(Result);
+end;
+
+procedure ClearArtworkStore;
+var
+  Path: string;
+begin
+  Path := GetArtworkStore;
+
+  if TDirectory.Exists(Path) then
+    TDirectory.Delete(Path, true);
+end;
+
+procedure InitiateArtworkStore;
+var
+  ArtRoot: string;
+  A: TObject;
+begin
+  if not ArtworkStore then
+    Exit;
+
+  ArtRoot := GetArtworkStore;
+
+  if not TDirectory.Exists(ArtRoot) then
+    TDirectory.CreateDirectory(ArtRoot);
+
+  TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Tracks));
+  TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Albums));
+  TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Artists));
+  TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Playlists));
 end;
 
 procedure LoadLibrary;
@@ -808,7 +902,19 @@ begin
   else
     begin
       if (CachedImage = nil) or CachedImage.Empty then
-        CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium);
+        begin
+          // Load from Artwork Store
+          if ExistsInStore(ID, TDataSource.Tracks) then
+            CachedImage := GetArtStoreCache(ID, TDataSource.Tracks)
+          else
+            // Load from server, save to artowork store
+            begin
+              CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium);
+
+              if ArtworkStore then
+                AddToArtworkStore(ID, CachedImage, TDataSource.Tracks);
+            end;
+        end;
 
       Result := CachedImage;
     end;
@@ -890,9 +996,21 @@ begin
   if (CachedImage = nil) or CachedImage.Empty then
     begin
       if Length(TracksID) > 0 then
-        CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork()
+        begin
+          // Load from Artwork Store
+          if ExistsInStore(ID, TDataSource.Albums)  then
+            CachedImage := GetArtStoreCache(ID, TDataSource.Albums)
+          else
+            // Load from server, save to artowork store
+            begin
+              CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork();
+
+              if ArtworkStore then
+                AddToArtworkStore(ID, CachedImage, TDataSource.Albums);
+            end;
+        end
       else
-        CachedImage := BroadcastAPI.DefaultPicture;
+        CachedImage := DefaultPicture;
     end;
 
   Result := CachedImage;
@@ -942,21 +1060,31 @@ begin
 
   if (CachedImage = nil) or CachedImage.Empty then
     begin
-      if HasArtwork then
-        // Get premade
-        CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium)
+      // Load from Artwork Store
+      if ExistsInStore(ID, TDataSource.Artists) then
+        CachedImage := GetArtStoreCache(ID, TDataSource.Artists)
       else
-        begin
-          if Length(TracksID) >= 4 then
-            begin
-              CachedImage := SongArtCollage(TracksID[0], TracksID[1], TracksID[2], TracksID[3]);
-            end
-          else
-            if Length(TracksID) > 0 then
-              CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork()
+      begin
+        if HasArtwork then
+          // Get premade
+          CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium)
+        else
+          // Load from server, save to artowork store
+          begin
+            if Length(TracksID) >= 4 then
+              begin
+                CachedImage := SongArtCollage(TracksID[0], TracksID[1], TracksID[2], TracksID[3]);
+              end
             else
-              CachedImage := BroadcastAPI.DefaultPicture;
-        end;
+              if Length(TracksID) > 0 then
+                CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork()
+              else
+                CachedImage := DefaultPicture;
+
+            if ArtworkStore and (CachedImage <> DefaultPicture) then
+              AddToArtworkStore(ID, CachedImage, TDataSource.Artists);
+          end;
+      end;
     end;
 
   Result := CachedImage;
@@ -1010,20 +1138,30 @@ begin
 
   if (CachedImage = nil) or CachedImage.Empty then
     begin
-      if HasArtwork then
-        // Get premade
-        CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium)
+      if ExistsInStore(ID, TDataSource.Playlists) then
+        CachedImage := GetArtStoreCache(ID, TDataSource.Playlists)
       else
         begin
-          if Length(TracksID) >= 4 then
-            begin
-              CachedImage := SongArtCollage(TracksID[0], TracksID[1], TracksID[2], TracksID[3]);
-            end
+          // Load from Artwork Store
+          if HasArtwork then
+            // Get premade
+            CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium)
           else
-            if Length(TracksID) > 0 then
-              CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork()
-            else
-              CachedImage := BroadcastAPI.DefaultPicture;
+            // Load from server, save to artowork store
+            begin
+              if Length(TracksID) >= 4 then
+                begin
+                  CachedImage := SongArtCollage(TracksID[0], TracksID[1], TracksID[2], TracksID[3]);
+                end
+              else
+                if Length(TracksID) > 0 then
+                  CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork()
+                else
+                  CachedImage := DefaultPicture;
+            end;
+
+          if ArtworkStore and (CachedImage <> DefaultPicture) then
+            AddToArtworkStore(ID, CachedImage, TDataSource.Playlists);
         end;
     end;
 

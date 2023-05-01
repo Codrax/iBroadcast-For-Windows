@@ -2778,8 +2778,6 @@ object NewVersion: TNewVersion
     Width = 484
     Height = 25
     CustomButtons = <>
-    ExplicitLeft = -199
-    ExplicitWidth = 683
   end
   object CButton1: CButton
     Left = 262

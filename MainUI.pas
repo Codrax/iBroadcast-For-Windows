@@ -40,10 +40,6 @@ type
     ScrollPrev: integer;
   end;
 
-  // Source
-  TDataSource = (None, Tracks, Albums, Artists, Playlists);
-  TDataSources = set of TDataSource;
-
   // Draw Item
   TDrawableItem = record
     Index: integer;
@@ -337,6 +333,8 @@ type
     UpdateHold: TPanel;
     Version_Check: TWebBrowser;
     UpdateCheck: TTimer;
+    Setting_ArtworkStore: CCheckBox;
+    CButton25: CButton;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -423,6 +421,9 @@ type
     procedure UpdateCheckTimer(Sender: TObject);
     procedure Version_CheckNavigateComplete2(ASender: TObject;
       const pDisp: IDispatch; const URL: OleVariant);
+    procedure CButton25Click(Sender: TObject);
+    procedure MoveByHold(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
     // Items
@@ -542,7 +543,7 @@ const
   // SYSTEM
   V_MAJOR = 1;
   V_MINOR = 2;
-  V_PATCH = 0;
+  V_PATCH = 5;
 
   UPDATE_URL = 'http://vinfo.codrutsoftware.cf/version_iBroadcast';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -784,6 +785,11 @@ procedure TUIForm.ApplySettings;
 begin
   Button_Performance.Visible := Setting_Graph.Checked;
   Button_Performance.Left := Button_Volume.Left + Button_Performance.Width;
+  ArtworkStore := Setting_ArtworkStore.Checked;
+  if ArtworkStore then
+    InitiateArtworkStore
+  else
+    ClearArtworkStore;
 end;
 
 procedure TUIForm.Button_ExtendClick(Sender: TObject);
@@ -803,6 +809,9 @@ begin
 
   QueueAnProgress := 1;
   QueuePopupAnimate.Enabled := true;
+
+  // Scroll Position
+  QueueScroll.Position := QueuePos * (QListHeight + QListSpacing);
 end;
 
 procedure TUIForm.Button_MiniPlayerClick(Sender: TObject);
@@ -947,6 +956,13 @@ begin
   end;
 end;
 
+procedure TUIForm.CButton25Click(Sender: TObject);
+begin
+  ClearArtworkStore;
+
+  InitiateArtworkStore;
+end;
+
 procedure TUIForm.ArtworkSelectClick(Sender: TObject);
 begin
   // Artwork
@@ -1076,7 +1092,7 @@ begin
       case I of
         1: FileName := AFile + '.mp3';
         2: FileName := AFile + '.txt';
-        3: FileName := AFile + '.jpeg';
+        3: FileName := AFile + ART_EXT;
       end;
 
       if TFile.Exists(FileName) then
@@ -1731,6 +1747,10 @@ begin
   // Data
   ProgramSettings(true);
 
+  // Artwork Store
+  MediaStoreLocation := AppData + 'Artwork Cache';
+  InitiateArtworkStore;
+
   // Load Downloads
   DownloadSettings(true);
 
@@ -2237,7 +2257,7 @@ begin
         end;
 
       // Artwork
-      FileName := FileRoot + '.jpeg';
+      FileName := FileRoot + ART_EXT;
       if TFile.Exists(FileName) then
         begin
           Tracks[I].CachedImage := TJpegImage.Create;
@@ -3128,7 +3148,7 @@ var
   Index: integer;
 begin
   Index := Length(PageHistory) - 2;
-  if Index > 0 then
+  if Index >= 0 then
     begin
       with PageHistory[Index] do
         begin
@@ -3250,6 +3270,8 @@ begin
           SplitView1.Opened := OPT.ReadBool(CAT_GENERAL, 'Menu Opened', true);
           Settings_CheckUpdate.Checked := OPT.ReadBool(CAT_GENERAL, 'Audo Update Check', true);
           ArtworkID := OPT.ReadInteger(CAT_GENERAL, 'Artwork Id', 0);
+          ArtworkStore := OPT.ReadBool(CAT_GENERAL, 'Artowork Store', true);
+          Setting_ArtworkStore.Checked := ArtworkStore;
 
           TransparentIndex := OPT.ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
       finally
@@ -3269,6 +3291,7 @@ begin
         OPT.WriteBool(CAT_GENERAL, 'Menu Opened', SplitView1.Opened);
         OPT.WriteBool(CAT_GENERAL, 'Audo Update Check', Settings_CheckUpdate.Checked);
         OPT.WriteInteger(CAT_GENERAL, 'Artwork Id', ArtworkID);
+        OPT.WriteBool(CAT_GENERAL, 'Artowork Store', ArtworkStore);
 
         OPT.WriteInteger(CAT_MINIPLAYER, 'Opacity', TransparentIndex);
       finally
@@ -3455,7 +3478,7 @@ begin
           end;
 
           // Artwork
-          Tracks[TrackIndex].GetArtwork().SaveToFile(local + '.jpeg');
+          Tracks[TrackIndex].GetArtwork().SaveToFile(local + ART_EXT);
 
           // Remove from list
           TThread.Synchronize(nil, procedure
@@ -4043,6 +4066,13 @@ procedure TUIForm.MenuToggled(Sender: TObject);
 begin
   OnResize(Self);
   PauseDrawing := false;
+end;
+
+procedure TUIForm.MoveByHold(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  ReleaseCapture;
+  SendMessage(Self.Handle, WM_NCLBUTTONDOWN, HTCAPTION, 0);
 end;
 
 procedure TUIForm.MenuStartedAnimation(Sender: TObject);
@@ -4883,7 +4913,10 @@ end;
 procedure TDrawableItem.StartPictureLoad;
 var
   ThreadSource: TDataSource;
-  ItemIndex: integer;
+  ItemIndex,
+  ItemIdentifier: integer;
+  FileName: string;
+  IsDownload: boolean;
 begin
   // MAX Thread limit
   if TotalThreads > THREAD_MAX then
@@ -4891,7 +4924,10 @@ begin
 
   // Self Access
   ThreadSource := Source;
+  ItemIdentifier := ItemID;
   ItemIndex := index;
+  if Source = TDataSource.Tracks then
+    IsDownload := AllDownload.IndexOf(ItemID) <> -1;
 
   with TThread.CreateAnonymousThread(procedure
     begin
@@ -4899,11 +4935,31 @@ begin
       Inc(TotalThreads);
 
       // Get artwork
-      case ThreadSource of
-        TDataSource.Tracks: Tracks[ItemIndex].GetArtwork();
-        TDataSource.Albums: Albums[ItemIndex].GetArtwork();
-        TDataSource.Artists: Artists[ItemIndex].GetArtwork();
-        TDataSource.Playlists: Playlists[ItemIndex].GetArtwork();
+      try
+        case ThreadSource of
+          TDataSource.Tracks: begin
+            // Check Local
+            if IsDownload and not Tracks[ItemIndex].ArtworkLoaded then
+              begin
+                FileName := AppData + DOWNLOAD_DIR + ItemIdentifier.ToString + ART_EXT;
+                if TFile.Exists(FileName) then
+                  begin
+                    Tracks[ItemIndex].CachedImage := TJpegImage.Create;
+                    Tracks[ItemIndex].CachedImage.LoadFromFile(FileName);
+                  end;
+              end;
+
+            // Server Side
+            Tracks[ItemIndex].GetArtwork();
+          end;
+          TDataSource.Albums: Albums[ItemIndex].GetArtwork();
+          TDataSource.Artists: Artists[ItemIndex].GetArtwork();
+          TDataSource.Playlists: Playlists[ItemIndex].GetArtwork();
+        end;
+      except
+        // Due to media store, sometimes files are being used by two threads at the same time
+        Dec(TotalThreads);
+        Exit;
       end;
 
       // Synchronize
