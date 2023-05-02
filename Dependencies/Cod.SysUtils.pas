@@ -1024,15 +1024,29 @@ end;
 
 function GetCompleteUserName: string;
 const
-  NameFormat = NameDisplay;
+  nameType = NameDisplay;
 var
-  Size: Cardinal;
+  dwSize: DWORD;
+  userName: PWideChar;
 begin
-  Size := 0;
-  if GetUserNameEx(NameFormat, nil, Size) <> S_OK then
+  dwSize := 0;
+  if Succeeded(GetUserNameEx(nameType, nil, dwSize)) then
+  begin
+    GetMem(userName, dwSize * SizeOf(WideChar));
+    try
+      if Succeeded(GetUserNameEx(nameType, userName, dwSize)) then
+      begin
+        // use the name
+        Result := PChar(userName);
+      end
+      else
+        RaiseLastOSError;
+    finally
+      FreeMem(userName);
+    end;
+  end
+  else
     RaiseLastOSError;
-  SetLength(Result, Size - 1);
-  GetUserNameEx(NameFormat, PWideChar(Result), Size);
 end;
 
 function IsAdministrator: boolean;

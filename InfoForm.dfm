@@ -37,12 +37,11 @@ object InfoBox: TInfoBox
     Caption = 'Panel1'
     ShowCaption = False
     TabOrder = 1
-    ExplicitHeight = 246
     object Song_Name: TLabel
       AlignWithMargins = True
       Left = 25
       Top = 5
-      Width = 199
+      Width = 384
       Height = 37
       Margins.Left = 25
       Margins.Top = 5
@@ -57,12 +56,13 @@ object InfoBox: TInfoBox
       Font.Style = []
       ParentFont = False
       WordWrap = True
+      ExplicitWidth = 199
     end
     object Song_Info: TLabel
       AlignWithMargins = True
       Left = 25
       Top = 52
-      Width = 195
+      Width = 384
       Height = 21
       Margins.Left = 25
       Margins.Top = 5
@@ -77,6 +77,7 @@ object InfoBox: TInfoBox
       Font.Style = []
       ParentFont = False
       WordWrap = True
+      ExplicitWidth = 195
     end
   end
   object Panel2: TPanel
@@ -95,7 +96,6 @@ object InfoBox: TInfoBox
     ParentColor = True
     ShowCaption = False
     TabOrder = 2
-    ExplicitHeight = 246
     object Song_Cover: CImage
       AlignWithMargins = True
       Left = 25
@@ -114,7 +114,7 @@ object InfoBox: TInfoBox
       DrawMode = dmCenterFit
       ExplicitWidth = 372
     end
-    object CButton24: CButton
+    object Download_Item: CButton
       AlignWithMargins = True
       Left = 15
       Top = 235
@@ -124,8 +124,8 @@ object InfoBox: TInfoBox
       Margins.Top = 5
       Margins.Right = 15
       Margins.Bottom = 0
-      OnEnter = CButton24Enter
-      OnClick = CButton24Click
+      OnEnter = Download_ItemEnter
+      OnClick = Download_ItemClick
       TabOrder = 0
       Align = alTop
       BSegoeIcon = #59542
@@ -181,9 +181,6 @@ object InfoBox: TInfoBox
       Animations.PAAnimateEngine = cbneAtDraw
       Animations.FadeAnimation = True
       Animations.FASpeed = 10
-      ExplicitLeft = 0
-      ExplicitTop = 242
-      ExplicitWidth = 240
     end
   end
 end

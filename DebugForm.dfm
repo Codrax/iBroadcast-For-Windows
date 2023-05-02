@@ -951,6 +951,20 @@ object DebugUI: TDebugUI
     Height = 21
     Caption = 'Ch Active:'
   end
+  object Label11: TLabel
+    Left = 185
+    Top = 223
+    Width = 91
+    Height = 21
+    Caption = 'Img-Threads:'
+  end
+  object Label12: TLabel
+    Left = 185
+    Top = 250
+    Width = 100
+    Height = 21
+    Caption = 'Downl Thread:'
+  end
   object CButton1: CButton
     Left = 19
     Top = 120
@@ -981,10 +995,10 @@ object DebugUI: TDebugUI
     Text = 'Copy Token'
     SubText = 'Hello World!'
     State = mbsLeave
-    Colors.Enter = 8364496
-    Colors.Leave = 5732776
-    Colors.Down = 3101056
-    Colors.BLine = 3101056
+    Colors.Enter = 8888776
+    Colors.Leave = 6257056
+    Colors.Down = 3625336
+    Colors.BLine = 3625336
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1041,10 +1055,10 @@ object DebugUI: TDebugUI
     Text = 'Copy User ID'
     SubText = 'Hello World!'
     State = mbsLeave
-    Colors.Enter = 8364496
-    Colors.Leave = 5732776
-    Colors.Down = 3101056
-    Colors.BLine = 3101056
+    Colors.Enter = 8888776
+    Colors.Leave = 6257056
+    Colors.Down = 3625336
+    Colors.BLine = 3625336
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1120,10 +1134,10 @@ object DebugUI: TDebugUI
     Text = 'POST'
     SubText = 'Hello World!'
     State = mbsLeave
-    Colors.Enter = 8364496
-    Colors.Leave = 5732776
-    Colors.Down = 3101056
-    Colors.BLine = 3101056
+    Colors.Enter = 8888776
+    Colors.Leave = 6257056
+    Colors.Down = 3625336
+    Colors.BLine = 3625336
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1180,10 +1194,10 @@ object DebugUI: TDebugUI
     Text = 'Copy song URL'
     SubText = 'Hello World!'
     State = mbsLeave
-    Colors.Enter = 8364496
-    Colors.Leave = 5732776
-    Colors.Down = 3101056
-    Colors.BLine = 3101056
+    Colors.Enter = 8888776
+    Colors.Leave = 6257056
+    Colors.Down = 3625336
+    Colors.BLine = 3625336
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1252,10 +1266,10 @@ object DebugUI: TDebugUI
     Text = 'Get Queue'
     SubText = 'Hello World!'
     State = mbsLeave
-    Colors.Enter = 8364496
-    Colors.Leave = 5732776
-    Colors.Down = 3101056
-    Colors.BLine = 3101056
+    Colors.Enter = 8888776
+    Colors.Leave = 6257056
+    Colors.Down = 3625336
+    Colors.BLine = 3625336
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1312,10 +1326,10 @@ object DebugUI: TDebugUI
     Text = 'DEBG 1'
     SubText = 'Hello World!'
     State = mbsLeave
-    Colors.Enter = 8364496
-    Colors.Leave = 5732776
-    Colors.Down = 3101056
-    Colors.BLine = 3101056
+    Colors.Enter = 8888776
+    Colors.Leave = 6257056
+    Colors.Down = 3625336
+    Colors.BLine = 3625336
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1344,7 +1358,7 @@ object DebugUI: TDebugUI
   end
   object SearchBox1: TSearchBox
     Left = 184
-    Top = 240
+    Top = 303
     Width = 121
     Height = 29
     Font.Charset = DEFAULT_CHARSET

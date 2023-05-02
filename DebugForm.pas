@@ -32,6 +32,8 @@ type
     Label9: TLabel;
     Label10: TLabel;
     SearchBox1: TSearchBox;
+    Label11: TLabel;
+    Label12: TLabel;
     procedure CButton1Click(Sender: TObject);
     procedure CButton2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -89,7 +91,7 @@ end;
 
 procedure TDebugUI.CButton6Click(Sender: TObject);
 begin
-  ShowMessage( UIForm.ScrollPosition.Max.ToString );
+  UIForm.SearchToggle.Left := 0;
 end;
 
 procedure TDebugUI.DataSyncTimer(Sender: TObject);
@@ -98,7 +100,9 @@ begin
   Label6.Caption := 'Hover: ' + MainUI.IndexHover.ToString;
   Label7.Caption := 'Hover SH: ' + MainUI.IndexHoverID.ToString;
   Label9.Caption := '10s Shrink:' + MainUI.Press10Stat.ToString;
-  Label10.Caption := 'Ch Active::' + BooleanToString( BASS_ChannelIsActive(Player.Stream) = BASS_ACTIVE_PLAYING );
+  Label10.Caption := 'Ch Active: ' + BooleanToString( BASS_ChannelIsActive(Player.Stream) = BASS_ACTIVE_PLAYING );
+  Label11.Caption := 'Img-Thread: ' + TotalThreads.ToString;
+  Label12.Caption := 'Img-Thread: ' + DownloadThreadsE.ToString;
 end;
 
 procedure TDebugUI.FormCreate(Sender: TObject);

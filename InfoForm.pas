@@ -16,10 +16,10 @@ type
     Song_Info: TLabel;
     Panel2: TPanel;
     Song_Cover: CImage;
-    CButton24: CButton;
+    Download_Item: CButton;
     procedure FormCreate(Sender: TObject);
-    procedure CButton24Enter(Sender: TObject);
-    procedure CButton24Click(Sender: TObject);
+    procedure Download_ItemEnter(Sender: TObject);
+    procedure Download_ItemClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -41,7 +41,7 @@ uses
 
 {$R *.dfm}
 
-procedure TInfoBox.CButton24Click(Sender: TObject);
+procedure TInfoBox.Download_ItemClick(Sender: TObject);
 var
   ListIndex: integer;
   LastValue: string;
@@ -82,7 +82,7 @@ begin
   UIForm.UpdateDownloads;
 end;
 
-procedure TInfoBox.CButton24Enter(Sender: TObject);
+procedure TInfoBox.Download_ItemEnter(Sender: TObject);
 begin
   with CButton(Sender) do
     if Tag <> 0 then

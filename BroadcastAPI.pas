@@ -911,6 +911,7 @@ begin
             begin
               CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium);
 
+              // Save artstore
               if ArtworkStore then
                 AddToArtworkStore(ID, CachedImage, TDataSource.Tracks);
             end;
@@ -1005,6 +1006,7 @@ begin
             begin
               CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork();
 
+              // Save artstore
               if ArtworkStore then
                 AddToArtworkStore(ID, CachedImage, TDataSource.Albums);
             end;
@@ -1064,27 +1066,28 @@ begin
       if ExistsInStore(ID, TDataSource.Artists) then
         CachedImage := GetArtStoreCache(ID, TDataSource.Artists)
       else
-      begin
-        if HasArtwork then
-          // Get premade
-          CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium)
-        else
-          // Load from server, save to artowork store
-          begin
-            if Length(TracksID) >= 4 then
-              begin
-                CachedImage := SongArtCollage(TracksID[0], TracksID[1], TracksID[2], TracksID[3]);
-              end
-            else
-              if Length(TracksID) > 0 then
-                CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork()
+      // Load from server, save to artowork store
+        begin
+          if HasArtwork then
+            // Get premade
+            CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium)
+          else
+            begin
+              if Length(TracksID) >= 4 then
+                begin
+                  CachedImage := SongArtCollage(TracksID[0], TracksID[1], TracksID[2], TracksID[3]);
+                end
               else
-                CachedImage := DefaultPicture;
+                if Length(TracksID) > 0 then
+                  CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork()
+                else
+                  CachedImage := DefaultPicture;
+            end;
 
-            if ArtworkStore and (CachedImage <> DefaultPicture) then
-              AddToArtworkStore(ID, CachedImage, TDataSource.Artists);
-          end;
-      end;
+          // Save artstore
+          if ArtworkStore and (CachedImage <> DefaultPicture) then
+            AddToArtworkStore(ID, CachedImage, TDataSource.Artists);
+        end;
     end;
 
   Result := CachedImage;
@@ -1160,6 +1163,7 @@ begin
                   CachedImage := DefaultPicture;
             end;
 
+          // Save artstore
           if ArtworkStore and (CachedImage <> DefaultPicture) then
             AddToArtworkStore(ID, CachedImage, TDataSource.Playlists);
         end;

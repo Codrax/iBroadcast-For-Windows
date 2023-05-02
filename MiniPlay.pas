@@ -243,6 +243,9 @@ begin
   HeightExtended := AdditionalOptions.Top + AdditionalOptions.Height;
 
   ClientHeight := HeightNormal;
+
+  // Apply Size
+  Height := HeightNormal;
 end;
 
 procedure TMiniPlayer.MoveMoveDown(Sender: TObject; Button: TMouseButton;

@@ -327,7 +327,7 @@ type
     CStandardIcon3: CStandardIcon;
     CButton22: CButton;
     Download_Album: CButton;
-    CButton23: CButton;
+    Download_Artist: CButton;
     Download_Playlist: CButton;
     Download_Status: TLabel;
     UpdateHold: TPanel;
@@ -524,6 +524,8 @@ type
     procedure StatLoginScreen;
 
     procedure InitiateOfflineMode;
+    procedure LoadOfflineModeData;
+    function ObtainIDFromFileName(FileName: string): integer;
     function HasOfflineBackup: boolean;
 
     // Data
@@ -534,6 +536,10 @@ type
 
     // System
     function Version: string;
+
+    // Utils
+    function IntArrayToStr(AArray: TArray<integer>): string;
+    function StrToIntArray(Str: string): TArray<integer>;
   end;
 
   // Utilities
@@ -542,8 +548,8 @@ type
 const
   // SYSTEM
   V_MAJOR = 1;
-  V_MINOR = 2;
-  V_PATCH = 5;
+  V_MINOR = 3;
+  V_PATCH = 0;
 
   UPDATE_URL = 'http://vinfo.codrutsoftware.cf/version_iBroadcast';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -1251,7 +1257,6 @@ begin
         except
           Picture := nil
         end;
-
     end;
 
   with Canvas do
@@ -1486,7 +1491,7 @@ begin
 
 
               if (Index = IndexHoverID) and (Press10Stat <> 0) then
-                ARect.Inflate(-Press10Stat, -trunc(ARect.Width / ARect.Height * Press10Stat));
+                ARect.Inflate(-Press10Stat, -trunc(ARect.Height/ ARect.Width * Press10Stat));
 
               // Draw
               DrawItemCanvas(TPaintBox(Sender).Canvas, ARect, Title, Info,
@@ -1538,7 +1543,7 @@ begin
               Picture := DrawItems[Index].GetPicture;
 
               if (Index = IndexHoverID) and (Press10Stat <> 0) then
-                ARect.Inflate(-Press10Stat, -trunc(ARect.Width / ARect.Height * Press10Stat));
+                ARect.Inflate(-Press10Stat, -Press10Stat);
 
               // Draw
               DrawItemCanvas(TPaintBox(Sender).Canvas, ARect, Title, Info,
@@ -1684,7 +1689,9 @@ begin
   // Save Data
   TokenLoginInfo(false);
   ProgramSettings(false);
-  DownloadSettings(false);
+
+  if not IsOffline then
+    DownloadSettings(false);
 end;
 
 procedure TUIForm.FormCreate(Sender: TObject);
@@ -1748,7 +1755,7 @@ begin
   ProgramSettings(true);
 
   // Artwork Store
-  MediaStoreLocation := AppData + 'Artwork Cache';
+  MediaStoreLocation := AppData + 'artwork cache';
   InitiateArtworkStore;
 
   // Load Downloads
@@ -2182,13 +2189,6 @@ begin
 end;
 
 procedure TUIForm.InitiateOfflineMode;
-var
-  Folder: string;
-  FileName, FileRoot: string;
-  Files: TArray<string>;
-  ST: TStringList;
-
-  I, MusicID: Integer;
 begin
   // Notify
   IsOffline := true;
@@ -2210,65 +2210,39 @@ begin
   CButton22.Hide;
   CButton2.Hide;
 
-  // Load Folder
-  Folder := AppData + DOWNLOAD_DIR;
-  Files := TDirectory.GetFiles( Folder, '*.mp3' );
-  SetLength(Tracks, Length(Files));
-
-  // Load Tracks
-  for I := 0 to High(Files) do
-    begin
-      FileName := ExtractFileName(Files[I]);
-      if ExtractFileExt(FileName) <> '.mp3' then
-        Continue;
-
-      try
-        MusicID := ChangeFileExt(FileName, '').ToInteger;
-      except
-        Continue;
-      end;
-      FileRoot := Folder + MusicID.ToString;
-
-      Tracks[I].ID := MusicID;
-      Tracks[I].Title := FileName;
-
-      // Data
-      FileName := FileRoot + '.txt';
-      if TFile.Exists(FileName) then
-        begin
-          ST := TStringList.Create;
-          try
-            ST.LoadFromFile(FileName);
-
-            with Tracks[I] do
-              begin
-                Title := ST[0];
-                Year := ST[1].ToInteger;
-                Genre := ST[2];
-                LengthSeconds := ST[3].ToInteger;
-                FileSize := ST[4].ToInteger;
-                Rating := ST[5].ToInteger;
-                Plays := ST[6].ToInteger;
-                AudioType := ST[7];
-              end;
-          finally
-            ST.Free;
-          end;
-        end;
-
-      // Artwork
-      FileName := FileRoot + ART_EXT;
-      if TFile.Exists(FileName) then
-        begin
-          Tracks[I].CachedImage := TJpegImage.Create;
-          Tracks[I].CachedImage.LoadFromFile(FileName);
-        end
-          else
-            Tracks[I].CachedImage := DefaultPicture;
-    end;
+  // Load Data
+  try
+    LoadOfflineModeData;
+  except
+    Hide;
+    OpenDialog('Cannot load offline mode!', 'Unfortunately a error occured and offline mode could not be loaded. Some files may be corrupt',
+      ctError, [mbOk]);
+    if OpenDialog('Delete data', 'Deleting all offline mode data may resolve the issue, but your songs will need to be redownloaded. Delete data?',
+      ctQuestion, [mbYes, mbNo]) = mrYes then
+        if OpenDialog('Final warning', 'All downloaded songs will be deleted. Confirm?', ctWarning, [mbYes, mbNo]) = mrYes then
+          TDirectory.Delete( Appdata + DOWNLOAD_DIR, true );
+          
+    Application.Terminate;
+  end;
 
   // Navigate
   NavigatePath('songs');
+end;
+
+function TUIForm.IntArrayToStr(AArray: TArray<integer>): string;
+var
+  I: Integer;
+begin
+  Result := '[';
+  for I := 0 to High(AArray) do
+    begin
+      Result := Result + AArray[I].ToString;
+
+      if I < High(AArray) then
+        Result := Result + ',';
+    end;
+
+  Result := Result + ']';
 end;
 
 procedure TUIForm.LoadingUIContainerResize(Sender: TObject);
@@ -2503,6 +2477,147 @@ begin
       end;
 end;
 
+procedure TUIForm.LoadOfflineModeData;
+var
+  Folder, Repo: string;
+  FileName, FileRoot: string;
+  Files: TArray<string>;
+  ST: TStringList;
+
+  I, ValueID: Integer;
+begin
+  // Load Folder
+  Folder := AppData + DOWNLOAD_DIR;
+  
+  // Load Tracks
+  Files := TDirectory.GetFiles( Folder, '*.mp3' );
+  SetLength(Tracks, Length(Files));
+  for I := 0 to High(Files) do
+    begin
+      FileName := Files[I];
+      try
+        ValueID := ObtainIDFromFileName(FileName);
+      except
+        Continue;
+      end;
+
+      Tracks[I].ID := ValueID;
+      Tracks[I].Title := ExtractFileName(FileName);
+
+      // Data
+      FileName := ChangeFileExt(FileName, '.txt');
+      if TFile.Exists(FileName) then
+        begin
+          ST := TStringList.Create;
+          try
+            ST.LoadFromFile(FileName);
+
+            with Tracks[I] do
+              begin
+                Title := ST[0];
+                Year := ST[1].ToInteger;
+                Genre := ST[2];
+                LengthSeconds := ST[3].ToInteger;
+                FileSize := ST[4].ToInteger;
+                Rating := ST[5].ToInteger;
+                Plays := ST[6].ToInteger;
+                AudioType := ST[7];
+              end;
+          finally
+            ST.Free;
+          end;
+        end;
+
+      // Artwork
+      FileName := ChangeFileExt(Filename, '.jpeg');
+      if TFile.Exists(FileName) then
+        begin
+          Tracks[I].CachedImage := TJpegImage.Create;
+          Tracks[I].CachedImage.LoadFromFile(FileName);
+        end
+          else
+            Tracks[I].CachedImage := DefaultPicture;
+    end;
+
+  // Albums
+  Repo := Folder + 'albums\';
+  SetLength(Files, 0);
+  if TDirectory.Exists(Repo) then
+    Files := TDirectory.GetFiles( Repo, '*.txt' );
+  SetLength(Albums, Length(Files));
+  for I := 0 to High(Files) do
+    begin
+      ST := TStringList.Create;
+      try
+        ST.LoadFromFile(Files[I]);
+
+        with Albums[I] do
+          begin
+            ID := ChangeFileExt(ExtractFileName(Files[I]), '').ToInteger;
+          
+            AlbumName := ST[0];
+            TracksID := StrToIntArray(ST[1]);
+            ArtistID := ST[2].ToInteger;
+            Rating := ST[3].ToInteger;
+            Year := ST[4].ToInteger;
+          end;
+      finally
+        ST.Free;
+      end;
+    end;
+
+  // Artists
+  Repo := Folder + 'artists\';    
+  SetLength(Files, 0);
+  if TDirectory.Exists(Repo) then
+    Files := TDirectory.GetFiles( Repo, '*.txt' );
+  SetLength(Artists, Length(Files));
+  for I := 0 to High(Files) do
+    begin
+      ST := TStringList.Create;
+      try
+        ST.LoadFromFile(Files[I]);
+
+        with Artists[I] do
+          begin
+            ID := ChangeFileExt(ExtractFileName(Files[I]), '').ToInteger;
+          
+            ArtistName := ST[0];
+            TracksID := StrToIntArray(ST[1]);
+            Rating := ST[2].ToInteger;
+          end;
+      finally
+        ST.Free;
+      end;
+    end;
+
+  // Playlists
+  Repo := Folder + 'playlists\';    
+  SetLength(Files, 0);
+  if TDirectory.Exists(Repo) then
+    Files := TDirectory.GetFiles( Repo, '*.txt' );
+  SetLength(Playlists, Length(Files));
+  for I := 0 to High(Files) do
+    begin
+      ST := TStringList.Create;
+      try
+        ST.LoadFromFile(Files[I]);
+
+        with Playlists[I] do
+          begin
+            ID := ChangeFileExt(ExtractFileName(Files[I]), '').ToInteger;
+          
+            Name := ST[0];
+            TracksID := StrToIntArray(ST[1]);
+            PlaylistType := ST[2];
+            Description := ST[3];
+          end;
+      finally
+        ST.Free;
+      end;
+    end;
+end;
+
 procedure TUIForm.LoadView(APageRoot: string);
 var
   I: Integer;
@@ -2595,6 +2710,14 @@ begin
 
   // View Compatability
   ReselectPage;
+end;
+
+function TUIForm.ObtainIDFromFileName(FileName: string): integer;
+begin
+  FileName := ExtractFileName(FileName);
+  FileName := ChangeFileExt(FileName, '');  
+
+  Result := FileName.ToInteger;
 end;
 
 procedure TUIForm.QueueNext;
@@ -3420,15 +3543,123 @@ begin
 
   // Download Each
   DownloadThread := TThread.CreateAnonymousThread(procedure
+    procedure SetStatus(Str: string);
+    begin
+      TThread.Synchronize(nil, procedure begin
+        Download_Status.Caption := Str;
+      end);
+    end;
     label ThreadStop;
     var
       I: integer;
-      Server, Local: string;
+      Server, Local, Repo: string;
       Identifier, TrackIndex, Total, ThreadID: integer;
       ST: TStringList;
     begin
       ThreadID := DownloadThreadsE + 1;
 
+      // Show Status UI
+      TThread.Synchronize(nil, procedure
+        begin
+          if not Download_Status.Visible then
+            Download_Status.Show;
+        end);
+      
+      // Write Album, Artist Playlist metadata
+      Repo := Folder + 'albums\';
+      TDirectory.CreateDirectory(Repo);
+      for I := 0 to DownloadedAlbums.Count - 1 do
+        begin
+          // Status
+          SetStatus( 'Writing album metadata (' + (I+1).ToString + '/'
+              + DownloadedAlbums.Count.ToString + ')');
+
+          // Get File
+          Local := Repo + DownloadedAlbums[I] + '.txt';
+            
+          if TFile.Exists(Local) then
+            Continue;
+            
+          // Write
+          ST := TStringList.Create;
+          try
+            with Albums[GetAlbum(DownloadedAlbums[I].ToInteger)] do
+              begin              
+                ST.Add( AlbumName );
+                ST.Add( IntArrayToStr(TracksID) );
+                ST.Add( ArtistID.ToString );
+                ST.Add( Rating.ToString );
+                ST.Add( Year.ToString );
+              end;
+
+            ST.SaveToFile( Local );
+          finally
+            ST.Free;
+          end;
+        end;
+
+      Repo := Folder + 'artists\';
+      TDirectory.CreateDirectory(Repo);
+      for I := 0 to DownloadedArtists.Count - 1 do
+        begin
+          // Status
+          SetStatus( 'Writing artist metadata (' + (I+1).ToString + '/'
+              + DownloadedArtists.Count.ToString + ')');
+
+          // Get File
+          Local := Repo + DownloadedArtists[I] + '.txt';
+            
+          if TFile.Exists(Local) then
+            Continue;
+            
+          // Write
+          ST := TStringList.Create;
+          try
+            with Artists[GetArtist(DownloadedArtists[I].ToInteger)] do
+              begin              
+                ST.Add( ArtistName );
+                ST.Add( IntArrayToStr(TracksID) );
+                ST.Add( Rating.ToString );
+              end;
+
+            ST.SaveToFile( Local );
+          finally
+            ST.Free;
+          end;
+        end;
+
+      Repo := Folder + 'playlists\';
+      TDirectory.CreateDirectory(Repo);
+      for I := 0 to DownloadedPlaylists.Count - 1 do
+        begin
+          // Status
+          SetStatus( 'Writing artist metadata (' + (I+1).ToString + '/'
+              + DownloadedPlaylists.Count.ToString + ')');
+
+          // Get Playlist File
+          Local := Repo + DownloadedPlaylists[I] + '.txt';
+            
+          if TFile.Exists(Local) then
+            Continue;
+            
+          // Write
+          ST := TStringList.Create;
+          try
+            with Playlists[GetPlaylist(DownloadedPlaylists[I].ToInteger)] do
+              begin              
+                ST.Add( Name );
+                ST.Add( IntArrayToStr(TracksID) );
+                ST.Add( PlaylistType );
+                ST.Add( Description );
+              end;
+
+            ST.SaveToFile( Local );
+          finally
+            ST.Free;
+          end;
+        end;
+        
+      // Download Tracks
       Total := DownloadQueue.Count - 1;
       for I := Total downto 0 do
         begin
@@ -3439,13 +3670,8 @@ begin
             end;
 
           // Update
-          TThread.Synchronize(nil, procedure begin
-            if not Download_Status.Visible then
-              Download_Status.Show;
-
-            Download_Status.Caption := 'Downloading songs... (' + (Total-I+1).ToString + '/'
-              + (Total+1).ToString + ')';
-          end);
+          SetStatus( 'Downloading songs... (' + (Total-I+1).ToString + '/'
+              + (Total+1).ToString + ')');
 
           // Get Data
           Identifier := DownloadQueue[I];
@@ -3653,8 +3879,6 @@ begin
   EnabledSorts := [];
   ViewModeToggle.Visible := ViewC;
   SearchToggle.Visible := ViewSC or ViewC;
-  if SearchToggle.Visible then
-    SearchBox_Hold.Left := 0;
 
   if ViewSC then
     EnabledSorts := [TSortType.Default, TSortType.Alphabetic];
@@ -3692,6 +3916,14 @@ begin
             end;
     end;
 
+  // Reorder UI
+    SortModeToggle.Visible := EnabledSorts <> [];
+  if SortModeToggle.Visible then
+    SortModeToggle.Left := ViewModeToggle.Left - SortModeToggle.Left;
+  
+  if SearchToggle.Visible then
+    SearchToggle.Left := 0;
+    
   // Load Information
   LoadItemInfo;
 
@@ -4031,9 +4263,11 @@ begin
   Sort_Date.Visible := TSortType.Year in EnabledSorts;
   Sort_Rating.Visible := TSortType.Rating in EnabledSorts;
 
-  SortModeToggle.Visible := EnabledSorts <> [];
-  if SortModeToggle.Visible then
-    SortModeToggle.Left := ViewModeToggle.Left - SortModeToggle.Left;
+  // Reorder
+  Sort_Default.Left := 0;
+  Sort_AlphaBetic.Left := 0;
+  Sort_Date.Left := 0;      
+  Sort_Rating.Left := 0;
 
   // Size
   SetLength(SortingList, GetItemCount );
@@ -4135,6 +4369,36 @@ begin
         Mini_Repeat.BSegoeIcon := Button_Repeat.BSegoeIcon;
         Mini_Shuffle.BSegoeIcon := Button_Shuffle.BSegoeIcon;
       end;
+end;
+
+function TUIForm.StrToIntArray(Str: string): TArray<integer>;
+var
+  ACount: integer;
+  P1, P2: integer;
+  I: Integer;
+begin
+  SetLength(Result, 0);
+  Str := Copy(Str, 2, Length(Str) - 2);
+
+  // Empty
+  if Str = '' then
+    Exit;
+
+  // Add ","
+  Str := ',' + Str + ',';
+
+  // Not Empty
+  ACount := StrCount(',', Str);
+  SetLength(Result, ACount - 1);
+
+  // Load
+  for I := 1 to ACount - 1 do
+    begin
+      P1 := StrPos(',', Str, I);
+      P2 := StrPos(',', Str, I + 1);
+
+      Result[I-1] := StrCopy(Str, P1, P2, true).ToInteger;
+    end;
 end;
 
 procedure TUIForm.TickUpdate;
@@ -4308,14 +4572,14 @@ end;
 
 procedure TUIForm.UpdateCheckTimer(Sender: TObject);
 begin
+  UpdateCheck.Enabled := false;
+
   if Settings_CheckUpdate.Checked and not IsOffline then
     begin
       Version_Check.Navigate(UPDATE_URL);
     end
       else
         UpdateHold.Hide;
-
-  UpdateCheck.Enabled := false;
 end;
 
 procedure TUIForm.UpdateDownloads;
@@ -4331,6 +4595,10 @@ var
   Category: Integer;
   I, Index: Integer;
 begin
+  // Offline Mode
+  if IsOffline then
+    Exit;
+
   // Clear
   AllDownload.Clear;
 
@@ -4424,6 +4692,10 @@ var
 
   Exists: boolean;
 begin
+  // Offline
+  if IsOffline then
+    Exit;
+
   // Folder
   Folder := AppData + DOWNLOAD_DIR;
 
@@ -4618,6 +4890,7 @@ begin
           // Download button
           with UIForm do
             begin
+              Download_Album.Visible := not IsOffline;
               Download_Album.Tag := (DownloadedAlbums.IndexOf( ItemID.ToString ) <> -1).ToInteger;
               Download_Album.OnEnter(Download_Album);
             end;
@@ -4641,8 +4914,9 @@ begin
           // Download button
           with UIForm do
             begin
-              Download_Album.Tag := (DownloadedAlbums.IndexOf( ItemID.ToString ) <> -1).ToInteger;
-              Download_Album.OnEnter(Download_Album);
+              Download_Artist.Visible := not IsOffline;
+              Download_Artist.Tag := (DownloadedArtists.IndexOf( ItemID.ToString ) <> -1).ToInteger;
+              Download_Artist.OnEnter(Download_Artist);
             end;
 
           UIForm.Page_Title.Caption := ArtistName;
@@ -4652,7 +4926,7 @@ begin
       UIForm.NavigatePath('ViewArtist:' + Artists[Index].ID.ToString);
       UIForm.Page_Title.Caption := AName;
     end;
-
+                                                                  
     TDataSource.Playlists: begin
       with Playlists[Index] do
         begin
@@ -4664,6 +4938,7 @@ begin
           // Download button
           with UIForm do
             begin
+              Download_Playlist.Visible := not IsOffline;
               Download_Playlist.Tag := (DownloadedPlaylists.IndexOf( ItemID.ToString ) <> -1).ToInteger;
               Download_Playlist.OnEnter(Download_Playlist);
             end;
@@ -4810,7 +5085,7 @@ begin
       if Temp <> -1 then
         Information[2] := 'Artist: ' + Artists[Temp].ArtistName
           else
-            Information[2] := 'Unknown Artist';
+            Information[2] := 'Artist: Unknown';
       Information[3] := 'Rating: ' + Albums[Index].Rating.ToString;
       Information[4] := 'Disk: ' + Albums[Index].Disk.ToString;
       Temp := 0;
@@ -4892,8 +5167,9 @@ begin
       Song_Name.Caption := Title;
       Song_Info.Caption := GetPremadeInfoList;
 
-      CButton24.Tag := Downloaded.ToInteger;
-      CButton24.OnEnter(CButton24);
+      Download_Item.Visible := not IsOffline;
+      Download_Item.Tag := Downloaded.ToInteger;
+      Download_Item.OnEnter(Download_Item);
 
       Song_Cover.Picture.Assign( Self.GetPicture );
     end;
