@@ -222,7 +222,7 @@ interface
   function Yearify(Year: cardinal): string;
 
   // Main Request
-  function SendClientRequest(RequestJSON: string): TJSONValue;
+  function SendClientRequest(RequestJSON: string; Endpoint: string = ''): TJSONValue;
 
   // User
   function LoginUser: boolean;
@@ -333,13 +333,17 @@ implementation
 uses
   MainUI;
 
-function SendClientRequest(RequestJSON: string): TJSONValue;
+function SendClientRequest(RequestJSON, Endpoint: string): TJSONValue;
 var
   Response: string;
   HTTP: TIdHTTP;
   SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
   RequestStream: TStringStream;
 begin
+  // Endpoint
+  if Endpoint = '' then
+    Endpoint := API_ENDPOINT;
+
   // Create HTTP and SSLIOHandler components
   HTTP := TIdHTTP.Create(nil);
   SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
@@ -353,7 +357,7 @@ begin
     HTTP.Request.ContentType := 'application/json';
 
     // Send request and receive response
-    Response := HTTP.Post(API_ENDPOINT, RequestStream);
+    Response := HTTP.Post(Endpoint, RequestStream);
 
     // Parse response and extract numbers
     Result := TJSONObject.ParseJSONValue(Response);

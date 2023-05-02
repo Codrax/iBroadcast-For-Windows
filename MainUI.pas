@@ -141,9 +141,9 @@ type
     Label13: TLabel;
     Login_UsrToken: TEdit;
     CButton13: CButton;
-    CPanel1: CPanel;
+    Robo_Panel: CPanel;
     CImage4: CImage;
-    Shape1: TShape;
+    Robo_Background: TShape;
     CImage5: CImage;
     CImage6: CImage;
     LoginFailed: TPanel;
@@ -335,6 +335,10 @@ type
     UpdateCheck: TTimer;
     Setting_ArtworkStore: CCheckBox;
     CButton25: CButton;
+    Label16: TLabel;
+    Label29: TLabel;
+    Settings_Threads: CSlider;
+    Threads_Text: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -424,6 +428,7 @@ type
     procedure CButton25Click(Sender: TObject);
     procedure MoveByHold(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure SettingsApplyes2(Sender: CSlider; Position, Max, Min: Integer);
   private
     { Private declarations }
     // Items
@@ -586,9 +591,6 @@ const
   SubViewCompatibile: TArray<string> = ['viewalbum', 'viewartist',
     'viewplaylist', 'history'];
 
-  // SYSTEM
-  THREAD_MAX = 5;
-
   // DOWNLOAD
   DOWNLOAD_DIR = 'downloaded\';
 
@@ -670,6 +672,9 @@ var
   SortingList: TArray<integer>;
 
   HomeFitItems: integer;
+
+  // SYSTEM
+  THREAD_MAX: integer = 15;
 
   // Queue System
   PlayIndex: integer = -1;
@@ -796,6 +801,9 @@ begin
     InitiateArtworkStore
   else
     ClearArtworkStore;
+
+  THREAD_MAX := Settings_Threads.Position;
+  Threads_Text.Caption := THREAD_MAX.ToString;
 end;
 
 procedure TUIForm.Button_ExtendClick(Sender: TObject);
@@ -1061,6 +1069,11 @@ end;
 procedure TUIForm.Complete_EmailClick(Sender: TObject);
 begin
   Complete_Email.Caption := Complete_Email.Hint;
+end;
+
+procedure TUIForm.SettingsApplyes2(Sender: CSlider; Position, Max, Min: Integer);
+begin
+  ApplySettings;
 end;
 
 procedure TUIForm.LoginItemsBeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
@@ -1844,6 +1857,10 @@ begin
   if SplitView1.Locked and SplitView1.Opened then
     SplitView1.Opened := false;
 
+  // Login Screen
+  Robo_Background.Visible := SmallSize < 2;
+  Robo_Panel.Visible := SmallSize < 2;
+
   // Menu bar
   Button_ToggleMenu.Visible := SmallSize < 2;
   Mini_Cast.Visible := SmallSize >= 2;
@@ -1873,7 +1890,6 @@ begin
 
   // Fix All
   Button_Extend.Left := Panel7.Width;
-
 end;
 
 function TUIForm.GetItemCount: cardinal;
@@ -3392,6 +3408,8 @@ begin
           ArtworkID := OPT.ReadInteger(CAT_GENERAL, 'Artwork Id', 0);
           ArtworkStore := OPT.ReadBool(CAT_GENERAL, 'Artowork Store', true);
           Setting_ArtworkStore.Checked := ArtworkStore;
+          THREAD_MAX := OPT.ReadInteger(CAT_GENERAL, 'Thread Count', 15);
+          Settings_Threads.Position := THREAD_MAX;
 
           TransparentIndex := OPT.ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
       finally
@@ -3412,6 +3430,7 @@ begin
         OPT.WriteBool(CAT_GENERAL, 'Audo Update Check', Settings_CheckUpdate.Checked);
         OPT.WriteInteger(CAT_GENERAL, 'Artwork Id', ArtworkID);
         OPT.WriteBool(CAT_GENERAL, 'Artowork Store', ArtworkStore);
+        OPT.WriteInteger(CAT_GENERAL, 'Thread Count', THREAD_MAX);
 
         OPT.WriteInteger(CAT_MINIPLAYER, 'Opacity', TransparentIndex);
       finally

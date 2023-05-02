@@ -1,7 +1,7 @@
 object HelpUI: THelpUI
   Left = 0
   Top = 0
-  Width = 699
+  Width = 750
   Height = 500
   AutoScroll = True
   BorderIcons = [biSystemMenu]
@@ -18,7 +18,7 @@ object HelpUI: THelpUI
   object ScrollBox1: TScrollBox
     Left = 0
     Top = 25
-    Width = 683
+    Width = 734
     Height = 436
     Align = alClient
     BevelInner = bvNone
@@ -26,6 +26,7 @@ object HelpUI: THelpUI
     BorderStyle = bsNone
     TabOrder = 0
     OnMouseWheel = ScrollBox1MouseWheel
+    ExplicitWidth = 683
     object Label1: TLabel
       Left = 24
       Top = 32
@@ -27255,11 +27256,9 @@ object HelpUI: THelpUI
   object TitleBarPanel: TTitleBarPanel
     Left = 0
     Top = 0
-    Width = 683
+    Width = 734
     Height = 25
     CustomButtons = <>
-    ExplicitLeft = 8
-    ExplicitTop = 8
-    ExplicitWidth = 662
+    ExplicitWidth = 683
   end
 end
