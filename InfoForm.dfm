@@ -112,6 +112,7 @@ object InfoBox: TInfoBox
       GifSettings.Enable = False
       GifSettings.AnimationSpeed = 100
       DrawMode = dmCenterFit
+      PopupMenu = Popup_Right
       ExplicitWidth = 372
     end
     object Download_Item: CButton
@@ -182,5 +183,20 @@ object InfoBox: TInfoBox
       Animations.FadeAnimation = True
       Animations.FASpeed = 10
     end
+  end
+  object Popup_Right: TPopupMenu
+    OwnerDraw = True
+    Left = 645
+    Top = 222
+    object Information1: TMenuItem
+      Caption = 'Save Cover'
+      Hint = #59675
+      OnClick = Information1Click
+    end
+  end
+  object SavePicture: TSavePictureDialog
+    Filter = 'JPEG Image File (*.jpeg)|*.jpeg'
+    Left = 661
+    Top = 58
   end
 end

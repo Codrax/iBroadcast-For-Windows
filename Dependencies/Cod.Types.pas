@@ -176,9 +176,10 @@ interface
   function HexToDec(Hex: string): int64;
 
 
-  // Arrays
+  { Arrays }
   function InArray(Value: integer; arrayitem: array of integer): integer; overload;
   function InArray(Value: string; arrayitem: array of string): integer; overload;
+  procedure ShuffleArray(var arr: TArray<Integer>);
 
 implementation
 
@@ -511,6 +512,20 @@ begin
       Result := I;
       Break;
     end;
+end;
+
+procedure ShuffleArray(var arr: TArray<Integer>);
+var
+  i, j, temp: Integer;
+begin
+  // shuffle the array using Fisher-Yates algorithm
+  for i := Length(arr) - 1 downto 1 do
+  begin
+    j := Random(i + 1); // generate a random index between 0 and i
+    temp := arr[j];
+    arr[j] := arr[i];
+    arr[i] := temp;
+  end;
 end;
 
 { TRoundRect }

@@ -7,7 +7,7 @@ interface
     Cod.Files, Windows, Dialogs, Cod.Visual.Button, UITypes, Types, Classes, Variants, Graphics,
     Forms, StdCtrls, Cod.Visual.StandardIcons, Themes, Styles,
     Controls, Cod.Components, Cod.ColorUtils, SysUtils, Vcl.ExtCtrls,
-    Vcl.TitleBarCtrls, Cod.SysUtils, Math, Cod.Math;
+    Vcl.TitleBarCtrls, Cod.SysUtils, Math, Cod.Math, Vcl.ComCtrls;
 
   type
     CMessageType = (ctInformation, ctError, ctCritical, ctQuestion, ctSucess, ctWarning, ctStar);
@@ -137,6 +137,30 @@ interface
         property CanCancel: boolean read FCanCancel write FCanCancel;
         property PasswordChar: char read FPasswordChar write FPasswordChar;
         property NumbersOnly: boolean read FNumbersOnly write FNumbersOnly;
+    end;
+
+    CMemoBox = class(CDialogBox)
+      private
+        FValue: TStringList;
+        FCanCancel: boolean;
+        FBoxWidth, FBoxHeight: integer;
+    function GetAsText: string;
+    procedure SetAsText(const Value: string);
+
+      public
+        DialogResult: CInputBoxResult;
+
+        constructor Create; override;
+        destructor Destroy; override;
+
+        function Execute: boolean; overload;
+
+        property Text: string read GetAsText write SetAsText;
+
+        property Value: TStringList read FValue write FValue;
+        property CanCancel: boolean read FCanCancel write FCanCancel;
+        property BoxWidth: integer read FBoxWidth write FBoxWidth;
+        property BoxHeight: integer read FBoxHeight write FBoxHeight;
     end;
 
     CInputBoxDialog = class(CDialogBox)
@@ -675,9 +699,6 @@ begin
 
     // Set Edit Width
     Text.Width := Form.ClientWidth - Prompt.Left * 2; // This is set after in case the Buttons span a langer distance that the Form
-
-    // Focus
-    Text.SetFocus;
 
     if ModalExecution = mrOk then
       begin
@@ -1386,6 +1407,98 @@ begin
 
     FreeForm;
   end;
+end;
+
+{ CMemoBox }
+
+constructor CMemoBox.Create;
+begin
+  inherited;
+
+  FBoxWidth := 500;
+  FBoxHeight := 300;
+  DialogResult := cidrCancel;
+
+  FValue := TStringList.Create;
+
+  FCanCancel := true;
+end;
+
+destructor CMemoBox.Destroy;
+begin
+  inherited;
+  FValue.Free;
+end;
+
+function CMemoBox.Execute: boolean;
+var
+  Text: TRichEdit;
+begin
+  ExecuteInherited;
+
+  with Form do begin
+    // Create Text Box
+    Text := TRichEdit.Create(Form);
+    with Text do
+    begin
+      Parent   := Form;
+
+      Lines.Assign( Value );
+
+      Font.Assign( TextFont );
+      Font.Size := Font.Size + 2;
+
+      Color := ChangeColorSat(Form.Color,-10);
+
+      Left := Prompt.Left;
+
+      Top := Prompt.Top + Prompt.Height + FButtonOffset;
+      Height := FBoxHeight;
+
+      Anchors := [akLeft, akTop];
+    end;
+
+    ResizeForm( FBoxWidth, Form.ClientHeight + Text.Height + FButtonOffset * 2 );
+
+    // Create Buttons
+    if FCanCancel then
+      CreateButtons( [mbOk, mbCancel] )
+    else
+      CreateButtons( [mbOk] );
+
+    // Default Button
+    FindButton( mrOK ).Default := true;
+    if FCanCancel then
+      with FindButton( mrCancel ) do
+        begin
+          Cancel := true;
+        end;
+
+    // Set Edit Width
+    Text.Width := Form.ClientWidth - Prompt.Left * 2; // This is set after in case the Buttons span a langer distance that the Form
+
+    if ModalExecution = mrOk then
+      begin
+        DialogResult := cidrOk;
+        Result := true;
+        Value.Assign( Text.Lines );
+      end
+    else
+      begin
+        DialogResult := cidrCancel;
+        Result := false;
+      end;
+  end;
+end;
+
+function CMemoBox.GetAsText: string;
+begin
+  Result := FValue.Text;
+end;
+
+procedure CMemoBox.SetAsText(const Value: string);
+begin
+  FValue.Text := Value;
 end;
 
 end.

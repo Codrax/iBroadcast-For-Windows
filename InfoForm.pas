@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.SysUtils, Vcl.TitleBarCtrls,
   Cod.Visual.Image, Vcl.StdCtrls, Vcl.ExtCtrls, Cod.Visual.Button, Cod.Dialogs,
-  BroadcastAPI;
+  BroadcastAPI, MainUI, Vcl.Menus, Vcl.ExtDlgs;
 
 type
   TInfoBox = class(TForm)
@@ -17,9 +17,13 @@ type
     Panel2: TPanel;
     Song_Cover: CImage;
     Download_Item: CButton;
+    Popup_Right: TPopupMenu;
+    Information1: TMenuItem;
+    SavePicture: TSavePictureDialog;
     procedure FormCreate(Sender: TObject);
     procedure Download_ItemEnter(Sender: TObject);
     procedure Download_ItemClick(Sender: TObject);
+    procedure Information1Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -31,55 +35,22 @@ var
   InfoBox: TInfoBox;
 
   InfoBoxIndex: integer;
-  InfoBoxID: integer;
-  InfoBoxType: TDataSource;
+  InfoBoxPointer: ^TDrawableItem;
 
 implementation
 
-uses
-  MainUI;
 
 {$R *.dfm}
 
 procedure TInfoBox.Download_ItemClick(Sender: TObject);
 var
-  ListIndex: integer;
-  LastValue: string;
-
-  List: ^TStringList;
-  PageSource: TDataSource;
+  Output: boolean;
 begin
-  LastValue := InfoBoxID.ToString;
-
-  // Source
-  PageSource := InfoBoxType;
-
-  // Index
-  case PageSource of
-    TDataSource.Tracks: List := @DownloadedTracks;
-    TDataSource.Albums: List := @DownloadedAlbums;
-    TDataSource.Artists: List := @DownloadedArtists;
-    TDataSource.Playlists: List := @DownloadedPlaylists;
-    else Exit;
-  end;
-
-  ListIndex := List.IndexOf(LastValue);
-
-  // Download / Delete
-  if ListIndex = -1 then
-    List.Add( LastValue )
-      else
-        if OpenDialog('Are you sure?', 'Are you sure you wish to delete this from your downloads?', ctQuestion, [mbNo, mbYes]) = mrYes then
-          List.Delete( ListIndex )
-            else
-              Exit;
+  Output := InfoBoxPointer.ToggleDownloaded;
 
   // Button Update
-  CButton(Sender).Tag := (ListIndex = -1).ToInteger;
+  CButton(Sender).Tag := Output.ToInteger;
   CButton(Sender).OnEnter(Sender);
-
-  // Update
-  UIForm.UpdateDownloads;
 end;
 
 procedure TInfoBox.Download_ItemEnter(Sender: TObject);
@@ -105,6 +76,8 @@ begin
 end;
 
 procedure TInfoBox.FormCreate(Sender: TObject);
+var
+  I, J: integer;
 begin
   // UX
   Font.Color := clWhite;
@@ -125,6 +98,30 @@ begin
       InactiveBackgroundColor := BackgroundColor;
       ButtonInactiveBackgroundColor := BackgroundColor;
     end;
+
+  // Popup Menus
+  for I := 0 to ComponentCount-1 do
+    if Components[I] is TPopupMenu then
+      with TPopupMenu(Components[I]) do
+        for J := 0 to Items.Count-1 do
+          begin
+            Items[J].OnDrawItem := UIForm.PopupDraw;
+            Items[J].OnMeasureItem := UIForm.PopupMesure;
+          end;
+end;
+
+procedure TInfoBox.Information1Click(Sender: TObject);
+const
+  EXT = '.jpeg';
+begin
+  // Save
+  if not SavePicture.Execute then
+    Exit;
+
+  if InfoBoxPointer.Source = TDataSource.Tracks then
+    Tracks[InfoBoxPointer.Index].GetArtwork(True).SaveToFile(SavePicture.FileName + EXT)
+  else
+    InfoBoxPointer.GetPicture.SaveToFile(SavePicture.FileName + EXT);
 end;
 
 end.

@@ -8,7 +8,7 @@ interface
     Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
     Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL,
     IdHTTP, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
-    Cod.VarHelpers;
+    Cod.VarHelpers, Cod.Dialogs;
 
   type
     // Cardinals
@@ -52,7 +52,6 @@ interface
       CreationDate: TDateTime;
 
       Verified: boolean;
-      Facebook: boolean;
       BetaTester: boolean;
 
       EmailAdress: string;
@@ -244,6 +243,7 @@ interface
   procedure InitiateArtworkStore;
 
   // Library
+  procedure LoadStatus;
   procedure LoadLibrary;
 
   // Additional Data
@@ -259,6 +259,7 @@ const
   // Login Constants
   CLIENT_NAME = 'Cods iBroadcast';
   API_ENDPOINT = 'https://api.ibroadcast.com/';
+  LIBRARY_ENDPOINT = 'https://library.ibroadcast.com/';
   ARTWORK_ENDPOINT = 'https://artwork.ibroadcast.com/artwork/%S-%U';
   STREAMING_ENDPOINT = 'https://streaming.ibroadcast.com';
 
@@ -295,7 +296,13 @@ const
     + '"user_id": %U,'
     + '"token": "%S",'
     + '"version": "' + API_VERSION + '",'
-    + '"mode": "library"'
+    + '"mode": "%S"'
+    + '}';
+
+  REQUEST_LIBRARY = '{'
+    + '"user_id": %U,'
+    + '"token": "%S",'
+    + '"version": "' + API_VERSION + '"'
     + '}';
 
 
@@ -306,6 +313,9 @@ var
   // Login Information
   VERSION: string;
   DEVICE_NAME: string;
+
+  // Verbose Loggins
+  WORK_STATUS: string;
 
   // Artwork Store
   ArtworkStore: boolean = true;
@@ -526,7 +536,6 @@ end;
 procedure InitiateArtworkStore;
 var
   ArtRoot: string;
-  A: TObject;
 begin
   if not ArtworkStore then
     Exit;
@@ -542,41 +551,88 @@ begin
   TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Playlists));
 end;
 
+procedure LoadStatus;
+var
+  Request: string;
+  JResult: ResultType;
+
+  JSONValue: TJSONValue;
+  JSONAccount,
+  JSONItem: TJSONObject;
+  JSONSessions: TJSONArray;
+  I: Integer;
+begin
+  // Prepare request string
+  Request := Format(REQUEST_DATA, [USER_ID, TOKEN, 'status']);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Contacting Client...';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    if JResult.Error then
+      if not JResult.LoggedIn then
+        JResult.TerminateSession;
+
+    // Load status
+    WORK_STATUS := 'Loading library status...';
+    JSONItem := JSONValue.GetValue<TJSONObject>('status');
+    LibraryStatus.LoadFrom(JSONItem);
+
+    // Account
+    WORK_STATUS := 'Loading your account...';
+    JSONAccount := JSONValue.GetValue<TJSONObject>('user');
+
+    Account.LoadFrom( JSONAccount );
+
+    // Sessions
+    WORK_STATUS := 'Loading sessions...';
+    JSONSessions := JSONAccount.GetValue<TJSONObject>('session').GetValue<TJSONArray>('sessions');
+
+    SetLength( Sessions, JSONSessions.Count );
+
+    for I := 0 to JSONSessions.Count - 1 do
+      begin
+        Sessions[I].LoadFrom( JSONSessions.Items[I] );
+      end;
+  finally
+    JSONValue.Free;
+  end;
+end;
+
 procedure LoadLibrary;
 var
   Request: string;
-  SResult: ResultType;
+  JResult: ResultType;
 
   JSONValue: TJSONValue;
-  JSONLibrary, JSONAccount,
+  JSONLibrary,
   JSONItem: TJSONObject;
-  JSONSessions: TJSONArray;
   JSONPair: TJSONPair;
   I, Index: Integer;
 begin
   // Prepare request string
-  Request := Format(REQUEST_DATA, [USER_ID, TOKEN]);
+  Request := Format(REQUEST_LIBRARY, [USER_ID, TOKEN]);
 
   // Parse response and extract numbers
-  JSONValue := SendClientRequest(Request);
+  WORK_STATUS := 'Contacting Client...';
+  JSONValue := SendClientRequest(Request, LIBRARY_ENDPOINT);
   try
-    Clipboard.AsText := JSONValue.Value;
-
-    SResult.AnaliseFrom(JSONValue);
-
     // Error
-    if SResult.Error then
-      if not SResult.LoggedIn then
-        SResult.TerminateSession;
+    JResult.AnaliseFrom(JSONVALUE);
 
-    // Load status
-    JSONItem := JSONValue.GetValue<TJSONObject>('status');
-    LibraryStatus.LoadFrom(JSONItem);
+    if JResult.Error then
+      if not JResult.LoggedIn then
+        JResult.TerminateSession;
 
     // Load library
+    WORK_STATUS := 'Loading library...';
     JSONLibrary := JSONValue.GetValue<TJSONObject>('library');
 
     // Tracks
+    WORK_STATUS := 'Loading tracks...';
     JSONItem := JSONLibrary.GetValue<TJSONObject>('tracks');
     SetLength( Tracks, 0 );
 
@@ -594,6 +650,7 @@ begin
       end;
 
     // Albums
+    WORK_STATUS := 'Loading albums...';
     JSONItem := JSONLibrary.GetValue<TJSONObject>('albums');
     SetLength( Albums, 0 );
 
@@ -611,6 +668,7 @@ begin
       end;
 
     // Artists
+    WORK_STATUS := 'Loading artists...';
     JSONItem := JSONLibrary.GetValue<TJSONObject>('artists');
     SetLength( Artists, 0 );
 
@@ -628,6 +686,7 @@ begin
       end;
 
     // PlayLists
+    WORK_STATUS := 'Loading playlists...';
     JSONItem := JSONLibrary.GetValue<TJSONObject>('playlists');
     SetLength( PlayLists, 0 );
 
@@ -642,21 +701,6 @@ begin
         SetLength( PlayLists, Index + 1 );
 
         PlayLists[Index].LoadFrom( JSONPair );
-      end;
-
-    // Account
-    JSONAccount := JSONValue.GetValue<TJSONObject>('user');
-
-    Account.LoadFrom( JSONAccount );
-
-    // Sessions
-    JSONSessions := JSONAccount.GetValue<TJSONObject>('session').GetValue<TJSONArray>('sessions');
-
-    SetLength( Sessions, JSONSessions.Count );
-
-    for I := 0 to JSONSessions.Count - 1 do
-      begin
-        Sessions[I].LoadFrom( JSONSessions.Items[I] );
       end;
   finally
     JSONValue.Free;
@@ -771,7 +815,9 @@ end;
 procedure ResultType.AnaliseFrom(JSON: TJSONValue);
 begin
   Error := not JSON.GetValue<TJSONBool>('result').AsBoolean;
-  LoggedIn := JSON.GetValue<TJSONBool>('authenticated').AsBoolean;
+
+  if not JSON.TryGetValue<boolean>('authenticated', LoggedIn) then
+    LoggedIn := true;
 
   if JSON.FindValue('message') <> nil then
     ServerMessage := JSON.GetValue<TJSONString>('message').Value;
@@ -969,22 +1015,32 @@ end;
 { TAccount }
 
 procedure TAccount.LoadFrom(JSON: TJSONValue);
+const
+  BACKUP_DATE = '2023-03-05';
+var
+  S: string;
 begin
-  Username := JSON.GetValue<TJSONString>('username').Value;
+  if not JSON.TryGetValue<string>('username', Username) then
+    Username := 'User';
+  //ShowMessage(JSOn.ToString);
 
-  OneQueue := stringtoboolean(JSON.GetValue<TJSONValue>('preferences').GetValue<TJSONString>('onequeue').Value);
-  BitRate := JSON.GetValue<TJSONValue>('preferences').GetValue<TJSONString>('bitratepref').Value;
+  JSON.GetValue<TJSONValue>('preferences').TryGetValue<string>('onequeue', S);
+  OneQueue := stringtoboolean(S);
+  JSON.GetValue<TJSONValue>('preferences').TryGetValue<string>('bitratepref', BitRate);
 
   UserID := JSON.GetValue<TJSONString>('user_id').Value.ToInteger;
-  CreationDate := StringToDateTime(JSON.GetValue<TJSONString>('created_on').Value);
+  if not JSON.TryGetValue<string>('created_on', S) then
+    S := BACKUP_DATE;
+  CreationDate := StringToDateTime(S);
 
-  Verified := JSON.GetValue<TJSONBool>('verified').Value.ToBoolean;
-  Facebook := JSON.GetValue<TJSONBool>('facebook').Value.ToBoolean;
-  BetaTester := JSON.GetValue<TJSONBool>('tester').Value.ToBoolean;
+  JSON.TryGetValue<boolean>('verified', Verified);
+  JSON.TryGetValue<boolean>('tester', BetaTester);
 
   EmailAdress := JSON.GetValue<TJSONString>('email_address').Value;
-  Premium := JSON.GetValue<TJSONBool>('premium').Value.ToBoolean;
-  VerificationDate := StringToDateTime(JSON.GetValue<TJSONString>('verified_on').Value);
+  JSON.TryGetValue<boolean>('premium', Premium);
+  if not JSON.TryGetValue<string>('verified_on', S) then
+    S := BACKUP_DATE;
+  VerificationDate := StringToDateTime(S);
 end;
 
 { TAlbumItem }

@@ -40,6 +40,10 @@ interface
   function StringToFloat(str: string): Extended;
   // Better string to float conversion
 
+  // Number Sequences
+  // Fisher-Yates shuffle algorithm
+  function GenerateRandomSequence(count: Integer): TArray<Integer>;
+
   // Basic Mathematical Function
   function EqualApprox(number1, number2: int64; span: real = 1): boolean; overload;
   function EqualApprox(number1, number2: real; span: real = 1): boolean; overload;
@@ -68,6 +72,27 @@ begin
   fs := TFormatSettings.Create(GetThreadLocale());
   {$WARN SYMBOL_PLATFORM ON}
   Result := fs.DecimalSeparator;
+end;
+
+function GenerateRandomSequence(count: Integer): TArray<Integer>;
+var
+  i, j, temp: Integer;
+begin
+  // create an array to hold the sequence
+  SetLength(Result, count);
+
+  // fill the array with sequential numbers
+  for i := 0 to count - 1 do
+    Result[i] := i + 1;
+
+  // shuffle the sequence using Fisher-Yates algorithm
+  for i := count - 1 downto 1 do
+  begin
+    j := Random(i + 1); // generate a random index between 0 and i
+    temp := Result[j];
+    Result[j] := Result[i];
+    Result[i] := temp;
+  end;
 end;
 
 function EqualApprox(number1, number2: int64; span: real): boolean;
