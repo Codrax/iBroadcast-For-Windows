@@ -89,10 +89,6 @@ type
     TitleBarPanel: TTitleBarPanel;
     PrimaryUIContainer: TPanel;
     SplitView1: TSplitView;
-    Button_ToggleMenu: CButton;
-    CImage1: CImage;
-    Label1: TLabel;
-    Label2: TLabel;
     CButton2: CButton;
     CButton3: CButton;
     CButton4: CButton;
@@ -133,13 +129,8 @@ type
     LoginUIContainer: TPanel;
     CImage3: CImage;
     Label10: TLabel;
-    Label11: TLabel;
-    LoginBox: TPanel;
-    Label12: TLabel;
-    Login_ID: TEdit;
-    Label13: TLabel;
-    Login_UsrToken: TEdit;
-    CButton13: CButton;
+    Status_Work: TLabel;
+    BoxContainer: TPanel;
     Robo_Panel: CPanel;
     CImage4: CImage;
     Robo_Background: TShape;
@@ -153,14 +144,6 @@ type
     Shape4: TShape;
     Shape5: TShape;
     HideLoginPopup: TTimer;
-    LoadingUIContainer: TPanel;
-    CImage7: CImage;
-    CImage8: CImage;
-    Label17: TLabel;
-    Status_Work: TLabel;
-    LoadingGif: CPanel;
-    CImage9: CImage;
-    Shape6: TShape;
     Track_Time: TTimer;
     PressNow: TTimer;
     ViewModeToggle: TPanel;
@@ -245,7 +228,6 @@ type
     Button_Volume: CButton;
     CButton17: CButton;
     Page_Search: TPanel;
-    Mini_Cast: CImage;
     SearchToggle: TPanel;
     Search_Button: CButton;
     SearchBox_Hold: TPanel;
@@ -282,7 +264,6 @@ type
     ImgSelector_3: CButton;
     ImgSelector_4: CButton;
     ImgSelector_5: CButton;
-    CButton21: CButton;
     Label14: TLabel;
     Label40: TLabel;
     Panel8: TPanel;
@@ -333,7 +314,6 @@ type
     UpdateCheck: TTimer;
     Setting_ArtworkStore: CCheckBox;
     CButton25: CButton;
-    Label16: TLabel;
     Label29: TLabel;
     Settings_Threads: CSlider;
     Threads_Text: TLabel;
@@ -389,6 +369,33 @@ type
     ScrollBar_6: TScrollBar;
     Panel26: TPanel;
     Page_Title: TLabel;
+    Setting_DataSaver: CCheckBox;
+    Setting_PlayerOnTop: CCheckBox;
+    LoginBox: TPanel;
+    CButton13: CButton;
+    Label13: TLabel;
+    Label16: TLabel;
+    Login_UsrToken: TEdit;
+    LoadingIcon: TPanel;
+    LoadingGif: CPanel;
+    Shape6: TShape;
+    CImage9: CImage;
+    Advanced_Login: TPanel;
+    Login_ID: TEdit;
+    Label12: TLabel;
+    Panel30: TPanel;
+    CButton21: CButton;
+    CButton23: CButton;
+    Panel31: TPanel;
+    Mini_Cast: CImage;
+    Button_ToggleMenu: CButton;
+    CImage1: CImage;
+    Label1: TLabel;
+    Label2: TLabel;
+    Label_Storage: TLabel;
+    Artwork_Storage: TLabel;
+    CButton24: CButton;
+    Label11: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -405,7 +412,6 @@ type
     procedure LoginUIContainerResize(Sender: TObject);
     procedure CButton13Click(Sender: TObject);
     procedure HideLoginPopupTimer(Sender: TObject);
-    procedure LoadingUIContainerResize(Sender: TObject);
     procedure Complete_EmailClick(Sender: TObject);
     procedure DrawItemMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -423,7 +429,6 @@ type
     procedure SelectView_Click(Sender: TObject);
     procedure Button_RepeatClick(Sender: TObject);
     procedure SortButtons_Click(Sender: TObject);
-    procedure WebSyncTimer(Sender: TObject);
     procedure Button_PrevClick(Sender: TObject);
     procedure Button_NextClick(Sender: TObject);
     procedure Button_ExtendClick(Sender: TObject);
@@ -492,8 +497,14 @@ type
     procedure ViewAlbum1Click(Sender: TObject);
     procedure DownloadsFilterSel(Sender: TObject);
     procedure Button_ShuffleTracksClick(Sender: TObject);
+    procedure ExperimentApply(Sender: CCheckBox; State: TCheckBoxState);
+    procedure CButton23Click(Sender: TObject);
+    procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
   private
     { Private declarations }
+    // Detect mouse Back/Forward
+    procedure WMAppCommand(var Msg: TMessage); message WM_APPCOMMAND;
+
     // Items
     function GetItemCount: cardinal;
     procedure LoadItemInfo;
@@ -584,6 +595,7 @@ type
     procedure UpdateDownloads;
     procedure ValidateDownloadFiles;
     procedure RedownloadItems;
+    procedure CalculateGeneralStorage;
 
     procedure DeleteDownloaded(MusicID: integer);
 
@@ -593,7 +605,7 @@ type
     // Login
     procedure PrepareForLogin;
     procedure InitiateLogin;
-    procedure StatLoginScreen;
+    procedure PrepareLoginUI;
 
     procedure InitiateOfflineMode;
     procedure LoadOfflineModeData;
@@ -621,7 +633,7 @@ const
   // SYSTEM
   V_MAJOR = 1;
   V_MINOR = 4;
-  V_PATCH = 0;
+  V_PATCH = 5;
 
   UPDATE_URL = 'http://vinfo.codrutsoftware.cf/version_iBroadcast';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -677,6 +689,7 @@ var
   AppData: string;
 
   SmallSize: integer;
+  OverrideOffline: boolean = false;
   IsOffline: boolean;
 
   // Downloads
@@ -897,6 +910,10 @@ begin
     InitiateArtworkStore
   else
     ClearArtworkStore;
+  if Setting_DataSaver.Checked then
+    DefaultArtSize := TArtSize.Small
+  else
+    DefaultArtSize := TArtSize.Medium;
 
   THREAD_MAX := Settings_Threads.Position;
   Threads_Text.Caption := THREAD_MAX.ToString;
@@ -928,6 +945,15 @@ procedure TUIForm.Button_MiniPlayerClick(Sender: TObject);
 begin
   Hide;
   MiniPlayer.PreparePosition;
+  MiniPlayer.FormStyle := fsNormal;
+
+  ExperimentalTop := Setting_PlayerOnTop.Checked;
+  if ExperimentalTop then
+    begin
+      MiniPlayer.FormStyle := fsStayOnTop;
+      ChangeMainForm(MiniPlayer);
+    end;
+
 
   // Get data
   UpdateMiniPlayer;
@@ -987,6 +1013,20 @@ begin
   QueuePlay;
 end;
 
+procedure TUIForm.CalculateGeneralStorage;
+const
+  STORAGE_PHRASE = '%S of internal storage used';
+  STORAGE_PHRASE2 = 'Storage Used by Artwork: %S';
+var
+  Storage: string;
+begin
+  Storage := GetFolderSizeInStr( AppData + DOWNLOAD_DIR );
+  Label_Storage.Caption := Format(STORAGE_PHRASE, [Storage]);
+
+  Storage := GetFolderSizeInStr( GetArtworkStore() );
+  Artwork_Storage.Caption := Format(STORAGE_PHRASE2, [Storage]);
+end;
+
 function TUIForm.CalculateLength(Seconds: cardinal): string;
 var
   Minutes, Hours: cardinal;
@@ -1005,10 +1045,10 @@ end;
 
 procedure TUIForm.Button_ReloadLibClick(Sender: TObject);
 begin
-  // Login User
-  HideAllUI;
+  // UI
+  PrepareLoginUI;
 
-  LoadingUIContainer.Show;
+  // Reload
   TTask.Run(procedure
     begin
 
@@ -1040,7 +1080,20 @@ begin
 end;
 
 procedure TUIForm.CButton12Click(Sender: TObject);
+var
+  FileName: string;
 begin
+  // Stop Audio
+  if Player.PlayStatus = psPlaying then
+    QueueClear;
+
+  // Delete Token
+  LOGIN_TOKEN := '';
+  FileName := AppData + 'login.token';
+  if TFile.Exists(FileName) then
+    TFile.Delete(FileName);
+
+  // Log Off
   LogOff;
 end;
 
@@ -1090,6 +1143,15 @@ begin
   end;
 end;
 
+procedure TUIForm.CButton23Click(Sender: TObject);
+begin
+  if OpenDialog('Advanced Login', 'Would you like to toggle Advanced Login?', ctQuestion, [mbYes, mbNo]) = mrYes then
+    Advanced_Login.Visible := not Advanced_Login.Visible;
+
+  if Advanced_Login.Visible then
+    Advanced_Login.Top := 0;
+end;
+
 procedure TUIForm.CButton25Click(Sender: TObject);
 begin
   ClearArtworkStore;
@@ -1126,6 +1188,9 @@ begin
   if (DownloadsFilter <> TDataSource.None) then
     for I := 0 to High(DrawItems) do
       DrawItems[I].HiddenItem := DrawItems[I].Source <> DownloadsFilter;
+
+  // Scroll
+  ScrollPosition.Position := 0;
 
   // Draw
   RedrawPaintBox;
@@ -1782,6 +1847,15 @@ begin
     end;
 end;
 
+procedure TUIForm.ExperimentApply(Sender: CCheckBox; State: TCheckBoxState);
+begin
+  if State = cbChecked then
+    case OpenDialog('Experimental Feature Ahead!', 'The setting you are about to enable ' +
+    'is experimental. This feature is unstable, you may use it at your own risk.'#13#13'Enable this feature?', ctWarning, [mbYes, mbNo]) of
+      mrNo: CCheckBox(Sender).State := cbUnchecked;
+    end;
+end;
+
 procedure TUIForm.FiltrateSearch(Term: string; Flags: TSearchFlags);
 procedure RidOfSimbols(var DataStr: string);
 var
@@ -1959,6 +2033,9 @@ begin
   ICON_CONNECT.Font.Name := GetSegoeIconFont;
   Version_Label.Caption := 'Version ' + VERSION;
 
+  // Storage
+  CalculateGeneralStorage;
+
   // Popup Menus
   for I := 0 to ComponentCount-1 do
     if Components[I] is TPopupMenu then
@@ -1986,6 +2063,45 @@ begin
       // Prepae
       PrepareForLogin;
     end;
+end;
+
+procedure TUIForm.FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  // Alt + Shift
+  if (ssAlt in Shift) and (ssShift in Shift) then
+    begin
+      case Key of
+        83: if TracksControl.Visible then
+          Button_ShuffleTracksClick(Button_ShuffleTracks);
+      end;
+    end;
+
+  // Alt
+  if ssAlt in Shift then
+    begin
+      case Key of
+        70: if SearchToggle.Visible then
+          Search_ButtonClick(Search_Button);
+        76: Action_Previous.Execute;
+        77: Button_ToggleMenuClick( Button_ToggleMenu );
+        78: Action_Next.Execute;
+        79: Button_MiniPlayerClick( Button_MiniPlayer );
+        80: Action_Play.Execute;
+        82: Button_RepeatClick( Button_Repeat );
+        83: Button_ShuffleClick( Button_Shuffle );
+        86: if ViewModeToggle.Visible then
+          begin
+            if ViewStyle = TViewStyle.List then
+              SetView( TViewStyle.Cover )
+            else
+              SetView( TViewStyle.List );
+
+            RedrawPaintBox;
+          end;
+      end;
+    end;
+
+  Key := 0;
 end;
 
 procedure TUIForm.FormMouseWheel(Sender: TObject; Shift: TShiftState;
@@ -2045,8 +2161,8 @@ begin
     SplitView1.Opened := false;
 
   // Login Screen
-  Robo_Background.Visible := SmallSize < 2;
-  Robo_Panel.Visible := SmallSize < 2;
+  Robo_Background.Visible := (SmallSize < 2) and LoginBox.Visible;
+  Robo_Panel.Visible := Robo_Background.Visible;
 
   // Menu bar
   Button_ToggleMenu.Visible := SmallSize < 2;
@@ -2152,7 +2268,11 @@ begin
   LoginUIContainer.Hide;
   TitlebarCompare.Hide;
   PrimaryUIContainer.Hide;
-  LoadingUIContainer.Hide;
+  LoadingIcon.Hide;
+
+  // Inside Login Box
+  LoginFailed.Hide;
+  LoginBox.Hide;
 
   // Disable verbose logging
   StatusUpdaterMs.Enabled := false;
@@ -2265,15 +2385,23 @@ procedure TUIForm.InitiateLogin;
 var
   LoggedIn: boolean;
 begin
+  // UI
+  PrepareLoginUI;
+
+  // Offline Flag
+  if OverrideOffline then
+    begin
+      InitiateOfflineMode;
+      Exit;
+    end;
+
   // Login User
-  StatLoginScreen;
   StatusUpdaterMs.Enabled := true;
 
   // Verbose
   WORK_STATUS := 'Contacting iBroadcast for login...';
 
   // Initiate Log in
-  LoadingUIContainer.Show;
   TTask.Run(procedure
     begin
       // Attempt log in
@@ -2312,11 +2440,12 @@ begin
           TThread.Synchronize(nil, procedure
             begin
               // Navigate to Home
-              NavigatePath('Home');
-
               HideAllUI;
               TitlebarCompare.Show;
               PrimaryUIContainer.Show;
+
+              // Home
+              NavigatePath('Home');
             end);
       end
     else
@@ -2324,7 +2453,7 @@ begin
         // Login unsuccessfull
         TThread.Synchronize(nil, procedure
           begin
-            if LoadingUIContainer.Visible then
+            if LoadingIcon.Visible then
               begin
                 PrepareForLogin;
 
@@ -2359,7 +2488,6 @@ begin
   // Hide UX
   CButton3.Hide;
   CButton7.Hide;
-  CButton22.Hide;
   CButton2.Hide;
 
   // Load Data
@@ -2376,6 +2504,9 @@ begin
           
     Application.Terminate;
   end;
+
+  // Reset list
+  UpdateDownloads;
 
   // Navigate
   NavigatePath('songs');
@@ -2395,19 +2526,6 @@ begin
     end;
 
   Result := Result + ']';
-end;
-
-procedure TUIForm.LoadingUIContainerResize(Sender: TObject);
-begin
-  // Realign components
-  LoadingGif.Left := LoadingUIContainer.Width div 2 - LoadingGif.Width div 2;
-  LoadingGif.Top := Status_Work.Top + Status_Work.Height * 3;
-
-  CImage7.Left := 0;
-  CImage7.Top := 0;
-
-  CImage7.Width := LoadingUIContainer.Width;
-  CImage7.Height := LoadingUIContainer.Height;
 end;
 
 procedure TUIForm.LoadItemInfo;
@@ -2821,8 +2939,8 @@ end;
 procedure TUIForm.LoginUIContainerResize(Sender: TObject);
 begin
   // Realign components
-  LoginBox.Left := LoginUIContainer.Width div 2 - LoginBox.Width div 2;
-  LoginBox.Top := Label11.Top + Label11.Height * 2;
+  BoxContainer.Left := LoginUIContainer.Width div 2 - BoxContainer.Width div 2;
+  BoxContainer.Top := Status_Work.Top + Status_Work.Height * 2;
 
   CImage6.Left := 0;
   CImage6.Top := 0;
@@ -2980,6 +3098,7 @@ var
   OffsetTrigger: integer;
   RespP: TPoint;
 begin
+  QueueHover := -1;
   for I := 0 to PlayQueue.Count - 1 do
     if QRects[I].Contains(Point(X, Y)) then
         begin
@@ -2987,8 +3106,8 @@ begin
           Break;
         end;
 
-  // Cusros
-  if I <> -1 then
+  // Cursor
+  if QueueHover <> -1 then
     QueueDraw.Cursor := crHandPoint
   else
     QueueDraw.Cursor := crDefault;
@@ -3510,7 +3629,7 @@ var
   FileName: string;
   AState: TWindowState;
 begin
-  FileName := AppData + 'downloadconfig.ini';
+  FileName := AppData + 'positions.ini';
   if Load then
     // Load Data
     begin
@@ -3618,8 +3737,24 @@ procedure TUIForm.PrepareForLogin;
 begin
   HideAllUI;
 
-  LoginFailed.Hide;
   LoginUIContainer.Show;
+  LoginBox.Show;
+  Status_Work.Caption := 'Please login below';
+
+  // Resize Ui
+  OnResize(Self);
+end;
+
+procedure TUIForm.PrepareLoginUI;
+begin
+  // UI
+  if not LoginUIContainer.Visible then
+      begin
+        HideAllUI;
+        LoginUIContainer.Show;
+      end;
+    LoginBox.Hide;
+    LoadingIcon.Show;
 end;
 
 procedure TUIForm.PressNowTimer(Sender: TObject);
@@ -3638,6 +3773,7 @@ procedure TUIForm.PreviousPage;
 var
   Index: integer;
 begin
+  // Navigate
   Index := Length(PageHistory) - 2;
   if Index >= 0 then
     begin
@@ -3765,6 +3901,8 @@ begin
           Setting_ArtworkStore.Checked := ArtworkStore;
           THREAD_MAX := OPT.ReadInteger(CAT_GENERAL, 'Thread Count', 15);
           Settings_Threads.Position := THREAD_MAX;
+          Setting_DataSaver.Checked := OPT.ReadBool(CAT_GENERAL, 'Data Saver', false);
+          Setting_PlayerOnTop.Checked := OPT.ReadBool(CAT_GENERAL, 'Mini player on top', false);
 
           TransparentIndex := OPT.ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
       finally
@@ -3786,6 +3924,8 @@ begin
         OPT.WriteInteger(CAT_GENERAL, 'Artwork Id', ArtworkID);
         OPT.WriteBool(CAT_GENERAL, 'Artowork Store', ArtworkStore);
         OPT.WriteInteger(CAT_GENERAL, 'Thread Count', THREAD_MAX);
+        OPT.WriteBool(CAT_GENERAL, 'Data Saver', Setting_DataSaver.Checked);
+        OPT.WriteBool(CAT_GENERAL, 'Mini player on top', Setting_PlayerOnTop.Checked);
 
         OPT.WriteInteger(CAT_MINIPLAYER, 'Opacity', TransparentIndex);
       finally
@@ -3896,6 +4036,10 @@ var
   FileName: string;
   ID, I: Integer;
 begin
+  // Offline Mode
+  if IsOffline then
+    Exit;
+
   // Folder
   Folder := AppData + DOWNLOAD_DIR;
 
@@ -4090,6 +4234,9 @@ begin
       ThreadStop:
       TThread.Synchronize(nil, procedure begin
         Download_Status.Hide;
+
+        // Storage
+        CalculateGeneralStorage;
       end);
     end);
 
@@ -4184,15 +4331,21 @@ begin
   end;
 
   // Buttons
-  ImgSelector_1.FlatButton := ArtworkID = 0;
-  ImgSelector_2.FlatButton := ArtworkID = 1;
-  ImgSelector_3.FlatButton := ArtworkID = 2;
-  ImgSelector_4.FlatButton := ArtworkID = 3;
-  ImgSelector_5.FlatButton := ArtworkID = 4;
+  try
+    ImgSelector_1.FlatButton := ArtworkID = 0;
+    ImgSelector_2.FlatButton := ArtworkID = 1;
+    ImgSelector_3.FlatButton := ArtworkID = 2;
+    ImgSelector_4.FlatButton := ArtworkID = 3;
+    ImgSelector_5.FlatButton := ArtworkID = 4;
+  except
+    (* For some unknown reason, 1/20 times, this gives a error :| *)
+  end;
 end;
 
 procedure TUIForm.ReloadLibrary;
 begin
+  StatusUpdaterMs.Enabled := true;
+
   // Get Status
   WORK_STATUS := 'Loading your account...';
   LoadStatus;
@@ -4715,11 +4868,6 @@ begin
   TitlebarCompare.Width := TSplitView(Sender).Width;
 end;
 
-procedure TUIForm.StatLoginScreen;
-begin
-  HideAllUI;
-end;
-
 procedure TUIForm.StatusChanged;
 var
   I: Integer;
@@ -4849,7 +4997,7 @@ begin
     end;
 
   // Loop
-  if (Player.Duration = Player.Position) and (PlayIndex <> -1) and (not IsOffline) then
+  if EqualApprox(Player.DurationSeconds, Player.PositionSeconds, 0.1) and (PlayIndex <> -1) and (not IsOffline) then
     begin
       if RepeatMode = TRepeat.One then
         PlaySong( PlayIndex )
@@ -4884,6 +5032,9 @@ var
   RandIndex, Start: integer;
   RandomQueue: TArray<integer>;
 begin
+  if PlayQueue.Count = 0 then
+    Exit;
+
   if Value then
     // Shuffle
     begin
@@ -4944,6 +5095,11 @@ var
   ST: TStringList;
   FileName: string;
 begin
+  // Invalid
+  if not Load and ((APPLICATION_ID = '') or (LOGIN_TOKEN = '')) then
+    Exit;
+
+  // File Name
   FileName := AppData + 'login.token';
   if Load then
     // Load Token
@@ -5006,10 +5162,6 @@ var
   Category: Integer;
   I, Index: Integer;
 begin
-  // Offline Mode
-  if IsOffline then
-    Exit;
-
   // Clear
   AllDownload.Clear;
 
@@ -5036,7 +5188,7 @@ begin
 
             AddItems( Albums[Index].TracksID );
           end;
-        end;
+      end;
       3:  begin
         for I := 0 to DownloadedArtists.Count - 1 do
           begin
@@ -5047,7 +5199,7 @@ begin
 
             AddItems( Artists[Index].TracksID );
           end;
-        end;
+      end;
       4: begin
         for I := 0 to DownloadedPlaylists.Count - 1 do
           begin
@@ -5058,8 +5210,12 @@ begin
 
             AddItems( Playlists[Index].TracksID );
           end;
-        end;
       end;
+    end;
+
+  // Offline Mode, only load tracks, then exit
+  if IsOffline then
+    Exit;
 
   // Validate Queue
   for I := DownloadQueue.Count - 1 downto 0 do
@@ -5238,9 +5394,16 @@ begin
   Item.Execute;
 end;
 
-procedure TUIForm.WebSyncTimer(Sender: TObject);
+procedure TUIForm.WMAppCommand(var Msg: TMessage);
 begin
-
+  case GET_APPCOMMAND_LPARAM(Msg.LParam) of
+    APPCOMMAND_BROWSER_BACKWARD:
+    begin
+      // Do "go back" code
+      PreviousPage;
+      Msg.Result := 1;
+    end;
+  end;
 end;
 
 { TDrawableItem }

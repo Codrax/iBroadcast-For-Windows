@@ -310,6 +310,9 @@ var
   // App Device token
   LOGIN_TOKEN: string;
 
+  // Cover Settings
+  DefaultArtSize: TArtSize = TArtSize.Medium;
+
   // Login Information
   VERSION: string;
   DEVICE_NAME: string;
@@ -566,7 +569,7 @@ begin
   Request := Format(REQUEST_DATA, [USER_ID, TOKEN, 'status']);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Contacting Client...';
+  WORK_STATUS := 'Contacting iBroadcast API servers...';
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -617,7 +620,7 @@ begin
   Request := Format(REQUEST_LIBRARY, [USER_ID, TOKEN]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Contacting Client...';
+  WORK_STATUS := 'Downloading iBroadcast Library...';
   JSONValue := SendClientRequest(Request, LIBRARY_ENDPOINT);
   try
     // Error
@@ -945,13 +948,13 @@ begin
   if Large then
     begin
       if (CachedImageLarge = nil) or CachedImageLarge.Empty then
-        CachedImageLarge := GetSongArtwork(ArtworkID, TArtSize.Medium);
+        CachedImageLarge := GetSongArtwork(ArtworkID, TArtSize.Large);
 
       Result := CachedImageLarge;
     end
   else
     begin
-      if (CachedImage = nil) or CachedImage.Empty then
+      if (CachedImage = nil) or ((CachedImage <> nil) and CachedImage.Empty) then
         begin
           // Load from Artwork Store
           if ExistsInStore(ID, TDataSource.Tracks) then
@@ -959,7 +962,7 @@ begin
           else
             // Load from server, save to artowork store
             begin
-              CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium);
+              CachedImage := GetSongArtwork(ArtworkID, DefaultArtSize);
 
               // Save artstore
               if ArtworkStore then
@@ -1051,6 +1054,8 @@ begin
 end;
 
 function TAlbumItem.GetArtwork: TJPEGImage;
+var
+  AIndex: integer;
 begin
   Status := Status + [TWorkItem.DownloadingImage];
 
@@ -1064,11 +1069,17 @@ begin
           else
             // Load from server, save to artowork store
             begin
-              CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork();
+              AIndex := GetTrack( TracksID[0] );
+              if AIndex <> -1 then
+                begin
+                  CachedImage := Tracks[AIndex].GetArtwork();
 
-              // Save artstore
-              if ArtworkStore then
-                AddToArtworkStore(ID, CachedImage, TDataSource.Albums);
+                  // Save artstore
+                  if ArtworkStore then
+                    AddToArtworkStore(ID, CachedImage, TDataSource.Albums);
+                end
+                  else
+                    CachedImage := DefaultPicture;
             end;
         end
       else
@@ -1117,6 +1128,8 @@ begin
 end;
 
 function TArtistItem.GetArtwork: TJPEGImage;
+var
+  AIndex: integer;
 begin
   Status := Status + [TWorkItem.DownloadingImage];
 
@@ -1130,7 +1143,7 @@ begin
         begin
           if HasArtwork then
             // Get premade
-            CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium)
+            CachedImage := GetSongArtwork(ArtworkID, DefaultArtSize)
           else
             begin
               if Length(TracksID) >= 4 then
@@ -1139,9 +1152,15 @@ begin
                 end
               else
                 if Length(TracksID) > 0 then
-                  CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork()
-                else
-                  CachedImage := DefaultPicture;
+                  begin
+                    AIndex := GetTrack( TracksID[0] );
+                    if AIndex <> -1 then
+                      CachedImage := Tracks[AIndex].GetArtwork()
+                    else
+                      CachedImage := DefaultPicture;
+                  end
+                    else
+                      CachedImage := DefaultPicture;
             end;
 
           // Save artstore
@@ -1208,7 +1227,7 @@ begin
           // Load from Artwork Store
           if HasArtwork then
             // Get premade
-            CachedImage := GetSongArtwork(ArtworkID, TArtSize.Medium)
+            CachedImage := GetSongArtwork(ArtworkID, DefaultArtSize)
           else
             // Load from server, save to artowork store
             begin

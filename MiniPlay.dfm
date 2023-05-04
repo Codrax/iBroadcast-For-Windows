@@ -16,12 +16,18 @@ object MiniPlayer: TMiniPlayer
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnMouseDown = MoveMoveDown
+  OnShow = FormShow
   TextHeight = 21
   object MainContain: TPanel
+    AlignWithMargins = True
     Left = 0
-    Top = 0
+    Top = 10
     Width = 309
     Height = 175
+    Margins.Left = 0
+    Margins.Top = 10
+    Margins.Right = 0
+    Margins.Bottom = 0
     Align = alTop
     BevelOuter = bvNone
     Caption = 'Panel1'
@@ -29,6 +35,7 @@ object MiniPlayer: TMiniPlayer
     ShowCaption = False
     TabOrder = 0
     OnMouseDown = MoveMoveDown
+    ExplicitTop = 0
     object Mini_Song: TLabel
       Left = 96
       Top = 16
@@ -385,7 +392,7 @@ object MiniPlayer: TMiniPlayer
   end
   object AdditionalOptions: TPanel
     Left = 0
-    Top = 176
+    Top = 186
     Width = 309
     Height = 185
     Margins.Top = 0
@@ -396,6 +403,7 @@ object MiniPlayer: TMiniPlayer
     ShowCaption = False
     TabOrder = 1
     OnMouseDown = MoveMoveDown
+    ExplicitTop = 176
     object Label3: TLabel
       AlignWithMargins = True
       Left = 3
@@ -463,9 +471,9 @@ object MiniPlayer: TMiniPlayer
       ParentColor = False
       AccentColor = acAccentAdjust
       Presets = cslNone
-      Foreground.Enter = 6914986
-      Foreground.Leave = 5270161
-      Foreground.Down = 3625336
+      Foreground.Enter = 6525346
+      Foreground.Leave = 4880521
+      Foreground.Down = 3235696
       Foreground.Border = clGray
       Foreground.BorderThick = 0
       Foreground.MultiColor = False
@@ -691,10 +699,11 @@ object MiniPlayer: TMiniPlayer
   end
   object TitleBarPanel: TTitleBarPanel
     Left = 0
-    Top = 175
+    Top = 185
     Width = 309
     Height = 1
     CustomButtons = <>
+    ExplicitTop = 175
   end
   object AnimTo: TTimer
     Enabled = False

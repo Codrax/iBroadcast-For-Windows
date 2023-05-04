@@ -47,6 +47,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure Mini_SeekChange(Sender: CSlider; Position, Max, Min: Integer);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FormShow(Sender: TObject);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   private
@@ -76,6 +77,9 @@ var
   TransparentIndex: integer;
 
   NoUpdateSeek: boolean;
+
+  // Experiment
+  ExperimentalTop: boolean;
 
 implementation
 
@@ -126,6 +130,12 @@ end;
 procedure TMiniPlayer.Mini_CloseClick(Sender: TObject);
 begin
   Self.Hide;
+
+  if ExperimentalTop then
+    begin
+      Self.FormStyle := fsNormal;
+      ChangeMainForm(UIForm);
+    end;
   Application.MainForm.Show;
 end;
 
@@ -203,6 +213,7 @@ procedure TMiniPlayer.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   if Visible then
     begin
+      CanClose := false;
       Mini_CloseClick(Mini_Close);
     end;
 end;
@@ -246,6 +257,13 @@ begin
 
   // Apply Size
   Height := HeightNormal;
+end;
+
+procedure TMiniPlayer.FormShow(Sender: TObject);
+begin
+  // Fix Titlebar
+  CustomTitleBar.Height := 1;
+  CustomTitleBar.Height := 0;
 end;
 
 procedure TMiniPlayer.MoveMoveDown(Sender: TObject; Button: TMouseButton;

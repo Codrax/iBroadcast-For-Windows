@@ -85,13 +85,13 @@ var
 begin
   Memo3.Clear;
 
-  for I := 0 to PlayQueue.Count do
+  for I := 0 to PlayQueue.Count - 1 do
     Memo3.Lines.Add( PlayQueue[I].ToString )
 end;
 
 procedure TDebugUI.CButton6Click(Sender: TObject);
 begin
-  UIForm.SearchToggle.Left := 0;
+  UIForm.ReloadArtwork;
 end;
 
 procedure TDebugUI.DataSyncTimer(Sender: TObject);

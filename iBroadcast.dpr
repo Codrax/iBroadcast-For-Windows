@@ -21,27 +21,42 @@ uses
 var
   I: integer;
   Param: string;
+  AllowDebug: boolean;
 begin
   Application.Initialize;
 
   // Close if Other instance
   TerminateIfOtherInstanceExists;
 
-  Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TUIForm, UIForm);
-  Application.CreateForm(TDebugUI, DebugUI);
-  Application.CreateForm(TVolumePop, VolumePop);
-  Application.CreateForm(TPerfForm, PerfForm);
-  Application.CreateForm(TMiniPlayer, MiniPlayer);
-  Application.CreateForm(TInfoBox, InfoBox);
-  Application.CreateForm(TNewVersion, NewVersion);
+  // Initiate Default
+  AllowDebug := false;
+
   // Parameter String
   for I := 1 to ParamCount do
     begin
       Param := GetParameter(I);
       if Param = '-debug' then
-        DebugUI.Show;
+        AllowDebug := true;
 
+      if Param = '-offline' then
+        begin
+          OverrideOffline := true;
+        end;
+    end;
+
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TUIForm, UIForm);
+  Application.CreateForm(TVolumePop, VolumePop);
+  Application.CreateForm(TPerfForm, PerfForm);
+  Application.CreateForm(TMiniPlayer, MiniPlayer);
+  Application.CreateForm(TInfoBox, InfoBox);
+  Application.CreateForm(TNewVersion, NewVersion);
+
+  // Debug
+  if AllowDebug then
+    begin
+      Application.CreateForm(TDebugUI, DebugUI);
+      DebugUI.Show;
       DebugUi.DataSync.Enabled := true;
     end;
 
