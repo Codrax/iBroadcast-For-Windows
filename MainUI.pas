@@ -416,7 +416,6 @@ type
     procedure DrawItemMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Button_PlayClick(Sender: TObject);
-    procedure Button_VolumeClick(Sender: TObject);
     procedure Track_TimeTimer(Sender: TObject);
     procedure Player_PositionChange(Sender: CSlider; Position, Max,
       Min: Integer);
@@ -500,6 +499,8 @@ type
     procedure ExperimentApply(Sender: CCheckBox; State: TCheckBoxState);
     procedure CButton23Click(Sender: TObject);
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure Button_VolumeMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Private declarations }
     // Detect mouse Back/Forward
@@ -633,7 +634,7 @@ const
   // SYSTEM
   V_MAJOR = 1;
   V_MINOR = 4;
-  V_PATCH = 5;
+  V_PATCH = 6;
 
   UPDATE_URL = 'http://vinfo.codrutsoftware.cf/version_iBroadcast';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -1224,15 +1225,24 @@ begin
   PerfForm.Show;
 end;
 
-procedure TUIForm.Button_VolumeClick(Sender: TObject);
+procedure TUIForm.Button_VolumeMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
 begin
-  // Volume
-  VolumePop.Top := Button_Volume.ClientToScreen(Point(0, 0)).Y - VolumePop.Height;
-  VolumePop.Left := Button_Volume.ClientToScreen(Point(0, 0)).X - VolumePop.Width + Button_Volume.Width;
+  if Button = mbLeft then
+    begin
+      if ssAlt in Shift then
+        ShellRun('sndvol.exe', true)
+      else
+        begin
+          // Volume
+          VolumePop.Top := Button_Volume.ClientToScreen(Point(0, 0)).Y - VolumePop.Height;
+          VolumePop.Left := Button_Volume.ClientToScreen(Point(0, 0)).X - VolumePop.Width + Button_Volume.Width;
 
-  VolumePop.CSlider1.Position := trunc(Player.Volume * 1000);
+          VolumePop.CSlider1.Position := trunc(Player.Volume * 1000);
 
-  VolumePop.Show;
+          VolumePop.Show;
+        end;
+    end;
 end;
 
 procedure TUIForm.NavigateButton(Sender: TObject);
@@ -5403,6 +5413,9 @@ begin
       PreviousPage;
       Msg.Result := 1;
     end;
+    APPCOMMAND_MEDIA_PREVIOUSTRACK: Action_Previous.Execute;
+    APPCOMMAND_MEDIA_PLAY_PAUSE: Action_Play.Execute;
+    APPCOMMAND_MEDIA_NEXTTRACK: Action_Next.Execute;
   end;
 end;
 

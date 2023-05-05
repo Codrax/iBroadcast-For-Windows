@@ -35,7 +35,6 @@ object MiniPlayer: TMiniPlayer
     ShowCaption = False
     TabOrder = 0
     OnMouseDown = MoveMoveDown
-    ExplicitTop = 0
     object Mini_Song: TLabel
       Left = 96
       Top = 16
@@ -403,7 +402,6 @@ object MiniPlayer: TMiniPlayer
     ShowCaption = False
     TabOrder = 1
     OnMouseDown = MoveMoveDown
-    ExplicitTop = 176
     object Label3: TLabel
       AlignWithMargins = True
       Left = 3
@@ -471,9 +469,9 @@ object MiniPlayer: TMiniPlayer
       ParentColor = False
       AccentColor = acAccentAdjust
       Presets = cslNone
-      Foreground.Enter = 6525346
-      Foreground.Leave = 4880521
-      Foreground.Down = 3235696
+      Foreground.Enter = 8026532
+      Foreground.Leave = 6381707
+      Foreground.Down = 4736882
       Foreground.Border = clGray
       Foreground.BorderThick = 0
       Foreground.MultiColor = False
@@ -703,7 +701,6 @@ object MiniPlayer: TMiniPlayer
     Width = 309
     Height = 1
     CustomButtons = <>
-    ExplicitTop = 175
   end
   object AnimTo: TTimer
     Enabled = False

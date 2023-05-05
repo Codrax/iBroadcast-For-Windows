@@ -186,6 +186,8 @@ end;
 procedure TMiniPlayer.Mini_ShuffleClick(Sender: TObject);
 begin
   UIForm.ToggleShuffle( not Shuffled );
+
+  UIForm.UpdateMiniPlayer;
 end;
 
 procedure TMiniPlayer.Mini_RepeatClick(Sender: TObject);
