@@ -47,6 +47,7 @@ object MiniPlayer: TMiniPlayer
       Font.Name = 'Segoe UI Semibold'
       Font.Style = []
       ParentFont = False
+      ShowAccelChar = False
       OnMouseDown = MoveMoveDown
     end
     object Mini_Cover: CImage
@@ -73,6 +74,7 @@ object MiniPlayer: TMiniPlayer
       Font.Name = 'Segoe UI'
       Font.Style = []
       ParentFont = False
+      ShowAccelChar = False
       OnMouseDown = MoveMoveDown
     end
     object Mini_Close: CButton
@@ -448,6 +450,7 @@ object MiniPlayer: TMiniPlayer
       Font.Style = []
       ParentColor = False
       ParentFont = False
+      ShowAccelChar = False
       OnMouseDown = MoveMoveDown
       ExplicitWidth = 100
     end
@@ -469,9 +472,9 @@ object MiniPlayer: TMiniPlayer
       ParentColor = False
       AccentColor = acAccentAdjust
       Presets = cslNone
-      Foreground.Enter = 8026532
-      Foreground.Leave = 6381707
-      Foreground.Down = 4736882
+      Foreground.Enter = 6914986
+      Foreground.Leave = 5270161
+      Foreground.Down = 3625336
       Foreground.Border = clGray
       Foreground.BorderThick = 0
       Foreground.MultiColor = False

@@ -396,6 +396,7 @@ type
     Artwork_Storage: TLabel;
     CButton24: CButton;
     Label11: TLabel;
+    Settings_DisableAnimations: CCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -915,6 +916,7 @@ begin
     DefaultArtSize := TArtSize.Small
   else
     DefaultArtSize := TArtSize.Medium;
+  SplitView1.UseAnimation := not Settings_DisableAnimations.Checked;
 
   THREAD_MAX := Settings_Threads.Position;
   Threads_Text.Caption := THREAD_MAX.ToString;
@@ -933,13 +935,21 @@ begin
       CButton(Sender).BSegoeIcon := #$E70D;
     end;
 
+  // Animations Disabled
+  if Settings_DisableAnimations.Checked then
+    begin
+      Queue_Extend.Height := DestQueuePopup;
+      Exit;
+    end;
+
+  // Scroll Position
+  QueueScroll.Position := QueuePos * (QListHeight + QListSpacing);
+
+  // Animation Settings
   PauseDrawing := true;
 
   QueueAnProgress := 1;
   QueuePopupAnimate.Enabled := true;
-
-  // Scroll Position
-  QueueScroll.Position := QueuePos * (QListHeight + QListSpacing);
 end;
 
 procedure TUIForm.Button_MiniPlayerClick(Sender: TObject);
@@ -3521,11 +3531,13 @@ begin
         end;
 
       // Fill
+      Pen.Color := Brush.Color;
       RoundRect( ARect, Radius, Radius );
 
       // Line
       if Menu.IsLine then
         begin
+          Pen.Style := psSolid;
           Pen.Color := FN_COLOR;
           MoveTo(10, ARect.Top + ARect.Height div 2);
           LineTo(ARect.Width - 10, ARect.Top + ARect.Height div 2);
@@ -3913,6 +3925,7 @@ begin
           Settings_Threads.Position := THREAD_MAX;
           Setting_DataSaver.Checked := OPT.ReadBool(CAT_GENERAL, 'Data Saver', false);
           Setting_PlayerOnTop.Checked := OPT.ReadBool(CAT_GENERAL, 'Mini player on top', false);
+          Settings_DisableAnimations.Checked := OPT.ReadBool(CAT_GENERAL, 'Disable Animations', false);
 
           TransparentIndex := OPT.ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
       finally
@@ -3936,6 +3949,7 @@ begin
         OPT.WriteInteger(CAT_GENERAL, 'Thread Count', THREAD_MAX);
         OPT.WriteBool(CAT_GENERAL, 'Data Saver', Setting_DataSaver.Checked);
         OPT.WriteBool(CAT_GENERAL, 'Mini player on top', Setting_PlayerOnTop.Checked);
+        OPT.WriteBool(CAT_GENERAL, 'Disable Animations', Settings_DisableAnimations.Checked);
 
         OPT.WriteInteger(CAT_MINIPLAYER, 'Opacity', TransparentIndex);
       finally
