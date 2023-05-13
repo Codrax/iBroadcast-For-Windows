@@ -2,16 +2,14 @@
  A unofficial iBroadcast client for Windows
  
 ### Description
-This is a native Windows client for the [iBroadcast](https://ibroadcast.com) music uploading platform. The application is made for Delphi 11 Comunity Edition. This app connects to your account via a access token.
+This is a native Windows client for the [iBroadcast](https://ibroadcast.com) music uploading platform. The application is made with Delphi 11 Comunity Edition. This app connects to your account via a access token.
 
-## To obtain the login token and app ID:
-Go to media.ibroadcast.com -> Account -> Apps, and create a token from the Developer settings. Currently this app as it's not official, It can only connect to your account this way.
+## To obtain the login token:
+Go to media.ibroadcast.com -> Account -> Apps, and create a token for Cod's iBroadcast Player.
 
-Step 1            |  Step 2     | Step 3
-:-------------------------:|:-------------------------:|:-------------------------:
-![Screenshot_1](https://user-images.githubusercontent.com/68193064/235357872-fc1900b2-bb1c-410d-b47f-14a574c27b31.png) | ![Screenshot_2](https://user-images.githubusercontent.com/68193064/235357878-f5db207a-31d2-4686-acb4-9ad31a13a344.png) | ![Screenshot_3](https://user-images.githubusercontent.com/68193064/235357886-9452946e-81d6-4f27-87ba-c0b987f69752.png)
+iBroadcast Apps Page
+![Screenshot_1](https://user-images.githubusercontent.com/68193064/235357872-fc1900b2-bb1c-410d-b47f-14a574c27b31.png)
 
- 
 ## Main Features
 - Browse library songs, albums, artists, playlists
 - Play music, add to queue
@@ -19,7 +17,8 @@ Step 1            |  Step 2     | Step 3
 - Local Queue support, with adding to queue, changing the order, seeking
 - View account information
 - Search library for anything, by type and by filters
-- Mini player
+- Mini player view
+- Shuffle all your songs
 - View artwork and Track, Album, Artist or Playlist (Ctrl+Click)
 - Sorting any view
 - View library as list or as grid
