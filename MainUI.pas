@@ -408,6 +408,7 @@ type
     Exit1: TMenuItem;
     ShuffleAll1: TMenuItem;
     N12: TMenuItem;
+    Latest_Version: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -519,6 +520,7 @@ type
     procedure Exit1Click(Sender: TObject);
     procedure TrayToggle(Sender: TObject);
     procedure Popup_TrayPopup(Sender: TObject);
+    procedure Latest_VersionClick(Sender: TObject);
   private
     { Private declarations }
     // Detect mouse Back/Forward
@@ -635,6 +637,9 @@ type
 
     // Data
     function CalculateLength(Seconds: cardinal): string;
+
+    // Update
+    procedure StartCheckForUpdate;
 
     // Library
     procedure ReloadLibrary;
@@ -2617,6 +2622,11 @@ begin
     end;
 
   Result := Result + ']';
+end;
+
+procedure TUIForm.Latest_VersionClick(Sender: TObject);
+begin
+  StartCheckForUpdate;
 end;
 
 procedure TUIForm.LoadItemInfo;
@@ -5121,6 +5131,22 @@ begin
   TitlebarCompare.Width := TSplitView(Sender).Width;
 end;
 
+procedure TUIForm.StartCheckForUpdate;
+begin
+  // Offline
+  if IsOffline then
+    begin
+      Latest_Version.Caption := 'Latest version on server: You are offline';
+      Exit;
+    end;
+
+  // Status
+  Latest_Version.Caption := 'Latest version on server: Checking...';
+
+  // Update
+  Version_Check.Navigate(UPDATE_URL, SHDocVw.navNoReadFromCache);
+end;
+
 procedure TUIForm.StatusChanged;
 var
   I: Integer;
@@ -5411,9 +5437,9 @@ procedure TUIForm.UpdateCheckTimer(Sender: TObject);
 begin
   UpdateCheck.Enabled := false;
 
-  if Settings_CheckUpdate.Checked and not IsOffline then
+  if Settings_CheckUpdate.Checked then
     begin
-      Version_Check.Navigate(UPDATE_URL);
+      StartCheckForUpdate;
     end
       else
         UpdateHold.Hide;
@@ -5642,6 +5668,9 @@ begin
         NewVersion.Free;
       end;
     end;
+
+  // Update version
+  Latest_Version.Caption := 'Latest version on server: ' + VMajor.ToString + '.' + VMinor.ToString + '.' + VPatch.ToString;
 end;
 
 procedure TUIForm.ViewAlbum1Click(Sender: TObject);
