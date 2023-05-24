@@ -397,6 +397,17 @@ type
     CButton24: CButton;
     Label11: TLabel;
     Settings_DisableAnimations: CCheckBox;
+    CButton26: CButton;
+    Setting_StartWindows: CCheckBox;
+    Setting_TrayClose: CCheckBox;
+    Setting_QueueSaver: CCheckBox;
+    TrayIcon1: TTrayIcon;
+    Popup_Tray: TPopupMenu;
+    Tray_Toggle: TMenuItem;
+    N8: TMenuItem;
+    Exit1: TMenuItem;
+    ShuffleAll1: TMenuItem;
+    N12: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -502,6 +513,12 @@ type
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure Button_VolumeMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure CButton26Click(Sender: TObject);
+    procedure PrepareStartupShortcut(Sender: CCheckBox; State: TCheckBoxState);
+    procedure TrayIcon1DblClick(Sender: TObject);
+    procedure Exit1Click(Sender: TObject);
+    procedure TrayToggle(Sender: TObject);
+    procedure Popup_TrayPopup(Sender: TObject);
   private
     { Private declarations }
     // Detect mouse Back/Forward
@@ -546,14 +563,16 @@ type
     procedure ProgramSettings(Load: boolean);
     procedure PositionSettings(Load: boolean);
     procedure DownloadSettings(Load: boolean);
+    procedure QueueSettings(Load: boolean);
 
   public
     { Public declarations }
     procedure NavigatePath(Path: String; AddHistory: boolean = true);
 
     // Player
-    procedure PlaySong(Index: cardinal);
+    procedure PlaySong(Index: cardinal; StartPlay: boolean = true);
 
+    procedure SongUpdate;
     procedure StatusChanged;
     procedure TickUpdate;
 
@@ -568,13 +587,13 @@ type
     procedure ReloadArtwork;
 
     // Queue
-    procedure AddQueue(MusicIndex: integer);
+    procedure AddQueue(MusicIndex: integer; StartPlay: boolean = true);
     procedure DeleteQueue(MusicIndex: integer);
 
     procedure QueueClear;
     procedure QueueNext;
     procedure QueuePrev;
-    procedure QueueSetTo(Index: integer);
+    procedure QueueSetTo(Index: integer; StartPlay: boolean = true);
 
     procedure QueuePlay;
     procedure QueueUpdated;
@@ -620,8 +639,14 @@ type
     // Library
     procedure ReloadLibrary;
 
+    // Application Tray
+    procedure MinimiseToTray;
+    procedure OpenFromTray;
+
     // System
     function Version: string;
+
+    procedure CloseApplication;
 
     // Utils
     function IntArrayToStr(AArray: TArray<integer>): string;
@@ -635,7 +660,7 @@ const
   // SYSTEM
   V_MAJOR = 1;
   V_MINOR = 4;
-  V_PATCH = 6;
+  V_PATCH = 7;
 
   UPDATE_URL = 'http://vinfo.codrutsoftware.cf/version_iBroadcast';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -693,6 +718,7 @@ var
   SmallSize: integer;
   OverrideOffline: boolean = false;
   IsOffline: boolean;
+  HiddenToTray: boolean;
 
   // Downloads
   AllDownload: TIntegerList;
@@ -864,7 +890,7 @@ begin
     end;
 end;
 
-procedure TUIForm.AddQueue(MusicIndex: integer);
+procedure TUIForm.AddQueue(MusicIndex: integer; StartPlay: boolean);
 var
   WasStopped: boolean;
 begin
@@ -873,7 +899,7 @@ begin
 
   PlayQueue.Add( MusicIndex );
 
-  if WasStopped then
+  if WasStopped and StartPlay then
     QueueNext;
 
   // Update
@@ -935,20 +961,18 @@ begin
       CButton(Sender).BSegoeIcon := #$E70D;
     end;
 
+  // Prepare
+  QueueAnProgress := 1;
+
   // Animations Disabled
   if Settings_DisableAnimations.Checked then
-    begin
-      Queue_Extend.Height := DestQueuePopup;
-      Exit;
-    end;
+    QueueAnProgress := DestQueuePopup div 2;
 
   // Scroll Position
   QueueScroll.Position := QueuePos * (QListHeight + QListSpacing);
 
   // Animation Settings
   PauseDrawing := true;
-
-  QueueAnProgress := 1;
   QueuePopupAnimate.Enabled := true;
 end;
 
@@ -1170,6 +1194,18 @@ begin
   InitiateArtworkStore;
 end;
 
+procedure TUIForm.CButton26Click(Sender: TObject);
+var
+  Folder: string;
+begin
+  Folder := AppData + DOWNLOAD_DIR;
+
+  if TDirectory.Exists(Folder) then
+    ShellRun(Folder, true)
+  else
+    OpenDialog('Opps', 'The Downloads folder does not exist yet');
+end;
+
 procedure TUIForm.DownloadsFilterSel(Sender: TObject);
 var
   I: Integer;
@@ -1282,6 +1318,19 @@ begin
 
       SetLength(PageHistory, Length(PageHistory) - 1);
     end;
+end;
+
+procedure TUIForm.CloseApplication;
+begin
+  // Tray Mode
+  HiddenToTray := false;
+
+  // Mini Player
+  if MiniPlayer.Visible then
+    MiniPlayer.Close;
+
+  // Close UI
+  Close;
 end;
 
 procedure TUIForm.QueueChanged;
@@ -1636,7 +1685,10 @@ procedure TUIForm.DrawItemMouseUp(Sender: TObject; Button: TMouseButton;
 begin
   // Draw Settings
   PressNow.Enabled := false;
-  Press10Stat := 0;
+
+  // Status
+  Press10Stat := 10;
+  Self.RedrawPaintBox;
 
   // Click
   if IndexHover <> -1 then
@@ -1644,6 +1696,7 @@ begin
 
   // Reset
   MouseIsPress := false;
+  Press10Stat := 0;
 
   // Redraw
   RedrawPaintBox;
@@ -1867,6 +1920,11 @@ begin
     end;
 end;
 
+procedure TUIForm.Exit1Click(Sender: TObject);
+begin
+  CloseApplication;
+end;
+
 procedure TUIForm.ExperimentApply(Sender: CCheckBox; State: TCheckBoxState);
 begin
   if State = cbChecked then
@@ -1955,6 +2013,15 @@ end;
 procedure
 TUIForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
+  // Hide to tray
+  if Setting_TrayClose.Checked and HiddenToTray then
+    begin
+      Self.MinimiseToTray;
+
+      CanClose := false;
+      Exit;
+    end;
+
   // Threads
   if (TotalThreads > 0) then
     if OpenDialog('Close Application', 'Are you sure? Some threads are still running', ctQuestion, [mbYes, mbNo]) = mrNo then
@@ -1963,9 +2030,6 @@ begin
         Exit;
       end;
 
-  Player.Free;
-  PlayQueue.Free;
-
   // Save Data
   TokenLoginInfo(false);
   ProgramSettings(false);
@@ -1973,6 +2037,13 @@ begin
 
   if not IsOffline then
     DownloadSettings(false);
+
+  if Setting_QueueSaver.Checked then
+    QueueSettings(false);
+
+  // Free Memory
+  Player.Free;
+  PlayQueue.Free;
 end;
 
 procedure TUIForm.FormCreate(Sender: TObject);
@@ -2967,6 +3038,9 @@ begin
 
   CImage6.Width := LoginUIContainer.Width;
   CImage6.Height := LoginUIContainer.Height;
+
+  if LoginUIContainer.Visible then
+    BoxContainer.Repaint;
 end;
 
 procedure TUIForm.NavigatePath(Path: String; AddHistory: boolean);
@@ -3042,6 +3116,12 @@ begin
   FileName := ChangeFileExt(FileName, '');  
 
   Result := FileName.ToInteger;
+end;
+
+procedure TUIForm.OpenFromTray;
+begin
+  Self.Show;
+  HiddenToTray := false;
 end;
 
 procedure TUIForm.QueueNext;
@@ -3232,6 +3312,10 @@ var
 begin
   with QueueDraw.Canvas do
     begin
+      // Small Size
+      if ClipRect.Height = 0 then
+        Exit;
+
       // Data
       SetLength(QRects, PlayQueue.Count);
 
@@ -3400,7 +3484,7 @@ begin
 
                   Picture := ItemToDraw.GetPicture;
                   if Picture <> nil then
-                    GDIGraphicRound(Picture, ARect, QListRadius);
+                    StretchDraw(ARect, Picture, 255);
                 end;
             end;
 
@@ -3642,6 +3726,18 @@ begin
     Width := Width + height;
 end;
 
+procedure TUIForm.Popup_TrayPopup(Sender: TObject);
+begin
+  // Minimise Button
+  if Visible then
+    Tray_Toggle.Caption := 'Minimise to Tray'
+  else
+    Tray_Toggle.Caption := 'Open from Tray';
+
+  Tray_Toggle.Visible := not MiniPlayer.Visible;
+  N12.Visible := Tray_Toggle.Visible;
+end;
+
 procedure TUIForm.PositionSettings(Load: boolean);
 const
   // Catrgories
@@ -3691,11 +3787,10 @@ begin
     end;
 end;
 
-procedure TUIForm.PlaySong(Index: cardinal);
+procedure TUIForm.PlaySong(Index: cardinal; StartPlay: boolean);
 var
   LocalName: string;
   Local: boolean;
-  A: integer;
 begin
   // Play State
   PlayID := Tracks[Index].ID;
@@ -3725,34 +3820,12 @@ begin
       if not Local then
         IsOffline := false;
 
-
-  // Song Info
-  Song_Name.Caption := Tracks[Index].Title;
-  A := GetArtist(Tracks[Index].ArtistID);
-  if A <> -1 then
-    Song_Artist.Caption := Artists[A].ArtistName;
-
-  try
-    Song_Cover.Picture.Assign( Tracks[Index].GetArtwork() );
-  except
-    Abort;
-  end;
-
-  // Player
-  Player_Position.Max := Player.Duration;
-  Track_Time.Enabled := true;
-
   // Data
-  Player.Play;
-
-  // UI
-  Song_Player.Show;
-
-  Taskbar1.ToolTip := '🎵' + Tracks[Index].Title + ' - ' + Song_Artist.Caption;
+  if StartPlay then
+    Player.Play;
 
   // Update
-  StatusChanged;
-  UpdateMiniPlayer;
+  SongUpdate;
 end;
 
 procedure TUIForm.PrepareForLogin;
@@ -3777,6 +3850,22 @@ begin
       end;
     LoginBox.Hide;
     LoadingIcon.Show;
+end;
+
+procedure TUIForm.PrepareStartupShortcut(Sender: CCheckBox;
+  State: TCheckBoxState);
+var
+  Start: boolean;
+  FileName: string;
+begin
+  Start := State = cbChecked;
+
+  FileName := IncludeTrailingPathDelimiter(GetUserShellLocation(TUserShellLocation.shlStartup)) + 'Cods iBroadcast.lnk';
+  if Start then
+    CreateShortcut(Application.ExeName, FileName, 'Cods iBroadcast Player', '-tray')
+  else
+    if TFile.Exists(FileName) then
+      TFile.Delete(FileName);
 end;
 
 procedure TUIForm.PressNowTimer(Sender: TObject);
@@ -3829,13 +3918,99 @@ begin
   QueueDraw.Repaint;
 end;
 
-procedure TUIForm.QueueSetTo(Index: integer);
+procedure TUIForm.QueueSettings(Load: boolean);
+var
+  FileName: string;
+  ST: TStringList;
+  I, ATrack, APosition: Integer;
+begin
+  FileName := AppData + 'lastqueue.ini';
+  if Load then
+    // Load Data
+    begin
+      if not TFile.Exists(FileName) then
+        Exit;
+
+      ST := TStringList.Create;
+      try
+        // Track Containers
+        ST.LoadFromFile(FileName);
+
+        // Get Pos
+        try
+          APosition := ST[0].ToInteger;
+        except
+          APosition := -1;
+        end;
+
+        // Load Tracks
+        if ST.Count > 1 then
+          for I := 1 to ST.Count - 1 do
+            begin
+              // Convert
+              try
+                ATrack := ST[I].ToInteger;
+              except
+                Break;
+              end;
+
+              // Validate
+              ATrack := GetTrack(ATrack);
+              if ATrack = -1 then
+                Continue;
+
+              // Add
+              AddQueue(ATrack, false);
+            end;
+
+        // Set Position
+        if APosition <> -1 then
+          begin
+            QueuePos := APosition;
+            PlaySong( PlayQueue[QueuePos], false );
+          end;
+      finally
+        ST.Free;
+      end;
+    end
+  else
+    // Save Data
+    begin
+      // No Queue
+      if PlayQueue.Count = 0 then
+        begin
+          if TFile.Exists(FileName) then
+            TFile.Delete(FileName);
+
+          Exit;
+        end;
+
+      // Create
+      ST := TStringList.Create;
+      try
+        // Write Position
+        ST.Add(QueuePos.ToString);
+
+        // Track Containers
+        for I := 0 to PlayQueue.Count - 1 do
+          ST.Add(Tracks[PlayQueue[I]].ID.ToString);
+
+        // Write
+        ST.SaveToFile(FileName);
+      finally
+        ST.Free;
+      end;
+    end;
+end;
+
+procedure TUIForm.QueueSetTo(Index: integer; StartPlay: boolean);
 begin
   if (Index >= 0) and (Index < PlayQueue.Count) and (QueuePos <> Index) then
     begin
       QueuePos := Index;
 
-      QueuePlay;
+      if StartPlay then
+        QueuePlay;
     end;
 
   QueueUpdated;
@@ -3926,6 +4101,9 @@ begin
           Setting_DataSaver.Checked := OPT.ReadBool(CAT_GENERAL, 'Data Saver', false);
           Setting_PlayerOnTop.Checked := OPT.ReadBool(CAT_GENERAL, 'Mini player on top', false);
           Settings_DisableAnimations.Checked := OPT.ReadBool(CAT_GENERAL, 'Disable Animations', false);
+          Setting_StartWindows.Checked := OPT.ReadBool(CAT_GENERAL, 'Start with windows', false);
+          Setting_TrayClose.Checked := OPT.ReadBool(CAT_GENERAL, 'Minimise to tray', false);
+          Setting_QueueSaver.Checked := OPT.ReadBool(CAT_GENERAL, 'Save Queue', false);
 
           TransparentIndex := OPT.ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
       finally
@@ -3950,6 +4128,9 @@ begin
         OPT.WriteBool(CAT_GENERAL, 'Data Saver', Setting_DataSaver.Checked);
         OPT.WriteBool(CAT_GENERAL, 'Mini player on top', Setting_PlayerOnTop.Checked);
         OPT.WriteBool(CAT_GENERAL, 'Disable Animations', Settings_DisableAnimations.Checked);
+        OPT.WriteBool(CAT_GENERAL, 'Start with windows', Setting_StartWindows.Checked);
+        OPT.WriteBool(CAT_GENERAL, 'Minimise to tray', Setting_TrayClose.Checked);
+        OPT.WriteBool(CAT_GENERAL, 'Save Queue', Setting_QueueSaver.Checked);
 
         OPT.WriteInteger(CAT_MINIPLAYER, 'Opacity', TransparentIndex);
       finally
@@ -4382,6 +4563,11 @@ begin
   WORK_STATUS := 'Updating Downloads...';
   UpdateDownloads;
 
+  // Get last queue
+  WORK_STATUS := 'Updating Queue...';
+  if Setting_QueueSaver.Checked then
+    QueueSettings(true);
+
   // Default Artwork
   WORK_STATUS := 'Loading Artwork...';
   ReloadArtwork;
@@ -4507,7 +4693,10 @@ end;
 procedure TUIForm.ScrollBox1MouseWheel(Sender: TObject; Shift: TShiftState;
   WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
 begin
-  TScrollBox(Sender).VertScrollBar.Position := TScrollBox(Sender).VertScrollBar.Position - WheelDelta div 4;
+  if ssShift in Shift then
+    TScrollBox(Sender).HorzScrollBar.Position := TScrollBox(Sender).HorzScrollBar.Position - WheelDelta div 4
+  else
+    TScrollBox(Sender).VertScrollBar.Position := TScrollBox(Sender).VertScrollBar.Position - WheelDelta div 4;
 end;
 
 procedure TUIForm.ScrollPositionChange(Sender: TObject);
@@ -4824,6 +5013,40 @@ begin
   end;
 end;
 
+procedure TUIForm.SongUpdate;
+var
+  A: integer;
+begin
+  // Invalid
+  if (PlayIndex >= Length(Tracks)) or (PlayIndex < 0) then
+    Exit;
+
+  // Song Info
+  Song_Name.Caption := Tracks[PlayIndex].Title;
+  A := GetArtist(Tracks[PlayIndex].ArtistID);
+  if A <> -1 then
+    Song_Artist.Caption := Artists[A].ArtistName;
+
+  try
+    Song_Cover.Picture.Assign( Tracks[PlayIndex].GetArtwork() );
+  except
+    Abort;
+  end;
+
+  // Player
+  Player_Position.Max := Player.Duration;
+  Track_Time.Enabled := true;
+
+  // UI
+  Song_Player.Show;
+
+  Taskbar1.ToolTip := '🎵' + Tracks[PlayIndex].Title + ' - ' + Song_Artist.Caption;
+
+  // Update
+  StatusChanged;
+  UpdateMiniPlayer;
+end;
+
 procedure TUIForm.Sort;
 var
   I: Integer;
@@ -4873,6 +5096,12 @@ procedure TUIForm.MenuToggled(Sender: TObject);
 begin
   OnResize(Self);
   PauseDrawing := false;
+end;
+
+procedure TUIForm.MinimiseToTray;
+begin
+  Self.Hide;
+  HiddenToTray := true;
 end;
 
 procedure TUIForm.MoveByHold(Sender: TObject; Button: TMouseButton;
@@ -5021,7 +5250,7 @@ begin
     end;
 
   // Loop
-  if EqualApprox(Player.DurationSeconds, Player.PositionSeconds, 0.1) and (PlayIndex <> -1) and (not IsOffline) then
+  if EqualApprox(Player.DurationSeconds, Player.PositionSeconds, 0.1) and (Player.DurationSeconds > 0) and (PlayIndex <> -1) and (not IsOffline) then
     begin
       if RepeatMode = TRepeat.One then
         PlaySong( PlayIndex )
@@ -5159,6 +5388,23 @@ end;
 procedure TUIForm.Track_TimeTimer(Sender: TObject);
 begin
   TickUpdate;
+end;
+
+procedure TUIForm.TrayIcon1DblClick(Sender: TObject);
+begin
+  if not Application.MainForm.Visible then
+    Application.MainForm.Show;
+end;
+
+procedure TUIForm.TrayToggle(Sender: TObject);
+begin
+  if not MiniPlayer.Visible then
+    begin
+      if Visible then
+        MinimiseToTray
+      else
+        OpenFromTray;
+    end;
 end;
 
 procedure TUIForm.UpdateCheckTimer(Sender: TObject);

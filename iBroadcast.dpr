@@ -42,6 +42,11 @@ begin
         begin
           OverrideOffline := true;
         end;
+
+      if Param = '-tray' then
+        begin
+          Application.ShowMainForm := false;
+        end;
     end;
 
   Application.MainFormOnTaskbar := True;
