@@ -47,6 +47,7 @@ begin
       if Param = '-tray' then
         begin
           Application.ShowMainForm := false;
+          HiddenToTray := true;
         end;
 
       if Param = '-logging' then
