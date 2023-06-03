@@ -668,7 +668,7 @@ const
   // SYSTEM
   V_MAJOR = 1;
   V_MINOR = 4;
-  V_PATCH = 8;
+  V_PATCH = 9;
 
   UPDATE_URL = 'http://vinfo.codrutsoftware.cf/version_iBroadcast';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -1208,6 +1208,7 @@ begin
   ClearArtworkStore;
 
   InitiateArtworkStore;
+  CalculateGeneralStorage;
 end;
 
 procedure TUIForm.CButton26Click(Sender: TObject);
@@ -2443,6 +2444,9 @@ begin
           Start := (A-1) * HomeFitItems;
           for I := Start to Start + HomeFitItems - 1 do
             begin
+              if Start > High(DrawItems) then
+                Break;
+
               ARect := Rect(X, Y, X + CoverWidth, Y + CoverHeight);
 
               // Hidden
@@ -2812,6 +2816,8 @@ begin
       // Items
       (* Get albums!!! *)
       A := GetPlaylistType('recently-played');
+      AddToLog('LoadItemInfo.Home.recently-played A=' + A.ToString);
+
       if A <> -1 then
         SomeArray := Playlists[A].TracksID
       else
@@ -2823,7 +2829,10 @@ begin
         begin
           Contained := false;
 
-          Identifier := Tracks[GetTrack(SomeArray[I])].AlbumID;
+          Identifier := -1;
+          P := GetTrack(SomeArray[I]);
+          if P > 0 then
+            Identifier := Tracks[P].AlbumID;
           if Identifier = -1 then
             Break;
 
@@ -2845,9 +2854,12 @@ begin
             Break;
         end;
 
+      (* Total Colums *)
+      SetLength( DrawItems, HomeFitItems * 4 );
+
+      AddToLog('LoadItemInfo.Home.RecentAlbums');
       (* Recent Albums *)
       P := 0;
-      SetLength( DrawItems, HomeFitItems * 4 );
       for I := 0 to HomeFitItems - 1 do
         begin
           if P < Length(SelectItems) then
@@ -2858,16 +2870,20 @@ begin
           Inc(P);
         end;
 
+      AddToLog('LoadItemInfo.Home.FavoriteTracks');
       (* Favorite Tracks *)
       P := 0;
       for I := HomeFitItems to HomeFitItems * 2 - 1 do
         begin
+          // Get thumbsup playlist
           A := GetPlaylistType('thumbsup');
           if A = -1 then
             Continue;
 
+          // Get Playlist
           SelectItems := Playlists[A].TracksID;
 
+          // Load from source
           if P < Length(SelectItems) then
             DrawItems[I].LoadSourceID(SelectItems[P], TDataSource.Tracks)
           else
@@ -2876,6 +2892,7 @@ begin
           Inc(P);
         end;
 
+      AddToLog('LoadItemInfo.Home.History');
       (* History *)
       P := 0;
       for I := HomeFitItems * 2 to HomeFitItems * 3 - 1 do
@@ -2894,6 +2911,7 @@ begin
           Inc(P);
         end;
 
+      AddToLog('LoadItemInfo.Home.Playlists');
       (* Playlists *)
       P := 0;
       for I := HomeFitItems * 3 to HomeFitItems * 4 - 1 do
@@ -2913,6 +2931,7 @@ begin
       AddItems(GetTracksID, TDataSource.Tracks, true);
     end;
 
+  AddToLog('LoadItemInfo.AfterLoadSetup');
   // After load setup
   for I := 0 to High(DrawItems) do
     with DrawItems[I] do
@@ -3101,7 +3120,7 @@ var
   Valid: integer;
   I: Integer;
 begin
-  AddToLog('Form.NavigatePath(%S, %B)');
+  AddToLog(Format('Form.NavigatePath(%S, ' + booleantostring(AddHistory) + ')', [Path]));
   Root := Path;
   MetaData := '';
 
@@ -3119,6 +3138,7 @@ begin
 
   LocationExtra := MetaData;
 
+  AddToLog('NavigatePath.Validate');
   // Validate
   Valid := -1;
   for I := 0 to High(PlayCaptions) do
@@ -3131,6 +3151,7 @@ begin
   if Valid = -1 then
     Exit;
 
+  AddToLog('NavigatePath.Page_Title.Caption. Valid=' + Valid.ToString);
   // Name
   Page_Title.Caption := PlayCaptions[Valid];
 
@@ -3139,6 +3160,7 @@ begin
   LocationROOT := ROOT;
   BareRoot := AnsiLowerCase(ROOT);
 
+  AddToLog('NavigatePath.History');
   // History
   if AddHistory then
     begin
@@ -3153,11 +3175,14 @@ begin
         end;
     end;
 
+  AddToLog('NavigatePath.CheckPages');
   CheckPages;
 
+  AddToLog('NavigatePath.SetScroll');
   // Scroll (after history!)
   SetScroll(0);
 
+  AddToLog('NavigatePath.ReselectPage');
   // View Compatability
   ReselectPage;
 end;
@@ -4702,7 +4727,7 @@ var
   ViewC, ViewSC, MultiPage: boolean;
   I: Integer;
 begin
- // View compatability
+  // View compatability
   ViewC := InArray( AnsiLowerCase(LocationROOT), ViewCompatibile) <> -1;
   ViewSC := InArray(BareRoot, SubViewCompatibile) <> -1;
   MultiPage := BareRoot = 'downloads';
@@ -4764,13 +4789,16 @@ begin
 
   if SearchToggle.Visible then
     SearchToggle.Left := 0;
-    
+
+  AddToLog('ReselectPage.LoadItemInfo');
   // Load Information
   LoadItemInfo;
 
+  AddToLog('ReselectPage.Sort');
   // Sort Reset
   Sort;
 
+  AddToLog('ReselectPage.Quick_Search.Text.Set');
   // Search Reset
   Quick_Search.Text := '';
 end;
@@ -5038,7 +5066,7 @@ end;
 Procedure ArrayItemSort(AType: TSortType);
   function GetTitleValue(Index: integer): string;
   begin
-    if InArray(BareRoot, SubViewCompatibile) <> -1 then
+    if (InArray(BareRoot, SubViewCompatibile) <> -1) or (BareRoot = 'downloads') then
       Exit( DrawItems[SortingList[Index]].Title );
     if BareRoot = 'songs' then
       Exit( Tracks[SortingList[Index]].Title );
@@ -5527,10 +5555,22 @@ end;
 procedure TUIForm.UpdateDownloads;
 procedure AddItems(Items: TArray<integer>);
   var
-    I: Integer;
+    I, J: Integer;
+    Find: integer;
 begin
   for I := 0 to High(Items) do
-    AllDownload.Add( Items[I] );
+    begin
+      Find := -1;
+      for J := 0 to AllDownload.Count-1 do
+        if AllDownload[J] = Items[I] then
+          begin
+            Find := J;
+            Break;
+          end;
+
+    if Find = -1 then
+      AllDownload.Add( Items[I] );
+    end;
 end;
 
 var
@@ -6003,7 +6043,7 @@ end;
 
 procedure TDrawableItem.LoadSource(AIndex: integer; From: TDataSource);
 var
-  Temp, A: integer;
+  Temp, A, APos: integer;
   Data1: string;
 begin
   if AIndex = -1 then
@@ -6069,7 +6109,11 @@ begin
       Information[4] := 'Disk: ' + Albums[Index].Disk.ToString;
       Temp := 0;
       for A := 0 to High(Albums[Index].TracksID) do
-        Inc(Temp, Tracks[GetTrack(Albums[Index].TracksID[A])].LengthSeconds );
+        begin
+          APos := GetTrack(Albums[Index].TracksID[A]);
+          if APos <> -1 then
+            Inc(Temp, Tracks[APos].LengthSeconds );
+        end;
       Information[5] := 'Length: ' + UIForm.CalculateLength(Temp);
 
       // Default Info
@@ -6109,7 +6153,11 @@ begin
       Information[0] := 'Total Tracks: ' + Length(Playlists[Index].TracksID).ToString;
       Temp := 0;
       for A := 0 to High(Playlists[Index].TracksID) do
-        Inc(Temp, Tracks[GetTrack(Playlists[Index].TracksID[A])].LengthSeconds );
+        begin
+          APos := GetTrack(Playlists[Index].TracksID[A]);
+          if APos <> -1 then
+            Inc(Temp, Tracks[APos].LengthSeconds );
+        end;
 
       Information[1] := 'Length: ' + UIForm.CalculateLength(Temp);
       Information[2] := 'Description: "' + Playlists[Index].Description + '"';
@@ -6117,8 +6165,6 @@ begin
       // Default Info
       InfoShort := Length(Playlists[Index].TracksID).ToString + ' Tracks • ' + Copy(Information[1], 9, 9);
       InfoLong := Information[0] + ', ' + Information[1] + ', ' + Information[2];
-
-
     end;
   end;
 end;
