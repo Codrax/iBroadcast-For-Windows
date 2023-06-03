@@ -180,9 +180,6 @@ type
     Time_Pass: TLabel;
     QueueDraw: TPaintBox;
     QueueScroll: TScrollBar;
-    Panel14: TPanel;
-    Label23: TLabel;
-    Button_ClearQueue: CButton;
     QueueSwitchAnimation: TTimer;
     QueueDownGo: TTimer;
     Label3: TLabel;
@@ -409,6 +406,9 @@ type
     ShuffleAll1: TMenuItem;
     N12: TMenuItem;
     Latest_Version: TLabel;
+    Panel14: TPanel;
+    Label23: TLabel;
+    Button_ClearQueue: CButton;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -964,7 +964,7 @@ procedure TUIForm.Button_ExtendClick(Sender: TObject);
 begin
   if EqualApprox(DestQueuePopup, Queue_Extend.Constraints.MaxHeight, 10) then
     begin
-      DestQueuePopup := 0;
+      DestQueuePopup := 1;
       CButton(Sender).BSegoeIcon := #$E70E;
     end
   else
@@ -976,12 +976,16 @@ begin
   // Prepare
   QueueAnProgress := 1;
 
-  // Animations Disabled
-  if Settings_DisableAnimations.Checked then
-    QueueAnProgress := DestQueuePopup div 2;
-
   // Scroll Position
   QueueScroll.Position := QueuePos * (QListHeight + QListSpacing);
+
+  // Animations Disabled
+  if Settings_DisableAnimations.Checked then
+    begin
+      Queue_Extend.Height := DestQueuePopup;
+      Exit;
+    end;
+    //QueueAnProgress := DestQueuePopup div 2;
 
   // Animation Settings
   PauseDrawing := true;
@@ -3273,11 +3277,12 @@ var
 begin
   QueueHover := -1;
   for I := 0 to PlayQueue.Count - 1 do
-    if QRects[I].Contains(Point(X, Y)) then
-        begin
-          QueueHover := I;
-          Break;
-        end;
+    if I < Length(QRects) then
+      if QRects[I].Contains(Point(X, Y)) then
+          begin
+            QueueHover := I;
+            Break;
+          end;
 
   // Cursor
   if QueueHover <> -1 then
@@ -3402,7 +3407,7 @@ begin
           ARect.Height := ARect.Height div 2;
 
           S := #$E90B;
-          TextRect( ARect, S, [tfBottom, tfCenter]);
+          TextRect( ARect, S, [tfBottom, tfCenter, tfSingleLine]);
 
           Font.Assign(Self.Font);
           Font.Size := 20;
