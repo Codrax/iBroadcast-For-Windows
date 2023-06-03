@@ -661,11 +661,14 @@ type
   // Utilities
   function OpenDialog(Title, Text: string; AType: CMessageType = ctInformation; Buttons: TMsgDlgButtons = [mbOk]): integer;
 
+  // Logging
+  procedure AddToLog(ALog: string);
+
 const
   // SYSTEM
   V_MAJOR = 1;
   V_MINOR = 4;
-  V_PATCH = 7;
+  V_PATCH = 8;
 
   UPDATE_URL = 'http://vinfo.codrutsoftware.cf/version_iBroadcast';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -781,7 +784,7 @@ var
   PauseDrawing: boolean;
   LastDrawBuffer: TBitMap;
 
-  LastScrollValue: integer;
+  LastScrollValue: integer = -1;
 
   ListSort: TSortType;
   EnabledSorts: TSortTypes = [TSortType.Default, TSortType.Alphabetic, TSortType.Year, TSortType.Rating];
@@ -795,6 +798,9 @@ var
 
   // SYSTEM
   THREAD_MAX: cardinal = 15;
+
+  // Logging
+  EnableLogging: boolean;
 
   // Queue System
   PlayIndex: integer = -1;
@@ -936,6 +942,7 @@ end;
 
 procedure TUIForm.ApplySettings;
 begin
+  AddToLog('Form.ApplySettings');
   Button_Performance.Visible := Setting_Graph.Checked;
   Button_Performance.Left := Button_Volume.Left + Button_Performance.Width;
   ArtworkStore := Setting_ArtworkStore.Checked;
@@ -1327,8 +1334,10 @@ end;
 
 procedure TUIForm.CloseApplication;
 begin
+  AddToLog('Form.CloseApplication');
   // Tray Mode
-  HiddenToTray := false;
+  if Setting_TrayClose.Checked then
+    HiddenToTray := true;
 
   // Mini Player
   if MiniPlayer.Visible then
@@ -1397,6 +1406,7 @@ var
   FileName: string;
   I: Integer;
 begin
+  AddToLog('Form.DeleteDownloaded(' + MusicID.ToString + ')');
   AFile := AppData + DOWNLOAD_DIR + MusicID.ToString;
 
   for I := 1 to 3 do
@@ -2019,7 +2029,7 @@ procedure
 TUIForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
   // Hide to tray
-  if Setting_TrayClose.Checked and HiddenToTray then
+  if Setting_TrayClose.Checked and not HiddenToTray then
     begin
       Self.MinimiseToTray;
 
@@ -2055,6 +2065,7 @@ procedure TUIForm.FormCreate(Sender: TObject);
 var
   I, J: Integer;
 begin
+  AddToLog('Loading Form.Create.UX');
   // UX
   Color := BG_COLOR;
   Font.Color := FN_COLOR;
@@ -2080,6 +2091,7 @@ begin
   // AppData
   AppData := GetPathInAppData('Cods iBroadcast');
 
+  AddToLog('Preparing Downloads');
   // Prepare Downloading
   AllDownload := TIntegerList.Create;
   DownloadQueue := TIntegerList.Create;
@@ -2089,6 +2101,7 @@ begin
   DownloadedArtists := TStringList.Create;
   DownloadedPlaylists := TStringList.Create;
 
+  AddToLog('Creating Player');
   // Player
   Player := TAudioPlayer.Create;
   StatusChanged;
@@ -2102,25 +2115,31 @@ begin
   // Page Navigation
   SetLength(PageHistory, 0);
 
+  AddToLog('Obtaining Form.Create.DEVICE_NAME');
   // Get Client Information
   DEVICE_NAME := Format(DEVICE_NAME_CONST, [GetCompleteUserName + #39's']);
 
+  AddToLog('Getting system colors');
   // System Draw Colors
   ItemColor := ChangeColorSat($002C0C14, 20);
   ItemActiveColor := ColorBlend( ChangeColorSat($002C0C14, 20), clHighlight, 60 );
   TextColor := Self.Font.Color;
 
+  AddToLog('Loading Settings');
   // Data
   PositionSettings(true);
   ProgramSettings(true);
 
+  AddToLog('Getting Artwork Store');
   // Artwork Store
   MediaStoreLocation := AppData + 'artwork cache';
   InitiateArtworkStore;
 
+  AddToLog('Loading Downloads');
   // Load Downloads
   DownloadSettings(true);
 
+  AddToLog('Form.Create.ApplySettings');
   // Apply Loaded Settings
   UIForm.ApplySettings;
 
@@ -2129,9 +2148,11 @@ begin
   ICON_CONNECT.Font.Name := GetSegoeIconFont;
   Version_Label.Caption := 'Version ' + VERSION;
 
+  AddToLog('Form.Create.CalculateGeneralStorage');
   // Storage
   CalculateGeneralStorage;
 
+  AddToLog('Form.Create.PopupMenus');
   // Popup Menus
   for I := 0 to ComponentCount-1 do
     if Components[I] is TPopupMenu then
@@ -2142,6 +2163,7 @@ begin
             Items[J].OnMeasureItem := PopupMesure;
           end;
 
+  AddToLog('Form.Create.TokenLoginInfo');
   // Get login info
   try
     TokenLoginInfo(true);
@@ -2151,11 +2173,13 @@ begin
   // Load Existing session
   if (APPLICATION_ID <> '') and (LOGIN_TOKEN <> '') then
     begin
+      AddToLog('Form.Create.InitiateLogin APPLICATION_ID, LOGIN_TOKEN <> NULL');
       InitiateLogin;
     end
   else
     // Login
     begin
+      AddToLog('Form.Create.PrepareForLogin');
       // Prepae
       PrepareForLogin;
     end;
@@ -2481,9 +2505,11 @@ procedure TUIForm.InitiateLogin;
 var
   LoggedIn: boolean;
 begin
+  AddToLog('Form.InitiateLogin.PrepareLoginUI');
   // UI
   PrepareLoginUI;
 
+  AddToLog('Form.InitiateLogin.OverrideOffline');
   // Offline Flag
   if OverrideOffline then
     begin
@@ -2502,6 +2528,7 @@ begin
     begin
       // Attempt log in
       try
+        AddToLog('Attempting Login... Form.InitiateLogin.LoginUser');
         LoggedIn := LoginUser;
       except
         TThread.Synchronize(nil, procedure
@@ -2509,12 +2536,14 @@ begin
             // Load offline mode if avalabile
             if HasOfflineBackup then
               begin
+                AddToLog('Offline Mode... Form.InitiateLogin.InitiateOfflineMode');
                 WORK_STATUS := 'Loading Offline Mode...';
                 InitiateOfflineMode;
               end
             else
               // Network Error
               begin
+                AddToLog('Network Error... Form.InitiateLogin.PrepareForLogin');
                 PrepareForLogin;
 
                 Error_Login.Caption := 'Can'#39't connect to the internet! Check your connection settings';
@@ -2529,6 +2558,8 @@ begin
       // Logon succeded
       if LoggedIn then
         begin
+          AddToLog('Logged In!');
+          AddToLog('Form.InitiateLogin.ReLoadLibrary');
           // Load Library, Account, Queue
           ReLoadLibrary;
 
@@ -2540,6 +2571,7 @@ begin
               TitlebarCompare.Show;
               PrimaryUIContainer.Show;
 
+              AddToLog('Form.InitiateLogin.NavigatePath');
               // Home
               NavigatePath('Home');
             end);
@@ -2549,8 +2581,11 @@ begin
         // Login unsuccessfull
         TThread.Synchronize(nil, procedure
           begin
+            AddToLog('Login Unsuccessfull!');
+
             if LoadingIcon.Visible then
               begin
+                AddToLog('Form.InitiateLogin.PrepareForLogin');
                 PrepareForLogin;
 
                 Error_Login.Caption := 'You sure that'#39's correct? The login failed!';
@@ -2559,6 +2594,7 @@ begin
               end
             else
               // Prepare
+              AddToLog('Form.InitiateLogin.PrepareForLogin');
               PrepareForLogin;
           end);
       end;
@@ -2567,6 +2603,7 @@ end;
 
 procedure TUIForm.InitiateOfflineMode;
 begin
+  AddToLog('Form.InitiateOfflineMode');
   // Notify
   IsOffline := true;
 
@@ -3060,6 +3097,7 @@ var
   Valid: integer;
   I: Integer;
 begin
+  AddToLog('Form.NavigatePath(%S, %B)');
   Root := Path;
   MetaData := '';
 
@@ -3183,6 +3221,31 @@ begin
   Result := Dialog.Execute;
 
   Dialog.Free;
+end;
+
+procedure AddToLog(ALog: string);
+var
+  F: TextFile;
+  AFile,
+  ADate: string;
+begin
+  // Use legacy writing for TextFile.Append
+  if EnableLogging then
+    begin
+      ADate := DateTimeToStr(Now);
+      AFile := ReplaceWinPath('shell:desktop\iBroadcast Log.txt');
+
+      AssignFile(F, AFile);
+      if TFile.Exists(AFile) then
+        Append(F)
+      else
+        ReWrite(F);
+
+      WriteLn(F, ADate + ': ' + ALog);
+
+      // Close
+      CloseFile(F);
+    end;
 end;
 
 procedure TUIForm.QueueDownGoTimer(Sender: TObject);
@@ -3840,18 +3903,21 @@ end;
 
 procedure TUIForm.PrepareForLogin;
 begin
+  AddToLog('Form.PrepareForLogin.HideAllUI');
   HideAllUI;
 
   LoginUIContainer.Show;
   LoginBox.Show;
   Status_Work.Caption := 'Please login below';
 
+  AddToLog('Form.PrepareForLogin.OnResize');
   // Resize Ui
   OnResize(Self);
 end;
 
 procedure TUIForm.PrepareLoginUI;
 begin
+  AddToLog('Form.PrepareLoginUI');
   // UI
   if not LoginUIContainer.Visible then
       begin
@@ -4045,6 +4111,7 @@ end;
 
 procedure TUIForm.QueueUpdated;
 begin
+  AddToLog('Form.QueueUpdated');
   QueueDraw.Repaint;
 end;
 
@@ -4251,6 +4318,7 @@ var
   FileName: string;
   ID, I: Integer;
 begin
+  AddToLog('Form.RedownloadItems');
   // Offline Mode
   if IsOffline then
     Exit;
@@ -4559,6 +4627,8 @@ end;
 
 procedure TUIForm.ReloadLibrary;
 begin
+  AddToLog('Form.ReloadLibrary');
+
   StatusUpdaterMs.Enabled := true;
 
   // Get Status
@@ -4930,6 +5000,7 @@ begin
 
   // Scrollbars
   ScrollPosition.Position := Index;
+  ScrollPositionChange(ScrollPosition);
 end;
 
 procedure TUIForm.SetSort(Mode: TSortType);
@@ -5133,6 +5204,7 @@ end;
 
 procedure TUIForm.StartCheckForUpdate;
 begin
+  AddToLog('Form.StartCheckForUpdate');
   // Offline
   if IsOffline then
     begin
@@ -5151,6 +5223,8 @@ procedure TUIForm.StatusChanged;
 var
   I: Integer;
 begin
+  AddToLog('Status changed! Form.StatusChanged');
+
   // Button Enable
   Button_Prev.Enabled := Player.IsFileOpen;
   Button_Play.Enabled := Player.IsFileOpen;
@@ -5418,8 +5492,8 @@ end;
 
 procedure TUIForm.TrayIcon1DblClick(Sender: TObject);
 begin
-  if not Application.MainForm.Visible then
-    Application.MainForm.Show;
+  if HiddenToTray then
+    OpenFromTray;
 end;
 
 procedure TUIForm.TrayToggle(Sender: TObject);
@@ -5458,6 +5532,7 @@ var
   Category: Integer;
   I, Index: Integer;
 begin
+  AddToLog('Form.UpdateDownloads');
   // Clear
   AllDownload.Clear;
 
@@ -5555,6 +5630,7 @@ var
 
   Exists: boolean;
 begin
+  AddToLog('Form.ValidateDownloadFiles');
   // Offline
   if IsOffline then
     Exit;
@@ -5727,6 +5803,8 @@ var
   I: integer;
   AName: string;
 begin
+  AddToLog('TDrawableItem[' + Index.ToString + '].Execute');
+
   case Source of
     TDataSource.Tracks: begin
       if (IndexHoverID <> PlayIndex) or (Player.PlayStatus <> psPlaying) then

@@ -30,6 +30,7 @@ begin
 
   // Initiate Default
   AllowDebug := false;
+  EnableLogging := false;
 
   // Parameter String
   for I := 1 to ParamCount do
@@ -47,7 +48,12 @@ begin
         begin
           Application.ShowMainForm := false;
         end;
+
+      if Param = '-logging' then
+        EnableLogging := true;
     end;
+
+  AddToLog('Started creating forms');
 
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TUIForm, UIForm);
@@ -58,6 +64,7 @@ begin
   Application.CreateForm(TNewVersion, NewVersion);
 
   // Debug
+  AddToLog('Checking Debug Mode');
   if AllowDebug then
     begin
       Application.CreateForm(TDebugUI, DebugUI);
@@ -65,5 +72,6 @@ begin
       DebugUi.DataSync.Enabled := true;
     end;
 
+  AddToLog('Executing Application');
   Application.Run;
 end.
