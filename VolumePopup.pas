@@ -4,7 +4,8 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.Visual.Slider, Vcl.StdCtrls, BASS;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.Visual.Slider, Vcl.StdCtrls, BASS,
+  Cod.MasterVolume;
 
 type
   TVolumePop = class(TForm)
@@ -30,7 +31,11 @@ uses
 
 procedure TVolumePop.CSlider1Change(Sender: CSlider; Position, Max, Min: Integer);
 begin
-  BASS_SetVolume( Position / 1000 );
+  try
+    SetMasterVolume( Position / 1000 );
+  except
+    //BASS_SetVolume( Position / 1000 );
+  end;
 
   UIForm.StatusChanged;
 end;

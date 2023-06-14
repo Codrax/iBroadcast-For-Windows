@@ -17,7 +17,8 @@ uses
   Cod.Audio, UITypes, Types, Math, Performance,
   Cod.Math, System.IniFiles, System.Generics.Collections, Web.HTTPApp,
   Bass, System.Win.TaskbarCore, Vcl.Taskbar, Cod.Visual.CheckBox,
-  Vcl.ControlList, Cod.StringUtils, Vcl.OleCtrls, SHDocVw, Vcl.Menus;
+  Vcl.ControlList, Cod.StringUtils, Vcl.OleCtrls, SHDocVw, Vcl.Menus,
+  Cod.MasterVolume;
 
 type
   // Cardinals
@@ -667,8 +668,8 @@ type
 const
   // SYSTEM
   V_MAJOR = 1;
-  V_MINOR = 4;
-  V_PATCH = 9;
+  V_MINOR = 5;
+  V_PATCH = 0;
 
   UPDATE_URL = 'http://vinfo.codrutsoftware.cf/version_iBroadcast';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -816,7 +817,7 @@ var
   RepeatMode: TRepeat = TRepeat.All;
 
   // Server
-  ArtworkID: integer = 0;
+  ArtworkID: integer = 1;
 
   // Queue Popup
   QueueAnProgress: integer;
@@ -1301,7 +1302,12 @@ begin
           VolumePop.Top := Button_Volume.ClientToScreen(Point(0, 0)).Y - VolumePop.Height;
           VolumePop.Left := Button_Volume.ClientToScreen(Point(0, 0)).X - VolumePop.Width + Button_Volume.Width;
 
-          VolumePop.CSlider1.Position := trunc(Player.Volume * 1000);
+          try
+            VolumePop.CSlider1.Position := trunc(GetMasterVolume * 1000);
+          except
+            VolumePop.CSlider1.Position := trunc(Player.Volume * 1000);
+          end;
+
 
           VolumePop.Show;
         end;
@@ -4688,7 +4694,7 @@ begin
   Complete_Email.Caption := Format(CAPTION_EMAIL, [MaskEmailAdress(Account.EmailAdress)]);
   Complete_Email.Hint := Format(CAPTION_EMAIL, [Account.EmailAdress]);
 
-  Complete_User.Caption := Format(CAPTION_EMAIL, [datetostr(Account.CreationDate)]);
+  Complete_User.Caption := Format(CAPTION_USER, [datetostr(Account.CreationDate)]);
 
   if Account.Verified then
     Complete_Verify.Caption := Format(CAPTION_VERIFIED, [datetostr(Account.VerificationDate)])
@@ -5255,6 +5261,7 @@ end;
 procedure TUIForm.StatusChanged;
 var
   I: Integer;
+  VolPosition: integer;
 begin
   AddToLog('Status changed! Form.StatusChanged');
 
@@ -5267,7 +5274,12 @@ begin
   TickUpdate;
 
   // Volume
-  case ceil(Player.Volume * 4) of
+  try
+    VolPosition := ceil(GetMasterVolume * 4);
+  except
+    VolPosition := ceil(Player.Volume * 4);
+  end;
+  case VolPosition of
     0: Button_Volume.BSegoeIcon := #$E74F;
     1: Button_Volume.BSegoeIcon := #$E992;
     2: Button_Volume.BSegoeIcon := #$E993;

@@ -11,10 +11,8 @@ object VolumePop: TVolumePop
   Font.Height = -16
   Font.Name = 'Segoe UI'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDesigned
   OnDeactivate = FormDeactivate
-  PixelsPerInch = 96
   TextHeight = 21
   object Label1: TLabel
     AlignWithMargins = True
@@ -71,6 +69,5 @@ object VolumePop: TVolumePop
     Max = 1000
     Min = 0
     Position = 50
-    ExplicitTop = 30
   end
 end
