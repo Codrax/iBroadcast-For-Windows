@@ -5774,15 +5774,20 @@ begin
 
   ANewVersion := true;
 
-  // Analise
-  if V_MAJOR > VMajor then
-    ANewVersion := false
-      else
-        if V_MINOR > VMinor then
-          ANewVersion := false
-            else
-              if V_PATCH >= VPatch then
-                ANewVersion := false;
+  // Analise - Major
+  case GetNumberRelation(V_MAJOR, VMajor) of
+    TNumberRelation.Bigger: ANewVersion := false;
+    TNumberRelation.Equal:
+      // Minor
+      case GetNumberRelation(V_MINOR, VMinor) of
+        TNumberRelation.Bigger: ANewVersion := false;
+        TNumberRelation.Equal:
+          // Patch
+          case GetNumberRelation(V_PATCH, VPatch) of
+            TNumberRelation.Bigger, TNumberRelation.Equal: ANewVersion := false;
+          end;
+      end;
+  end;
 
   // New Version
   if ANewVersion then
