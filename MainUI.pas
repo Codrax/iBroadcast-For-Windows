@@ -62,6 +62,7 @@ type
 
     (* Other data *)
     OnlyQueue: boolean;
+    Loaded: boolean;
 
     (* Mix data *)
     function Hidden: boolean;
@@ -153,25 +154,19 @@ type
     Button_Shuffle: CButton;
     Button_Repeat: CButton;
     CButton9: CButton;
-    Page_ViewAlbum: TPanel;
+    Page_SubView: TPanel;
     DrawItem_Clone1: TPaintBox;
     Scrollbar_1: TScrollBar;
     Panel1: TPanel;
-    CImage2: CImage;
+    SubView_Cover: CImage;
     Panel4: TPanel;
-    Label4: TLabel;
+    SubView_Type: TLabel;
     Label5: TLabel;
     SortModeToggle: TPanel;
     Sort_Default: CButton;
     Sort_Alphabetic: CButton;
     Sort_Date: CButton;
     Sort_Rating: CButton;
-    Page_ViewArtist: TPanel;
-    DrawItem_Clone2: TPaintBox;
-    Scrollbar_2: TScrollBar;
-    Page_ViewPlaylist: TPanel;
-    DrawItem_Clone3: TPaintBox;
-    Scrollbar_3: TScrollBar;
     WebSync: TTimer;
     Button_Extend: CButton;
     Queue_Extend: TPanel;
@@ -185,20 +180,6 @@ type
     QueueDownGo: TTimer;
     Label3: TLabel;
     Panel15: TPanel;
-    Panel10: TPanel;
-    Label6: TLabel;
-    Panel11: TPanel;
-    CImage10: CImage;
-    Panel16: TPanel;
-    Label7: TLabel;
-    Label19: TLabel;
-    Panel12: TPanel;
-    Label20: TLabel;
-    Panel13: TPanel;
-    CImage11: CImage;
-    Panel17: TPanel;
-    Label21: TLabel;
-    Label22: TLabel;
     Taskbar1: TTaskbar;
     ActionList1: TActionList;
     Action_Play: TAction;
@@ -304,8 +285,6 @@ type
     CStandardIcon3: CStandardIcon;
     CButton22: CButton;
     Download_Album: CButton;
-    Download_Artist: CButton;
-    Download_Playlist: CButton;
     Download_Status: TLabel;
     UpdateHold: TPanel;
     Version_Check: TWebBrowser;
@@ -410,6 +389,7 @@ type
     Panel14: TPanel;
     Label23: TLabel;
     Button_ClearQueue: CButton;
+    QueueLoadWhenFinished: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -522,6 +502,7 @@ type
     procedure TrayToggle(Sender: TObject);
     procedure Popup_TrayPopup(Sender: TObject);
     procedure Latest_VersionClick(Sender: TObject);
+    procedure QueueLoadWhenFinishedTimer(Sender: TObject);
   private
     { Private declarations }
     // Detect mouse Back/Forward
@@ -669,7 +650,7 @@ const
   // SYSTEM
   V_MAJOR = 1;
   V_MINOR = 5;
-  V_PATCH = 0;
+  V_PATCH = 1;
 
   UPDATE_URL = 'http://vinfo.codrutsoftware.cf/version_iBroadcast';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -1354,7 +1335,12 @@ begin
   if MiniPlayer.Visible then
     MiniPlayer.Close;
 
+  // Alpha Blend (hide flickering window)
+  AlphaBlend := true;
+  AlphaBlendValue := 0;
+
   // Close UI
+  Show;
   Close;
 end;
 
@@ -2038,6 +2024,8 @@ end;
 
 procedure
 TUIForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+var
+  I: Integer;
 begin
   // Hide to tray
   if Setting_TrayClose.Checked and not HiddenToTray then
@@ -2066,6 +2054,11 @@ begin
 
   if Setting_QueueSaver.Checked then
     QueueSettings(false);
+
+  // Disable Timers
+  for I := 0 to Self.ComponentCount-1 do
+    if Components[I] is TTimer then
+      (Components[I] as TTimer).Enabled := false;
 
   // Free Memory
   Player.Free;
@@ -2283,8 +2276,6 @@ begin
 
   // Panels
   UIForm.Panel1.Visible := SmallSize < 2;
-  UIForm.Panel10.Visible := SmallSize < 2;
-  UIForm.Panel12.Visible := SmallSize < 2;
 
   // Split View
   SplitView1.Locked := SmallSize > 1;
@@ -2993,6 +2984,8 @@ begin
                 Rating := ST[5].ToInteger;
                 Plays := ST[6].ToInteger;
                 AudioType := ST[7];
+                ArtistID := ST[8].ToInteger;
+                AlbumID := ST[9].ToInteger;
               end;
           finally
             ST.Free;
@@ -3125,6 +3118,7 @@ var
   P: integer;
   Valid: integer;
   I: Integer;
+  Data: TDrawableItem;
 begin
   AddToLog(Format('Form.NavigatePath(%S, ' + booleantostring(AddHistory) + ')', [Path]));
   Root := Path;
@@ -3165,6 +3159,55 @@ begin
   Location := Path;
   LocationROOT := ROOT;
   BareRoot := AnsiLowerCase(ROOT);
+
+  AddToLog('NavigatePath.LoadSubViewData');
+  // Load Sub-View Data
+  if LocationExtra <> '' then
+    begin
+      // Album
+      if BareRoot = 'viewalbum' then
+        begin
+          SubView_Type.Caption := 'Album View';
+          I := BroadcastAPI.GetAlbum(LocationExtra.ToInteger);
+
+          if I <> -1 then
+            Data.LoadSource(I, TDataSource.Albums);
+        end;
+
+      if BareRoot = 'viewartist' then
+        begin
+          SubView_Type.Caption := 'Artist View';
+          I := BroadcastAPI.GetArtist(LocationExtra.ToInteger);
+
+          if I <> -1 then
+            Data.LoadSource(I, TDataSource.Artists);
+        end;
+
+      if BareRoot = 'viewplaylist' then
+        begin
+          SubView_Type.Caption := 'Playlist View';
+          I := BroadcastAPI.GetPlaylist(LocationExtra.ToInteger);
+
+          if I <> -1 then
+            Data.LoadSource(I, TDataSource.Playlists);
+        end;
+
+      // Load
+      with Data do
+        if Loaded then
+          begin
+            Label5.Caption := GetPremadeInfoList;
+            SubView_Cover.Picture.Assign( GetPicture );
+
+            // Download BT
+            Download_Album.Visible := not IsOffline;
+            Download_Album.Tag := (DownloadedAlbums.IndexOf( ItemID.ToString ) <> -1).ToInteger;
+            Download_Album.OnEnter(Download_Album);
+
+            // Title
+            Page_Title.Caption := Data.Title;
+          end;
+    end;
 
   AddToLog('NavigatePath.History');
   // History
@@ -3375,6 +3418,9 @@ end;
 procedure TUIForm.QueueDrawMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
+  if Button <> mbLeft then
+    Exit;
+
   // Drag
   if QueueDragPress then
     begin
@@ -3665,6 +3711,17 @@ begin
 
   if QueueScroll.Max > AHeight then
     QueueScroll.Max := QueueScroll.Max - AHeight div 2;
+end;
+
+procedure TUIForm.QueueLoadWhenFinishedTimer(Sender: TObject);
+begin
+  if not PrimaryUIContainer.Visible then
+    Exit;
+
+  // Play
+  PlaySong(PlayQueue[QueuePos], false);
+
+  QueueLoadWhenFinished.Enabled := false;
 end;
 
 procedure TUIForm.Player_PositionChange(Sender: CSlider; Position, Max,
@@ -4079,7 +4136,9 @@ begin
         if APosition <> -1 then
           begin
             QueuePos := APosition;
-            PlaySong( PlayQueue[QueuePos], false );
+
+            // Fake play
+            QueueLoadWhenFinished.Enabled := true;
           end;
       finally
         ST.Free;
@@ -4534,6 +4593,8 @@ begin
             ST.Add(Tracks[TrackIndex].Rating.ToString);
             ST.Add(Tracks[TrackIndex].Plays.ToString);
             ST.Add(Tracks[TrackIndex].AudioType);
+            ST.Add(Tracks[TrackIndex].ArtistID.ToString);
+            ST.Add(Tracks[TrackIndex].AlbumID.ToString);
 
             ST.SaveToFile(Local + '.txt')
           finally
@@ -4584,10 +4645,10 @@ begin
         ActiveDraw := DrawItem_Clone1;
 
       if BareRoot = 'viewartist' then
-        ActiveDraw := DrawItem_Clone2;
+        ActiveDraw := DrawItem_Clone1;
 
       if BareRoot = 'viewplaylist' then
-        ActiveDraw := DrawItem_Clone3;
+        ActiveDraw := DrawItem_Clone1;
 
       if BareRoot = 'home' then
         ActiveDraw := HomeDraw;
@@ -4777,7 +4838,7 @@ begin
         if PagesHolder.Controls[I] is TPanel then
           with TPanel(PagesHolder.Controls[I]) do
             begin
-              if AnsiLowerCase(Caption) = AnsiLowerCase(LocationROOT) then
+              if Pos(AnsiLowerCase(LocationROOT),AnsiLowerCase(Caption)) <> 0 then
                 begin
                   Show;
                   Break;
@@ -4830,22 +4891,16 @@ begin
       ScrollPosition.Position := TScrollBar(Sender).Position;
 
       Scrollbar_1.PageSize := ScrollPosition.PageSize;
-      Scrollbar_2.PageSize := ScrollPosition.PageSize;
-      Scrollbar_3.PageSize := ScrollPosition.PageSize;
       Scrollbar_4.PageSize := ScrollPosition.PageSize;
       Scrollbar_5.PageSize := ScrollPosition.PageSize;
       Scrollbar_6.PageSize := ScrollPosition.PageSize;
 
       Scrollbar_1.Max := ScrollPosition.Max;
-      Scrollbar_2.Max := ScrollPosition.Max;
-      Scrollbar_3.Max := ScrollPosition.Max;
       Scrollbar_4.Max := ScrollPosition.Max;
       Scrollbar_5.Max := ScrollPosition.Max;
       Scrollbar_6.Max := ScrollPosition.Max;
 
       Scrollbar_1.Position := TScrollBar(Sender).Position;
-      Scrollbar_2.Position := TScrollBar(Sender).Position;
-      Scrollbar_3.Position := TScrollBar(Sender).Position;
       Scrollbar_4.Position := TScrollBar(Sender).Position;
       Scrollbar_5.Position := TScrollBar(Sender).Position;
       ScrollBar_6.Position := TScrollBar(Sender).Position;
@@ -5863,7 +5918,6 @@ end;
 procedure TDrawableItem.Execute;
 var
   I: integer;
-  AName: string;
 begin
   AddToLog('TDrawableItem[' + Index.ToString + '].Execute');
 
@@ -5916,75 +5970,18 @@ begin
     end;
 
     TDataSource.Albums: begin
-      with Albums[Index] do
-        begin
-          AName := AlbumName;
-          UIForm.Label5.Caption := GetPremadeInfoList;
-
-          UIForm.CImage2.Picture.Assign( GetArtwork() );
-
-          // Download button
-          with UIForm do
-            begin
-              Download_Album.Visible := not IsOffline;
-              Download_Album.Tag := (DownloadedAlbums.IndexOf( ItemID.ToString ) <> -1).ToInteger;
-              Download_Album.OnEnter(Download_Album);
-            end;
-
-          UIForm.Page_Title.Caption := AlbumName;
-        end;
-
       (* Navigate *)
       UIForm.NavigatePath('ViewAlbum:' + Albums[Index].ID.ToString);
-      UIForm.Page_Title.Caption := AName;
     end;
 
     TDataSource.Artists: begin
-      with Artists[Index] do
-        begin
-          AName := ArtistName;
-          UIForm.Label19.Caption := GetPremadeInfoList;
-
-          UIForm.CImage10.Picture.Assign( GetArtwork );
-
-          // Download button
-          with UIForm do
-            begin
-              Download_Artist.Visible := not IsOffline;
-              Download_Artist.Tag := (DownloadedArtists.IndexOf( ItemID.ToString ) <> -1).ToInteger;
-              Download_Artist.OnEnter(Download_Artist);
-            end;
-
-          UIForm.Page_Title.Caption := ArtistName;
-        end;
-
       (* Navigate *)
       UIForm.NavigatePath('ViewArtist:' + Artists[Index].ID.ToString);
-      UIForm.Page_Title.Caption := AName;
     end;
-                                                                  
+
     TDataSource.Playlists: begin
-      with Playlists[Index] do
-        begin
-          AName := Name;
-          UIForm.Label22.Caption := GetPremadeInfoList;
-
-          UIForm.CImage11.Picture.Assign( GetArtwork );
-
-          // Download button
-          with UIForm do
-            begin
-              Download_Playlist.Visible := not IsOffline;
-              Download_Playlist.Tag := (DownloadedPlaylists.IndexOf( ItemID.ToString ) <> -1).ToInteger;
-              Download_Playlist.OnEnter(Download_Playlist);
-            end;
-
-          UIForm.Page_Title.Caption := Name;
-        end;
-
       (* Navigate *)
       UIForm.NavigatePath('ViewPlaylist:' + Playlists[Index].ID.ToString);
-      UIForm.Page_Title.Caption := AName;
     end;
   end;
 
@@ -6071,6 +6068,7 @@ begin
   HiddenItem := false;
   HiddenSearch := false;
   Active := false;
+  Loaded := true;
 
   Source := From;
 
@@ -6230,6 +6228,7 @@ var
   ItemIdentifier: integer;
   FileName: string;
   IsDownload: boolean;
+  AImagePointer: TJPegImage;
 begin
   // MAX Thread limit
   if TotalThreads > THREAD_MAX then
@@ -6251,7 +6250,7 @@ begin
       try
         case ThreadSource of
           TDataSource.Tracks: begin
-            // Check Local
+            // Check Local mp3 download! Different from Artowork Store!!!
             if IsDownload and not Tracks[ItemIndex].ArtworkLoaded then
               begin
                 FileName := AppData + DOWNLOAD_DIR + ItemIdentifier.ToString + ART_EXT;
@@ -6262,12 +6261,12 @@ begin
                   end;
               end;
 
-            // Server Side
-            Tracks[ItemIndex].GetArtwork();
+            // Server Side + get pointer
+            AImagePointer := Tracks[ItemIndex].GetArtwork();
           end;
-          TDataSource.Albums: Albums[ItemIndex].GetArtwork();
-          TDataSource.Artists: Artists[ItemIndex].GetArtwork();
-          TDataSource.Playlists: Playlists[ItemIndex].GetArtwork();
+          TDataSource.Albums: AImagePointer := Albums[ItemIndex].GetArtwork();
+          TDataSource.Artists: AImagePointer := Artists[ItemIndex].GetArtwork();
+          TDataSource.Playlists: AImagePointer := Playlists[ItemIndex].GetArtwork();
         end;
       except
         // Due to media store, sometimes files are being used by two threads at the same time
@@ -6278,9 +6277,17 @@ begin
       // Synchronize
       TThread.Synchronize(nil, procedure
         begin
-          if InfoBox.Visible and (ItemIndex = InfoBoxIndex) then
-            (* Info Box *)
-            InfoBox.Song_Cover.Picture.Assign( DrawItems[ItemIndex].GetPicture )
+          if AImagePointer <> nil then
+            if InfoBox.Visible and (ItemIndex = InfoBoxIndex) then
+              (* Info Box *)
+              InfoBox.Song_Cover.Picture.Assign( AImagePointer )
+                else
+              (* Info View Page *)
+              if UIForm.Page_SubView.Visible and (ItemIdentifier.ToString = LocationExtra) then
+                begin
+                  UIForm.SubView_Cover.Picture.Assign(AImagePointer);
+                  UIForm.RedrawPaintBox;
+                end
               else
                 (* Box Draw *)
                 UIForm.RedrawPaintBox;
