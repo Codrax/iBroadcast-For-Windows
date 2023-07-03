@@ -18,7 +18,8 @@ uses
   Cod.Math, System.IniFiles, System.Generics.Collections, Web.HTTPApp,
   Bass, System.Win.TaskbarCore, Vcl.Taskbar, Cod.Visual.CheckBox,
   Vcl.ControlList, Cod.StringUtils, Vcl.OleCtrls, SHDocVw, Vcl.Menus,
-  Cod.MasterVolume;
+  Cod.MasterVolume, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
+  IdHTTP;
 
 type
   // Cardinals
@@ -286,8 +287,6 @@ type
     CButton22: CButton;
     Download_Album: CButton;
     Download_Status: TLabel;
-    UpdateHold: TPanel;
-    Version_Check: TWebBrowser;
     UpdateCheck: TTimer;
     Setting_ArtworkStore: CCheckBox;
     CButton25: CButton;
@@ -390,6 +389,7 @@ type
     Label23: TLabel;
     Button_ClearQueue: CButton;
     QueueLoadWhenFinished: TTimer;
+    IdHTTP1: TIdHTTP;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -471,8 +471,6 @@ type
     procedure DownloadItem(Sender: TObject);
     procedure ChangeIconDownload(Sender: TObject);
     procedure UpdateCheckTimer(Sender: TObject);
-    procedure Version_CheckNavigateComplete2(ASender: TObject;
-      const pDisp: IDispatch; const URL: OleVariant);
     procedure CButton25Click(Sender: TObject);
     procedure MoveByHold(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -487,7 +485,6 @@ type
     procedure PopupGeneralDownload(Sender: TObject);
     procedure PopupGeneralAddTracks(Sender: TObject);
     procedure PopupGeneralViewArtist(Sender: TObject);
-    procedure ViewAlbum1Click(Sender: TObject);
     procedure DownloadsFilterSel(Sender: TObject);
     procedure Button_ShuffleTracksClick(Sender: TObject);
     procedure ExperimentApply(Sender: CCheckBox; State: TCheckBoxState);
@@ -509,7 +506,7 @@ type
     procedure WMAppCommand(var Msg: TMessage); message WM_APPCOMMAND;
 
     // Items
-    function GetItemCount: cardinal;
+    function GetItemCount(OnlyVisible: boolean = false): cardinal;
     procedure LoadItemInfo;
 
     function GetTracksID: TArray<integer>;
@@ -548,6 +545,7 @@ type
     procedure PositionSettings(Load: boolean);
     procedure DownloadSettings(Load: boolean);
     procedure QueueSettings(Load: boolean);
+    procedure ViewAlbum1Click(Sender: TObject);
 
   public
     { Public declarations }
@@ -622,6 +620,7 @@ type
 
     // Update
     procedure StartCheckForUpdate;
+    procedure GetVersionUpdateData;
 
     // Library
     procedure ReloadLibrary;
@@ -650,9 +649,9 @@ const
   // SYSTEM
   V_MAJOR = 1;
   V_MINOR = 5;
-  V_PATCH = 1;
+  V_PATCH = 2;
 
-  UPDATE_URL = 'http://vinfo.codrutsoftware.cf/version_iBroadcast';
+  UPDATE_URL = 'https://www.codrutsoftware.cf/versions/ibroadcast.txt';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
 
   // UI
@@ -2317,9 +2316,19 @@ begin
   Button_Extend.Left := Panel7.Width;
 end;
 
-function TUIForm.GetItemCount: cardinal;
+function TUIForm.GetItemCount(OnlyVisible: boolean): cardinal;
+var
+  I: Integer;
 begin
-  Exit( Length(DrawItems) );
+  if OnlyVisible then
+    begin
+      Result := 0;
+      for I := 0 to High(DrawItems) do
+        if not DrawItems[I].Hidden then
+          Inc(Result);
+    end
+      else
+        Exit( Length(DrawItems) );
 end;
 
 function TUIForm.GetPageViewType: TDataSource;
@@ -2365,6 +2374,95 @@ begin
 
   if BareRoot = 'history' then
     Result := Playlists[GetPlaylistType('recently-played')].TracksID;
+end;
+
+procedure TUIForm.GetVersionUpdateData;
+var
+  HTML: string;
+
+  VerStr: TArray<string>;
+  VMajor, VMinor, VPatch: integer;
+
+  ANewVersion: boolean;
+begin
+  // Get HTML
+  try
+    HTML := IdHTTP1.Get(UPDATE_URL);
+  except
+    Latest_Version.Caption := 'Latest version on server: Unknown';
+    Exit;
+  end;
+
+  // Trim
+  HTML := Trim(HTML);
+
+  // Get Str
+  VerStr := GetAllSeparatorItems(HTML, '.');
+
+  try
+    VMajor := VerStr[0].ToInteger;
+    VMinor := VerStr[1].ToInteger;
+    VPatch := VerStr[2].ToInteger;
+  except
+    Exit;
+  end;
+
+  ANewVersion := true;
+
+  // Analise - Major
+  case GetNumberRelation(V_MAJOR, VMajor) of
+    TNumberRelation.Bigger: ANewVersion := false;
+    TNumberRelation.Equal:
+      // Minor
+      case GetNumberRelation(V_MINOR, VMinor) of
+        TNumberRelation.Bigger: ANewVersion := false;
+        TNumberRelation.Equal:
+          // Patch
+          case GetNumberRelation(V_PATCH, VPatch) of
+            TNumberRelation.Bigger, TNumberRelation.Equal: ANewVersion := false;
+          end;
+      end;
+  end;
+
+  // New Version
+  if ANewVersion then
+    begin
+      NewVersion := TNewVersion.Create(Application);
+      try
+        with NewVersion do
+          begin
+            Version_Old.Caption := Version;
+            Version_New.Caption := HTML;
+
+            if ShowModal = mrOk then
+              ShellRun( DOWNLOAD_UPDATE_URL, false );
+          end;
+      finally
+        NewVersion.Free;
+      end;
+    end;
+
+  // Update version
+  Latest_Version.Caption := 'Latest version on server: ' + VMajor.ToString + '.' + VMinor.ToString + '.' + VPatch.ToString;
+end;
+procedure TUIForm.ViewAlbum1Click(Sender: TObject);
+var
+  AlbumID: integer;
+  Item: TDrawableItem;
+begin
+  // View Artist
+  case PopupSource of
+    TDataSource.Tracks: AlbumID := Tracks[DrawItems[PopupDrawIndex].Index].AlbumID;
+    else Exit;
+  end;
+
+  // Validate
+  if AlbumID = 0 then
+    Exit;
+
+  // Open
+  Item.LoadSourceID(AlbumID, TDataSource.Albums);
+  Item.Execute;
 end;
 
 function TUIForm.HasOfflineBackup: boolean;
@@ -3334,6 +3432,10 @@ end;
 procedure TUIForm.QueueDrawMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
+  if Button <> mbLeft then
+    Exit;
+
+  // Drag
   if QueueHover <> -1 then
     begin
       QueueMouseDown := true;
@@ -4216,6 +4318,7 @@ begin
     Exit;
 
   FiltrateSearch( TEdit(Sender).Text );
+  ScrollPosition.Position := 0;
 
   RedrawPaintBox;
 end;
@@ -4361,7 +4464,7 @@ begin
     Exit;
 
   // Count
-  ItemCount := (GetItemCount);
+  ItemCount := (GetItemCount(true));
 
   // Calculations based on view mode
   if ViewStyle = TViewStyle.Cover then
@@ -5310,7 +5413,7 @@ begin
   Latest_Version.Caption := 'Latest version on server: Checking...';
 
   // Update
-  Version_Check.Navigate(UPDATE_URL, SHDocVw.navNoReadFromCache);
+  GetVersionUpdateData;
 end;
 
 procedure TUIForm.StatusChanged;
@@ -5612,11 +5715,7 @@ begin
   UpdateCheck.Enabled := false;
 
   if Settings_CheckUpdate.Checked then
-    begin
-      StartCheckForUpdate;
-    end
-      else
-        UpdateHold.Hide;
+    StartCheckForUpdate;
 end;
 
 procedure TUIForm.UpdateDownloads;
@@ -5793,97 +5892,6 @@ end;
 function TUIForm.Version: string;
 begin
   Result := V_MAJOR.ToString + '.' + V_MINOR.ToString + '.' + V_PATCH.ToString ;
-end;
-
-procedure TUIForm.Version_CheckNavigateComplete2(ASender: TObject;
-  const pDisp: IDispatch; const URL: OleVariant);
-var
-  Doc: Variant;
-  HTML: string;
-
-  VerStr: TArray<string>;
-  VMajor, VMinor, VPatch: integer;
-
-  ANewVersion: boolean;
-begin
-  if not Assigned(Version_Check.Document) then
-    Version_Check.Navigate('about:blank');
-
-  Doc := Version_Check.Document;
-  Doc.Clear;
-  HTML := Doc.Body.InnerHTML;
-  Doc.Close;
-
-  HTML := Trim(HTML);
-
-  // Get Str
-  VerStr := GetAllSeparatorItems(HTML, '.');
-
-  try
-    VMajor := VerStr[0].ToInteger;
-    VMinor := VerStr[1].ToInteger;
-    VPatch := VerStr[2].ToInteger;
-  except
-    Exit;
-  end;
-
-  ANewVersion := true;
-
-  // Analise - Major
-  case GetNumberRelation(V_MAJOR, VMajor) of
-    TNumberRelation.Bigger: ANewVersion := false;
-    TNumberRelation.Equal:
-      // Minor
-      case GetNumberRelation(V_MINOR, VMinor) of
-        TNumberRelation.Bigger: ANewVersion := false;
-        TNumberRelation.Equal:
-          // Patch
-          case GetNumberRelation(V_PATCH, VPatch) of
-            TNumberRelation.Bigger, TNumberRelation.Equal: ANewVersion := false;
-          end;
-      end;
-  end;
-
-  // New Version
-  if ANewVersion then
-    begin
-      NewVersion := TNewVersion.Create(Application);
-      try
-        with NewVersion do
-          begin
-            Version_Old.Caption := Version;
-            Version_New.Caption := HTML;
-
-            if ShowModal = mrOk then
-              ShellRun( DOWNLOAD_UPDATE_URL, false );
-          end;
-      finally
-        NewVersion.Free;
-      end;
-    end;
-
-  // Update version
-  Latest_Version.Caption := 'Latest version on server: ' + VMajor.ToString + '.' + VMinor.ToString + '.' + VPatch.ToString;
-end;
-
-procedure TUIForm.ViewAlbum1Click(Sender: TObject);
-var
-  AlbumID: integer;
-  Item: TDrawableItem;
-begin
-  // View Artist
-  case PopupSource of
-    TDataSource.Tracks: AlbumID := Tracks[DrawItems[PopupDrawIndex].Index].AlbumID;
-    else Exit;
-  end;
-
-  // Validate
-  if AlbumID = 0 then
-    Exit;
-
-  // Open
-  Item.LoadSourceID(AlbumID, TDataSource.Albums);
-  Item.Execute;
 end;
 
 procedure TUIForm.WMAppCommand(var Msg: TMessage);
