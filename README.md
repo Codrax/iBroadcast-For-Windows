@@ -30,6 +30,15 @@ iBroadcast Apps Page
 - Delphi BASS Audio Library - https://github.com/TDDung/Delphi-BASS
 - Units in the Dependencies folder
 
+### Parameters
+| Parameter  | Description |
+| ------------- | ------------- |
+| -offline  | Forces offline mode  |
+| -tray  | Start hidden in system tray  |
+| -logging  | Output application log of tasks and errors on user desktop  |
+| -logtoken  | Output login token in log  |
+| -debug  | Enable application debugging features  |
+
 ## Screenshots
 
 ![Screenshot 2023-04-29 164348](https://user-images.githubusercontent.com/68193064/235306793-64afed5f-e1b3-4ba0-aa28-535582849f35.png)
