@@ -38,8 +38,6 @@ object InfoBox: TInfoBox
     ParentColor = True
     ShowCaption = False
     TabOrder = 2
-    ExplicitLeft = 85
-    ExplicitTop = 30
     object Panel3: TPanel
       AlignWithMargins = True
       Left = 25
@@ -77,8 +75,6 @@ object InfoBox: TInfoBox
         Text = 'Item name'
         OnChange = Song_NameChange
         OnKeyUp = Song_NameKeyUp
-        ExplicitLeft = -3
-        ExplicitTop = 2
       end
       object Save_Button: CButton
         AlignWithMargins = True
@@ -166,7 +162,6 @@ object InfoBox: TInfoBox
       ParentColor = True
       ShowCaption = False
       TabOrder = 1
-      ExplicitHeight = 113
       object Song_Info: TMemo
         Left = 0
         Top = 0
@@ -181,7 +176,6 @@ object InfoBox: TInfoBox
         ReadOnly = True
         TabOrder = 0
         OnKeyUp = Song_InfoKeyUp
-        ExplicitTop = -2
       end
       object Editor_View: TPanel
         Left = 0
@@ -195,7 +189,6 @@ object InfoBox: TInfoBox
         ShowCaption = False
         TabOrder = 1
         Visible = False
-        ExplicitTop = -2
         DesignSize = (
           384
           218)
@@ -212,7 +205,6 @@ object InfoBox: TInfoBox
           ParentColor = True
           TabOrder = 0
           OnKeyUp = Edit_DescKeyUp
-          ExplicitTop = 80
         end
         object Save_Button2: CButton
           AlignWithMargins = True

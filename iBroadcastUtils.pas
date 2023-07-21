@@ -17,7 +17,14 @@ const
   FN_COLOR = clWhite;
 
 var
+  // App Config
   AllowDebug: boolean;
+
+  // Application Settings
+  IsOffline: boolean;
+  SmallSize: integer;
+  OverrideOffline: boolean = false;
+  HiddenToTray: boolean;
 
 implementation
 

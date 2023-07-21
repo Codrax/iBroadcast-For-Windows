@@ -405,7 +405,7 @@ type
     CopyID3: TMenuItem;
     CopyID4: TMenuItem;
     Panel10: TPanel;
-    Download_Album: CButton;
+    Download_SubView: CButton;
     CButton27: CButton;
     CButton28: CButton;
     Add_Type: TPopupMenu;
@@ -413,6 +413,7 @@ type
     Addalbum1: TMenuItem;
     Playartists1: TMenuItem;
     Playplaylist1: TMenuItem;
+    Cleanupplaylist1: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -535,6 +536,7 @@ type
     procedure Addalbum1Click(Sender: TObject);
     procedure Popup_PlaylistPopup(Sender: TObject);
     procedure PopupGeneralViewAlbum(Sender: TObject);
+    procedure Cleanupplaylist1Click(Sender: TObject);
   private
     { Private declarations }
     // Detect mouse Back/Forward
@@ -738,11 +740,6 @@ var
   // Application Data
   AppData: string;
 
-  SmallSize: integer;
-  OverrideOffline: boolean = false;
-  IsOffline: boolean;
-  HiddenToTray: boolean;
-
   // Downloads
   AllDownload: TIntegerList;
   DownloadQueue: TIntegerList;
@@ -791,7 +788,7 @@ var
   Press10Stat: cardinal = 0;
   MouseIsPress: boolean;
   IndexHover,
-  IndexHoverID: integer;
+  IndexHoverSort: integer;
 
   DrawItems: TArray<TDrawableItem>;
 
@@ -1538,6 +1535,59 @@ begin
     end;
 end;
 
+procedure TUIForm.Cleanupplaylist1Click(Sender: TObject);
+var
+  Index: integer;
+begin
+  if IsOffline then
+    OfflineDialog('Cannot clean playlist in Offline Mode. Please connect to the internet.')
+  else
+    if OpenDialog('Start cleanup?', 'Cleanup will remove invalid songs that iBroadcast may have left and update the playlist accordingly. No data loss will occur, only invalid enteries will be removed.',
+      ctQuestion, [mbYes, mbNo]) = mryes then
+      if (EditorThread < THREAD_EDITOR_MAX) then
+        with TThread.CreateAnonymousThread(procedure
+          begin
+            // Increase
+            Inc(EditorThread);
+
+            // Status
+            ThreadSyncStatus('Repairing Playlist...');
+
+            // Delete
+            try
+              TouchupPlaylist(DrawItems[PopupDrawIndex].ItemID);
+
+              // Redraw
+              TThread.Synchronize(nil,
+                procedure
+                  begin
+                    LoadItemInfo;
+                    RedrawPaintBox;
+                    Sort;
+                  end);
+            except
+              // Offline
+              TThread.Synchronize(nil,
+                procedure
+                  begin
+                    OfflineDialog('We can'#39't delete this item. Are you connected to the internet?');
+                  end);
+            end;
+
+            // Decrease
+            Dec(EditorThread);
+
+            // Finish
+            EdidThreadFinalised
+          end) do
+            begin
+              Priority := tpLowest;
+
+              FreeOnTerminate := true;
+              Start;
+            end;
+end;
+
 procedure TUIForm.CloseApplication;
 begin
   AddToLog('Form.CloseApplication');
@@ -1896,17 +1946,17 @@ var
 begin
   // Get Press position
     IndexHover := -1;
-  IndexHoverID := -1;
+  IndexHoverSort := -1;
   for I := 0 to High(DrawItems) do
     if DrawItems[I].Bounds.Contains( Point(X, Y) ) then
       begin
         IndexHover := I;
-        IndexHoverID := GetSort( I );
+        IndexHoverSort := GetSort( I );
         Break;
       end;
 
   // Cursor
-  if IndexHoverID <> -1 then
+  if IndexHoverSort <> -1 then
     TPaintBox(Sender).Cursor := crHandPoint
   else
     TPaintBox(Sender).Cursor := crDefault;
@@ -1998,7 +2048,7 @@ begin
               Picture := DrawItems[Index].GetPicture;
 
 
-              if (Index = IndexHoverID) and (Press10Stat <> 0) then
+              if (Index = IndexHoverSort) and (Press10Stat <> 0) then
                 ARect.Inflate(-Press10Stat, -trunc(ARect.Height/ ARect.Width * Press10Stat));
 
               // Draw
@@ -2050,7 +2100,7 @@ begin
               Info := DrawItems[Index].InfoLong;
               Picture := DrawItems[Index].GetPicture;
 
-              if (Index = IndexHoverID) and (Press10Stat <> 0) then
+              if (Index = IndexHoverSort) and (Press10Stat <> 0) then
                 ARect.Inflate(-Press10Stat, -Press10Stat);
 
               // Draw
@@ -2215,7 +2265,8 @@ begin
       else
         begin
           Found := CompareFound(Term, DrawItems[I].Title, Flags)
-            or ((TSearchFlag.SearchInfo in Flags) and CompareFound(Term, DrawItems[I].InfoLong, Flags));
+            or ((TSearchFlag.SearchInfo in Flags) and CompareFound(Term, DrawItems[I].InfoLong, Flags))
+            or (DrawItems[I].ItemID.ToString = Term);
 
           DrawItems[I].HiddenSearch := not Found;
         end;
@@ -2741,7 +2792,7 @@ begin
 
               // Bounds
               DrawItems[I].Bounds := ARect;
-              if (I = IndexHoverID) and (Press10Stat <> 0) then
+              if (I = IndexHoverSort) and (Press10Stat <> 0) then
                     ARect.Inflate(-Press10Stat, -trunc(ARect.Width / ARect.Height * Press10Stat));
 
               // Draw
@@ -3458,8 +3509,11 @@ begin
 
           if I <> -1 then
             Data.LoadSource(I, TDataSource.Albums);
+
+          Download_SubView.Tag := (DownloadedAlbums.IndexOf( Data.ItemID.ToString ) <> -1).ToInteger;
         end;
 
+      // Artist
       if BareRoot = 'viewartist' then
         begin
           SubView_Type.Caption := 'Artist View';
@@ -3467,6 +3521,8 @@ begin
 
           if I <> -1 then
             Data.LoadSource(I, TDataSource.Artists);
+
+          Download_SubView.Tag := (DownloadedArtists.IndexOf( Data.ItemID.ToString ) <> -1).ToInteger;
         end;
 
       if BareRoot = 'viewplaylist' then
@@ -3476,6 +3532,8 @@ begin
 
           if I <> -1 then
             Data.LoadSource(I, TDataSource.Playlists);
+
+          Download_SubView.Tag := (DownloadedPlaylists.IndexOf( Data.ItemID.ToString ) <> -1).ToInteger;
         end;
 
       // Load
@@ -3486,9 +3544,8 @@ begin
             SubView_Cover.Picture.Assign( GetPicture );
 
             // Download BT
-            Download_Album.Visible := not IsOffline;
-            Download_Album.Tag := (DownloadedAlbums.IndexOf( ItemID.ToString ) <> -1).ToInteger;
-            Download_Album.OnEnter(Download_Album);
+            Download_SubView.Enabled := not IsOffline;
+            Download_SubView.OnEnter(Download_SubView);
 
             // Title
             Page_Title.Caption := Data.Title;
@@ -4090,6 +4147,13 @@ begin
           Radius := 0;
         end;
 
+      // Diabled
+      if not Menu.Enabled then
+        begin
+          ABackground := ColorToGrayScale(BG_COLOR);
+          AForeground := clGray;
+        end;
+
       // Fill
       Pen.Color := ABackground;
       Brush.Color := ABackground;
@@ -4236,6 +4300,9 @@ begin
 
   // Update
   UIForm.UpdateDownloads;
+
+  // Redraw
+  RedrawPaintBox;
 end;
 
 procedure TUIForm.PopupMesure(Sender: TObject; ACanvas: TCanvas; var Width,
@@ -4833,9 +4900,6 @@ begin
           // Get File
           Local := Repo + DownloadedAlbums[I] + '.txt';
             
-          if TFile.Exists(Local) then
-            Continue;
-            
           // Write
           ST := TStringList.Create;
           try
@@ -4865,9 +4929,6 @@ begin
           // Get File
           Local := Repo + DownloadedArtists[I] + '.txt';
             
-          if TFile.Exists(Local) then
-            Continue;
-            
           // Write
           ST := TStringList.Create;
           try
@@ -4894,10 +4955,7 @@ begin
 
           // Get Playlist File
           Local := Repo + DownloadedPlaylists[I] + '.txt';
-            
-          if TFile.Exists(Local) then
-            Continue;
-            
+
           // Write
           ST := TStringList.Create;
           try
@@ -4933,6 +4991,8 @@ begin
           Identifier := DownloadQueue[I];
           TrackIndex := GetTrack(Identifier);
 
+          if TrackIndex = -1 then
+            Continue;
           try
             Local := Folder + Identifier.ToString;
             Server := STREAMING_ENDPOINT + Tracks[TrackIndex].StreamLocations;
@@ -5413,7 +5473,7 @@ begin
 
           // Bounds
           DrawItems[I].Bounds := ARect;
-          if (I = IndexHoverID) and (Press10Stat <> 0) then
+          if (I = IndexHoverSort) and (Press10Stat <> 0) then
                 ARect.Inflate(-Press10Stat, -trunc(ARect.Width / ARect.Height * Press10Stat));
 
           // Draw
@@ -5777,7 +5837,7 @@ end;
 procedure TUIForm.ThreadSyncStatus(Str: string);
 begin
   TThread.Synchronize(nil, procedure begin
-    if not Download_Status.Visible then
+    if SplitView1.Opened and not Download_Status.Visible then
       Download_Status.Show;
 
     Download_Status.Caption := Str;
@@ -6105,6 +6165,7 @@ begin
 end;
 
 procedure TUIForm.ValidateDownloadFiles;
+{ This function deleted files that are no longer needed }
 var
   Files: TArray<string>;
   Folder: string;
@@ -6126,15 +6187,10 @@ begin
   if not TDirectory.Exists(Folder) then
     TDirectory.CreateDirectory(Folder);
 
-  // Load Items
+  // Delete Songs
   Files := TDirectory.GetFiles( Folder, '*.mp3' );
-
   for I := 0 to High(Files) do
     begin
-      // Non audio
-      if ExtractFileExt(Files[I]) <> '.mp3' then
-        Continue;
-
       // Get ID
       Name := ChangeFileExt( ExtractFileName( Files[I] ), '' );
       try
@@ -6159,6 +6215,51 @@ begin
           except
             // Thread is still using the file. To be deleted on next launch
           end;
+    end;
+
+  // Delete albums
+  Files := TDirectory.GetFiles( Folder + 'albums\', '*.txt' );
+  for I := 0 to High(Files) do
+    begin
+      // Get ID
+      Name := ChangeFileExt( ExtractFileName( Files[I] ), '' );
+
+      if DownloadedAlbums.IndexOf(Name) = -1 then
+        try
+          TFile.Delete(Files[I]);
+        finally
+          // Thread is still using the file. To be deleted on next launch
+        end;
+    end;
+
+  // Delete artists
+  Files := TDirectory.GetFiles( Folder + 'artists\', '*.txt' );
+  for I := 0 to High(Files) do
+    begin
+      // Get ID
+      Name := ChangeFileExt( ExtractFileName( Files[I] ), '' );
+
+      if DownloadedArtists.IndexOf(Name) = -1 then
+        try
+          TFile.Delete(Files[I]);
+        finally
+          // Thread is still using the file. To be deleted on next launch
+        end;
+    end;
+
+  // Delete playlists
+  Files := TDirectory.GetFiles( Folder + 'playlists\', '*.txt' );
+  for I := 0 to High(Files) do
+    begin
+      // Get ID
+      Name := ChangeFileExt( ExtractFileName( Files[I] ), '' );
+
+      if DownloadedPlaylists.IndexOf(Name) = -1 then
+        try
+          TFile.Delete(Files[I]);
+        finally
+          // Thread is still using the file. To be deleted on next launch
+        end;
     end;
 end;
 
@@ -6234,7 +6335,7 @@ begin
 
   case Source of
     TDataSource.Tracks: begin
-      if (IndexHoverID <> PlayIndex) or (Player.PlayStatus <> psPlaying) then
+      if (IndexHoverSort <> PlayIndex) or (Player.PlayStatus <> psPlaying) then
         begin
           // Add to queue ONLY
           if OnlyQueue then

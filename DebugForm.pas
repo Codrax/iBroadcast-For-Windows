@@ -36,6 +36,7 @@ type
     Label12: TLabel;
     Memo1: TMemo;
     CButton7: CButton;
+    CButton8: CButton;
     procedure CButton1Click(Sender: TObject);
     procedure CButton2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -45,6 +46,7 @@ type
     procedure DataSyncTimer(Sender: TObject);
     procedure CButton6Click(Sender: TObject);
     procedure SearchBox1InvokeSearch(Sender: TObject);
+    procedure CButton8Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -96,11 +98,16 @@ begin
   UIForm.ReloadArtwork;
 end;
 
+procedure TDebugUI.CButton8Click(Sender: TObject);
+begin
+  UIForm.UpdateDownloads;
+end;
+
 procedure TDebugUI.DataSyncTimer(Sender: TObject);
 begin
   // Sync
   Label6.Caption := 'Hover: ' + MainUI.IndexHover.ToString;
-  Label7.Caption := 'Hover SH: ' + MainUI.IndexHoverID.ToString;
+  Label7.Caption := 'Hover SH: ' + MainUI.IndexHoverSort.ToString;
   Label9.Caption := '10s Shrink:' + MainUI.Press10Stat.ToString;
   Label10.Caption := 'Ch Active: ' + BooleanToString( BASS_ChannelIsActive(Player.Stream) = BASS_ACTIVE_PLAYING );
   Label11.Caption := 'Img-Thread: ' + TotalThreads.ToString;

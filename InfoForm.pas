@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.SysUtils, Vcl.TitleBarCtrls,
   Cod.Visual.Image, Vcl.StdCtrls, Vcl.ExtCtrls, Cod.Visual.Button, Cod.Dialogs,
-  BroadcastAPI, MainUI, Vcl.Menus, Vcl.ExtDlgs;
+  BroadcastAPI, MainUI, Vcl.Menus, Vcl.ExtDlgs, iBroadcastUtils;
 
 type
   TInfoBox = class(TForm)
@@ -150,7 +150,7 @@ end;
 procedure TInfoBox.Prepare;
 begin
   // Editable
-  Song_Name.ReadOnly := InfoBoxPointer.Source <> TDataSource.Playlists;
+  Song_Name.ReadOnly := (InfoBoxPointer.Source <> TDataSource.Playlists) or IsOffline;
   Save_Button.Visible := false;
   Editor_View.Hide;
 
@@ -189,7 +189,7 @@ end;
 procedure TInfoBox.Song_InfoKeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
-  if InfoBoxPointer.Source = TDataSource.Playlists then
+  if (InfoBoxPointer.Source = TDataSource.Playlists) and not IsOffline then
     begin
       Editor_View.Show;
       Edit_Desc.Lines.Text := Playlists[InfoBoxPointer.Index].Description;

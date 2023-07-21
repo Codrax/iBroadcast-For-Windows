@@ -272,6 +272,7 @@ interface
   function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Mood: string): boolean; overload;
   function AppentToPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
   function DeleteFromPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
+  function TouchupPlaylist(ID: integer): boolean;
   function UpdatePlayList(ID: integer; Name, Description: string): boolean;
   function DeletePlayList(ID: integer): boolean;
 
@@ -784,6 +785,57 @@ begin
 
   // Parse response and extract numbers
   WORK_STATUS := 'Changing songs of playlist';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.PlayList]);
+end;
+
+function TouchupPlaylist(ID: integer): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  AllTracks: TArray<integer>;
+  ATracks: string;
+  ATotal: integer;
+
+  JSONValue: TJSONValue;
+  I: Integer;
+begin
+  // Delete Tracks
+  AllTracks := Playlists[GetPlaylist(ID)].TracksID;
+
+  // Delete invalid enteries
+  for I := High(AllTracks) downto 0 do
+    if GetTrack(AllTracks[I]) = -1 then
+      AllTracks.Delete(I);
+
+  // Get Tracks
+  ATracks := '';
+  ATotal := High(AllTracks);
+  for I := 0 to ATotal do
+    begin
+      ATracks := ATracks + AllTracks[I].ToString;
+
+      if I < ATotal then
+        ATracks := Concat(ATracks, ',');
+    end;
+
+  // Prepare request string
+  Request := Format(REQUEST_LIST_SET, [USER_ID, TOKEN,
+    ID, ATracks]);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Repairing playlist';
   JSONValue := SendClientRequest(Request);
   try
     // Error
