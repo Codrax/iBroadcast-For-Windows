@@ -3,8 +3,8 @@ object DebugUI: TDebugUI
   Top = 0
   BorderIcons = [biSystemMenu]
   Caption = 'iBroadcast for Windows debug mode'
-  ClientHeight = 361
-  ClientWidth = 635
+  ClientHeight = 411
+  ClientWidth = 684
   Color = 2886678
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
@@ -21,6 +21,8 @@ object DebugUI: TDebugUI
     Height = 50
     Smooth = True
     Opacity = 255
+    RotationAngle = 0
+    InflationValue = 0
     GifSettings.Enable = False
     GifSettings.AnimationSpeed = 100
     DrawMode = dmCenterFit
@@ -889,7 +891,7 @@ object DebugUI: TDebugUI
     ParentFont = False
   end
   object Label4: TLabel
-    Left = 395
+    Left = 454
     Top = 8
     Width = 190
     Height = 20
@@ -903,7 +905,7 @@ object DebugUI: TDebugUI
     ParentFont = False
   end
   object Label5: TLabel
-    Left = 395
+    Left = 454
     Top = 172
     Width = 134
     Height = 20
@@ -994,11 +996,12 @@ object DebugUI: TDebugUI
     FontAutoSize.Min = -1
     Text = 'Copy Token'
     SubText = 'Hello World!'
+    AutoExtendImage = False
     State = mbsLeave
-    Colors.Enter = 8630460
-    Colors.Leave = 5998740
-    Colors.Down = 3367020
-    Colors.BLine = 3367020
+    Colors.Enter = 10000322
+    Colors.Leave = 7368602
+    Colors.Down = 4736882
+    Colors.BLine = 4736882
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1054,11 +1057,12 @@ object DebugUI: TDebugUI
     FontAutoSize.Min = -1
     Text = 'Copy User ID'
     SubText = 'Hello World!'
+    AutoExtendImage = False
     State = mbsLeave
-    Colors.Enter = 8630460
-    Colors.Leave = 5998740
-    Colors.Down = 3367020
-    Colors.BLine = 3367020
+    Colors.Enter = 10000322
+    Colors.Leave = 7368602
+    Colors.Down = 4736882
+    Colors.BLine = 4736882
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1086,27 +1090,30 @@ object DebugUI: TDebugUI
     Animations.FASpeed = 10
   end
   object Memo1: TMemo
-    Left = 395
+    Left = 454
     Top = 34
     Width = 222
     Height = 132
     Lines.Strings = (
-      'Memo1')
+      'Type here JSON request')
     ParentColor = True
+    ScrollBars = ssVertical
     TabOrder = 2
   end
   object Memo2: TMemo
-    Left = 395
+    Left = 454
     Top = 198
     Width = 222
-    Height = 155
+    Height = 195
     Lines.Strings = (
-      'Memo1')
+      'JSON response will be '
+      'shown here')
     ParentColor = True
+    ScrollBars = ssVertical
     TabOrder = 3
   end
   object CButton3: CButton
-    Left = 552
+    Left = 611
     Top = 172
     Width = 65
     Height = 20
@@ -1133,11 +1140,12 @@ object DebugUI: TDebugUI
     FontAutoSize.Min = -1
     Text = 'POST'
     SubText = 'Hello World!'
+    AutoExtendImage = False
     State = mbsLeave
-    Colors.Enter = 8630460
-    Colors.Leave = 5998740
-    Colors.Down = 3367020
-    Colors.BLine = 3367020
+    Colors.Enter = 10000322
+    Colors.Leave = 7368602
+    Colors.Down = 4736882
+    Colors.BLine = 4736882
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1193,11 +1201,12 @@ object DebugUI: TDebugUI
     FontAutoSize.Min = -1
     Text = 'Copy song URL'
     SubText = 'Hello World!'
+    AutoExtendImage = False
     State = mbsLeave
-    Colors.Enter = 8630460
-    Colors.Leave = 5998740
-    Colors.Down = 3367020
-    Colors.BLine = 3367020
+    Colors.Enter = 10000322
+    Colors.Leave = 7368602
+    Colors.Down = 4736882
+    Colors.BLine = 4736882
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1227,18 +1236,17 @@ object DebugUI: TDebugUI
   object Memo3: TMemo
     Left = 323
     Top = 34
-    Width = 54
-    Height = 319
+    Width = 118
+    Height = 359
     Lines.Strings = (
-      'Mem'
-      'o'
-      '1')
+      'Queue')
     ParentColor = True
+    ScrollBars = ssVertical
     TabOrder = 6
   end
   object CButton5: CButton
     Left = 19
-    Top = 255
+    Top = 250
     Width = 150
     Height = 33
     OnClick = CButton5Click
@@ -1265,11 +1273,12 @@ object DebugUI: TDebugUI
     FontAutoSize.Min = -1
     Text = 'Get Queue'
     SubText = 'Hello World!'
+    AutoExtendImage = False
     State = mbsLeave
-    Colors.Enter = 8630460
-    Colors.Leave = 5998740
-    Colors.Down = 3367020
-    Colors.BLine = 3367020
+    Colors.Enter = 10000322
+    Colors.Leave = 7368602
+    Colors.Down = 4736882
+    Colors.BLine = 4736882
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1323,13 +1332,14 @@ object DebugUI: TDebugUI
     FontAutoSize.Enabled = False
     FontAutoSize.Max = -1
     FontAutoSize.Min = -1
-    Text = 'DEBG 1'
+    Text = 'Reload Artwork'
     SubText = 'Hello World!'
+    AutoExtendImage = False
     State = mbsLeave
-    Colors.Enter = 8630460
-    Colors.Leave = 5998740
-    Colors.Down = 3367020
-    Colors.BLine = 3367020
+    Colors.Enter = 10000322
+    Colors.Leave = 7368602
+    Colors.Down = 4736882
+    Colors.BLine = 4736882
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True
@@ -1370,6 +1380,66 @@ object DebugUI: TDebugUI
     TabOrder = 9
     TextHint = 'Search Filter'
     OnInvokeSearch = SearchBox1InvokeSearch
+  end
+  object CButton7: CButton
+    Left = 19
+    Top = 360
+    Width = 150
+    Height = 33
+    TabOrder = 10
+    BSegoeIcon = #59155
+    ButtonIcon = cicSegoeFluent
+    GradientOptions.Enabled = False
+    GradientOptions.Enter = clFuchsia
+    GradientOptions.Leave = clRed
+    GradientOptions.Down = clMaroon
+    ControlStyle = []
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = 14123546
+    Font.Height = -16
+    Font.Name = 'Segoe UI Semibold'
+    Font.Style = []
+    SubTextFont.Charset = DEFAULT_CHARSET
+    SubTextFont.Color = 14123546
+    SubTextFont.Height = -13
+    SubTextFont.Name = 'Segoe UI'
+    SubTextFont.Style = []
+    FontAutoSize.Enabled = False
+    FontAutoSize.Max = -1
+    FontAutoSize.Min = -1
+    Text = 'Debug 1'
+    SubText = 'Hello World!'
+    AutoExtendImage = False
+    State = mbsLeave
+    Colors.Enter = 10000322
+    Colors.Leave = 7368602
+    Colors.Down = 4736882
+    Colors.BLine = 4736882
+    Preset.Color = clBlue
+    Preset.Kind = cbprCustom
+    Preset.PenColorAuto = True
+    Preset.ApplyOnce = False
+    Preset.IgnoreGlobalSync = False
+    UnderLine.Enable = True
+    UnderLine.UnderLineRound = True
+    UnderLine.UnderLineThicknes = 6
+    TextColors.Enter = clWhite
+    TextColors.Leave = clWhite
+    TextColors.Down = clWhite
+    TextColors.BLine = clBlack
+    Pen.Color = 2886678
+    Pen.Width = 0
+    Pen.EnableAlternativeColors = False
+    Pen.FormSyncedColor = False
+    Pen.AltHoverColor = clBlack
+    Pen.AltPressColor = clBlack
+    Pen.GlobalPresetExcept = False
+    Animations.PressAnimation = False
+    Animations.PADelay = 2
+    Animations.PAShrinkAmount = 6
+    Animations.PAAnimateEngine = cbneAtDraw
+    Animations.FadeAnimation = True
+    Animations.FASpeed = 10
   end
   object DataSync: TTimer
     Enabled = False

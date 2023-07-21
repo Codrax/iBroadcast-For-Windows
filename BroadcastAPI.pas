@@ -8,7 +8,7 @@ interface
     Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
     Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL,
     IdHTTP, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
-    Cod.VarHelpers, Cod.Dialogs;
+    Cod.VarHelpers, Cod.Dialogs, Cod.SysUtils;
 
   type
     // Cardinals
@@ -20,7 +20,11 @@ interface
     TDataSource = (None, Tracks, Albums, Artists, Playlists);
     TDataSources = set of TDataSource;
 
-    // Recors
+    // Loading
+    TLoad = (Track, Album, Artist, PlayList);
+    TLoadSet = set of TLoad;
+
+    // Records
     ResultType = record
       Error: boolean;
       LoggedIn: boolean;
@@ -32,6 +36,11 @@ interface
       procedure AnaliseFrom(JSON: TJSONValue);
     end;
 
+    THistoryItem = record
+      TrackID: integer;
+      TimeStamp: TDateTime;
+    end;
+
     TLibraryStatus = record
       TotalTracks: integer;
       TotalPlays: integer;
@@ -40,6 +49,7 @@ interface
       LastLibraryModified: TDateTime;
       UpdateTimestamp: TDateTime;
 
+      (* Loading *)
       procedure LoadFrom(JSON: TJSONValue);
     end;
 
@@ -58,6 +68,7 @@ interface
       Premium: boolean;
       VerificationDate: TDateTime;
 
+      (* Loading *)
       procedure LoadFrom(JSON: TJSONValue);
     end;
 
@@ -100,9 +111,11 @@ interface
       CachedImageLarge: TJpegImage;
       Status: TWorkItems;
 
+      (* Artwork *)
       function ArtworkLoaded(Large: boolean = false): boolean;
       function GetArtwork(Large: boolean = false): TJPEGImage;
 
+      (* Loading *)
       procedure LoadFrom(JSONPair: TJSONPair);
     end;
 
@@ -127,9 +140,11 @@ interface
       CachedImage: TJpegImage;
       Status: TWorkItems;
 
+      (* Artwork *)
       function ArtworkLoaded: boolean;
       function GetArtwork: TJPEGImage;
 
+      (* Loading *)
       procedure LoadFrom(JSONPair: TJSONPair);
     end;
 
@@ -153,9 +168,11 @@ interface
       CachedImage: TJpegImage;
       Status: TWorkItems;
 
+      (* Artwork *)
       function ArtworkLoaded: boolean;
       function GetArtwork: TJPEGImage;
 
+      (* Loading *)
       procedure LoadFrom(JSONPair: TJSONPair);
     end;
 
@@ -182,9 +199,11 @@ interface
       CachedImage: TJpegImage;
       Status: TWorkItems;
 
+      (* Artwork *)
       function ArtworkLoaded: boolean;
       function GetArtwork: TJPEGImage;
 
+      (* Loading *)
       procedure LoadFrom(JSONPair: TJSONPair);
     end;
 
@@ -198,6 +217,7 @@ interface
       LastLogin: TDateTime;
       Location: string;
 
+      (* Loading *)
       procedure LoadFrom(JSON: TJSONValue);
     end;
 
@@ -214,10 +234,12 @@ interface
   function GetArtist(ID: integer): integer;
   function GetPlaylist(ID: integer): integer;
 
-  function GetPlaylistType(AType: string): integer;
+  function GetPlaylistOfType(AType: string): integer; (* thumbsup, recently-played, recently-uploaded *)
 
   // Utils
   function StringToDateTime(const ADateTimeStr: string; CovertUTC: boolean = true): TDateTime;
+  function DateTimeToString(ADateTime: TDateTime; CovertUTC: boolean = true): string;
+  function DateToString(ADateTime: TDate; CovertUTC: boolean = true): string;
   function Yearify(Year: cardinal): string;
 
   // Main Request
@@ -242,14 +264,28 @@ interface
   procedure ClearArtworkStore;
   procedure InitiateArtworkStore;
 
+  // Tracks
+  function GetSongPlaylists(ID: integer): TArray<integer>;
+
+  // Playlist
+  function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Tracks: TArray<integer>): boolean; overload;
+  function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Mood: string): boolean; overload;
+  function AppentToPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
+  function DeleteFromPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
+  function UpdatePlayList(ID: integer; Name, Description: string): boolean;
+  function DeletePlayList(ID: integer): boolean;
+
+  // History
+  function PushHistory(Items: TArray<THistoryItem>): boolean;
+
   // Library
   procedure LoadStatus;
   procedure LoadLibrary;
+  procedure LoadLibraryAdvanced(LoadSet: TLoadSet);
 
   // Additional Data
   function GetSongArtwork(ID: string; Size: TArtSize = TArtSize.Small): TJpegImage;
   function SongArtCollage(ID1, ID2, ID3, ID4: integer): TJpegImage;
-
 
 const
   // Formattable Strings
@@ -268,6 +304,12 @@ const
   // Artwork Store
   ART_EXT = '.jpeg';
 
+  // Templates
+  REQUEST_HEADER = '{'
+    + '"user_id": %U,'
+    + '"token": "%S",'
+    + '"version": "' + API_VERSION + '"';
+
   // Request Formats
   REQUEST_LOGIN = '{'
     + '"login_token": "%S",'
@@ -279,30 +321,62 @@ const
     + '"mode": "login_token"'
     + '}';
 
-  REQUEST_LOGOFF = '{'
-    + '"user_id": %U,'
-    + '"token": "%S",'
-    + '"version": "' + API_VERSION + '",'
+  REQUEST_LOGOFF = REQUEST_HEADER + ','
     + '"mode": "logout"'
     + '}';
 
-  REQUEST_EMPTY = '{'
-    + '"user_id": %U,'
-    + '"token": "%S",'
-    + '"version": "' + API_VERSION + '"'
+  // Data
+  REQUEST_EMPTY = REQUEST_HEADER + ','
     + '}';
 
-  REQUEST_DATA = '{'
-    + '"user_id": %U,'
-    + '"token": "%S",'
-    + '"version": "' + API_VERSION + '",'
+  REQUEST_DATA = REQUEST_HEADER + ','
     + '"mode": "%S"'
     + '}';
 
-  REQUEST_LIBRARY = '{'
-    + '"user_id": %U,'
-    + '"token": "%S",'
-    + '"version": "' + API_VERSION + '"'
+  // Playlist
+  REQUEST_LIST_TEMPLATE = REQUEST_HEADER + ','
+    + '"mode": "createplaylist",'
+    + '"name": "%S",'
+    + '"description": "%S",'
+    + '"make_public": %S';
+
+  REQUEST_LIST_CREATETRACKS = REQUEST_LIST_TEMPLATE + ','
+    + '"tracks": [%S]'
+    + '}';
+
+  REQUEST_LIST_CREATEMOOD = REQUEST_LIST_TEMPLATE + ','
+    + '"mood": "%S"'
+    + '}';
+
+  REQUEST_LIST_DELETE = REQUEST_HEADER + ','
+    + '"mode": "deleteplaylist",'
+    + '"playlist": %D'
+    + '}';
+
+  REQUEST_LIST_ADD = REQUEST_HEADER + ','
+    + '"mode": "appendplaylist",'
+    + '"playlist": %D,'
+    + '"tracks": [%S]'
+    + '}';
+
+  REQUEST_LIST_SET = REQUEST_HEADER + ','
+    + '"mode": "updateplaylist",'
+    + '"playlist": %D,'
+    + '"tracks": [%S]'
+    + '}';
+
+  REQUEST_LIST_UPDATE = REQUEST_HEADER + ','
+    + '"mode": "updateplaylist",'
+    + '"playlist": %D,'
+    + '"name": "%S",'
+    + '"description": "%S"'
+    + '}';
+
+  // History
+  (* Will be build on runtime *)
+
+  // Library
+  REQUEST_LIBRARY = REQUEST_HEADER
     + '}';
 
 
@@ -554,6 +628,337 @@ begin
   TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Playlists));
 end;
 
+function GetSongPlaylists(ID: integer): TArray<integer>;
+var
+  I: Integer;
+begin
+  // Search
+  Result := [];
+  for I := 0 to High(Playlists) do
+    if Playlists[I].TracksID.Find(ID) <> -1 then
+      Result.AddValue(Playlists[I].ID);
+end;
+
+function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Tracks: TArray<integer>): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  ATracks: string;
+  ATotal: integer;
+
+  JSONValue: TJSONValue;
+  I: Integer;
+begin
+  // Get Tracks
+  ATracks := '';
+  ATotal := High(Tracks);
+  for I := 0 to ATotal do
+    begin
+      ATracks := ATracks + Tracks[I].ToString;
+
+      if I < ATotal then
+        ATracks := Concat(ATracks, ',');
+    end;
+
+  // Prepare request string
+  Request := Format(REQUEST_LIST_CREATETRACKS, [USER_ID, TOKEN,
+    Name, Description, booleantostring(MakePublic), ATracks]);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Creating Playlist by Songs';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.PlayList]);
+end;
+
+function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Mood: string): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  JSONValue: TJSONValue;
+begin
+  // Prepare request string
+  Request := Format(REQUEST_LIST_CREATEMOOD, [USER_ID, TOKEN,
+    Name, Description, booleantostring(MakePublic), Mood]);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Creating Playlist by Mood';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.PlayList]);
+end;
+
+function AppentToPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  ATracks: string;
+  ATotal: integer;
+
+  JSONValue: TJSONValue;
+  I: Integer;
+begin
+  // Get Tracks
+  ATracks := '';
+  ATotal := High(Tracks);
+  for I := 0 to ATotal do
+    begin
+      ATracks := ATracks + Tracks[I].ToString;
+
+      if I < ATotal then
+        ATracks := Concat(ATracks, ',');
+    end;
+
+  // Prepare request string
+  Request := Format(REQUEST_LIST_ADD, [USER_ID, TOKEN,
+    ID, ATracks]);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Adding songs to playlist';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.PlayList]);
+end;
+
+function DeleteFromPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  AllTracks: TArray<integer>;
+  ATracks: string;
+  ATotal: integer;
+
+  JSONValue: TJSONValue;
+  I: Integer;
+begin
+  // Delete Tracks
+  AllTracks := Playlists[GetPlaylist(ID)].TracksID;
+  for I := 0 to High(Tracks) do
+    AllTracks.Delete(AllTracks.Find(Tracks[I]));
+
+  // Get Tracks
+  ATracks := '';
+  ATotal := High(AllTracks);
+  for I := 0 to ATotal do
+    begin
+      ATracks := ATracks + AllTracks[I].ToString;
+
+      if I < ATotal then
+        ATracks := Concat(ATracks, ',');
+    end;
+
+  // Prepare request string
+  Request := Format(REQUEST_LIST_SET, [USER_ID, TOKEN,
+    ID, ATracks]);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Changing songs of playlist';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.PlayList]);
+end;
+
+function UpdatePlayList(ID: integer; Name, Description: string): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  JSONValue: TJSONValue;
+begin
+  // Prepare request string
+  Request := Format(REQUEST_LIST_UPDATE, [USER_ID, TOKEN,
+    ID, Name, Description]);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Updating playlist';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.PlayList]);
+end;
+
+function DeletePlayList(ID: integer): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  JSONValue: TJSONValue;
+begin
+  // Prepare request string
+  Request := Format(REQUEST_LIST_DELETE, [USER_ID, TOKEN, ID]);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Deleting playlist';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.PlayList]);
+end;
+
+function PushHistory(Items: TArray<THistoryItem>): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  JSONRequest,
+  JSONHist,
+  JSONEvents,
+  JSONItem: TJSONObject;
+  JSONArray,
+  JSONHistory: TJSONArray;
+
+  JSONValue: TJSONValue;
+
+  PlayMap,
+  PlayCount: TArray<integer>;
+
+  Day: TDate;
+
+  Index, I: Integer;
+begin
+  if Length(Items) = 0 then
+    Exit(false);
+
+  Day := Items[0].Timestamp;
+
+  // Calculate Count
+  PlayMap := [];
+  PlayCount := [];
+
+  for I := 0 to High(Items) do
+    begin
+      Index := PlayMap.Find(Items[I].TrackID);
+
+      if Index = -1 then
+        begin
+          PlayMap.AddValue(Items[I].TrackID);
+          PlayCount.AddValue(1);
+        end
+      else
+        begin
+          Inc(PlayCount[Index]);
+        end;
+    end;
+
+  // Create JSON
+  JSONRequest := TJSONObject.Create;
+  JSONHistory := TJSONArray.Create;
+  JSONHist := TJSONObject.Create;
+  try
+    // Data
+    JSONRequest.AddPair('user_id', USER_ID);
+    JSONRequest.AddPair('token', TOKEN);
+    JSONRequest.AddPair('version', API_VERSION);
+    JSONRequest.AddPair('mode', 'status');
+
+    // Overview
+    JSONHist.AddPair('day', DateToString(Day));
+
+    JSONItem := TJSONObject.Create;
+    for I := 0 to High(PlayMap) do
+      JSONItem.AddPair(PlayMap[I].ToString, PlayCount[I]);
+
+    JSONHist.AddPair('plays', JSONItem);
+
+    // Detail & Events
+    JSONEvents := TJSONObject.Create;
+
+    for I := 0 to High(Items) do
+      begin
+        JSONArray := TJsonArray.Create;
+        JSONItem := TJSONObject.Create;
+
+        JSONItem.AddPair('event', 'play');
+        JSONItem.AddPair('ts', DateTimeToString(Items[I].TimeStamp));
+
+        JSONArray.Add(JSONItem);
+        JSONEvents.AddPair(Items[I].TrackID.ToString, JSONArray);
+      end;
+
+    JSONHist.AddPair('detail', JSONEvents);
+
+    // Add
+    JSONHistory.Add(JSONHist);
+    JSONRequest.AddPair('history', JSONHistory);
+
+    // Prepare request string
+    Request := JSONRequest.ToJSON;
+  finally
+    JSONRequest.Free;
+  end;
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Pushing history update to server';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load history, nah
+  LoadLibraryAdvanced([TLoad.PlayList]);
+end;
+
 procedure LoadStatus;
 var
   Request: string;
@@ -606,6 +1011,11 @@ begin
 end;
 
 procedure LoadLibrary;
+begin
+  LoadLibraryAdvanced( [TLoad.Track, TLoad.Album, TLoad.Artist, TLoad.PlayList]);
+end;
+
+procedure LoadLibraryAdvanced(LoadSet: TLoadSet);
 var
   Request: string;
   JResult: ResultType;
@@ -635,75 +1045,87 @@ begin
     JSONLibrary := JSONValue.GetValue<TJSONObject>('library');
 
     // Tracks
-    WORK_STATUS := 'Loading tracks...';
-    JSONItem := JSONLibrary.GetValue<TJSONObject>('tracks');
-    SetLength( Tracks, 0 );
-
-    for I := 0 to JSONItem.Count - 1 do
+    if TLoad.Track in LoadSet then
       begin
-        JSONPair := JSONItem.Pairs[I];
+        WORK_STATUS := 'Loading tracks...';
+        JSONItem := JSONLibrary.GetValue<TJSONObject>('tracks');
+        SetLength( Tracks, 0 );
 
-        if JSONPair.JsonString.Value = 'map' then
-          Continue;
+        for I := 0 to JSONItem.Count - 1 do
+          begin
+            JSONPair := JSONItem.Pairs[I];
 
-        Index := Length(Tracks);
-        SetLength( Tracks, Index + 1 );
+            if JSONPair.JsonString.Value = 'map' then
+              Continue;
 
-        Tracks[Index].LoadFrom( JSONPair );
+            Index := Length(Tracks);
+            SetLength( Tracks, Index + 1 );
+
+            Tracks[Index].LoadFrom( JSONPair );
+          end;
       end;
 
     // Albums
-    WORK_STATUS := 'Loading albums...';
-    JSONItem := JSONLibrary.GetValue<TJSONObject>('albums');
-    SetLength( Albums, 0 );
-
-    for I := 0 to JSONItem.Count - 1 do
+    if TLoad.Album in LoadSet then
       begin
-        JSONPair := JSONItem.Pairs[I];
+        WORK_STATUS := 'Loading albums...';
+        JSONItem := JSONLibrary.GetValue<TJSONObject>('albums');
+        SetLength( Albums, 0 );
 
-        if JSONPair.JsonString.Value = 'map' then
-          Continue;
+        for I := 0 to JSONItem.Count - 1 do
+          begin
+            JSONPair := JSONItem.Pairs[I];
 
-        Index := Length(Albums);
-        SetLength( Albums, Index + 1 );
+            if JSONPair.JsonString.Value = 'map' then
+              Continue;
 
-        Albums[Index].LoadFrom( JSONPair );
+            Index := Length(Albums);
+            SetLength( Albums, Index + 1 );
+
+            Albums[Index].LoadFrom( JSONPair );
+          end;
       end;
 
     // Artists
-    WORK_STATUS := 'Loading artists...';
-    JSONItem := JSONLibrary.GetValue<TJSONObject>('artists');
-    SetLength( Artists, 0 );
-
-    for I := 0 to JSONItem.Count - 1 do
+    if TLoad.Artist in LoadSet then
       begin
-        JSONPair := JSONItem.Pairs[I];
+        WORK_STATUS := 'Loading artists...';
+        JSONItem := JSONLibrary.GetValue<TJSONObject>('artists');
+        SetLength( Artists, 0 );
 
-        if JSONPair.JsonString.Value = 'map' then
-          Continue;
+        for I := 0 to JSONItem.Count - 1 do
+          begin
+            JSONPair := JSONItem.Pairs[I];
 
-        Index := Length(Artists);
-        SetLength( Artists, Index + 1 );
+            if JSONPair.JsonString.Value = 'map' then
+              Continue;
 
-        Artists[Index].LoadFrom( JSONPair );
+            Index := Length(Artists);
+            SetLength( Artists, Index + 1 );
+
+            Artists[Index].LoadFrom( JSONPair );
+          end;
       end;
 
     // PlayLists
-    WORK_STATUS := 'Loading playlists...';
-    JSONItem := JSONLibrary.GetValue<TJSONObject>('playlists');
-    SetLength( PlayLists, 0 );
-
-    for I := 0 to JSONItem.Count - 1 do
+    if TLoad.PlayList in LoadSet then
       begin
-        JSONPair := JSONItem.Pairs[I];
+        WORK_STATUS := 'Loading playlists...';
+        JSONItem := JSONLibrary.GetValue<TJSONObject>('playlists');
+        SetLength( PlayLists, 0 );
 
-        if JSONPair.JsonString.Value = 'map' then
-          Continue;
+        for I := 0 to JSONItem.Count - 1 do
+          begin
+            JSONPair := JSONItem.Pairs[I];
 
-        Index := Length(PlayLists);
-        SetLength( PlayLists, Index + 1 );
+            if JSONPair.JsonString.Value = 'map' then
+              Continue;
 
-        PlayLists[Index].LoadFrom( JSONPair );
+            Index := Length(PlayLists);
+            SetLength( PlayLists, Index + 1 );
+
+            PlayLists[Index].LoadFrom( JSONPair );
+          end;
       end;
   finally
     JSONValue.Free;
@@ -880,7 +1302,7 @@ begin
       Exit( I );
 end;
 
-function GetPlaylistType(AType: string): integer;
+function GetPlaylistOfType(AType: string): integer;
 var
   I: Integer;
 begin
@@ -909,6 +1331,52 @@ begin
 
       Result := TimeZone.ToLocalTime(Result);
     end;
+end;
+
+function DateTimeToString(ADateTime: TDateTime; CovertUTC: boolean = true): string;
+var
+  DateTimeFormat: TFormatSettings;
+
+  TimeZone: TTimeZone;
+begin
+  DateTimeFormat := TFormatSettings.Create;
+  DateTimeFormat.ShortDateFormat := 'yyyy-mm-dd';
+  DateTimeFormat.LongTimeFormat := 'hh:nn:ss';
+  DateTimeFormat.DateSeparator := '-';
+
+  // Unversal Coordinated Time
+  if CovertUTC then
+    begin
+      TimeZone := TTimeZone.Local;
+
+      ADateTime := TimeZone.ToUniversalTime(ADateTime);
+    end;
+
+  // Convert
+  Result := DateTimeToStr(ADateTime, DateTimeFormat);
+end;
+
+function DateToString(ADateTime: TDate; CovertUTC: boolean = true): string;
+var
+  DateTimeFormat: TFormatSettings;
+
+  TimeZone: TTimeZone;
+begin
+  DateTimeFormat := TFormatSettings.Create;
+  DateTimeFormat.ShortDateFormat := 'yyyy-mm-dd';
+  DateTimeFormat.LongTimeFormat := 'hh:nn:ss';
+  DateTimeFormat.DateSeparator := '-';
+
+  // Unversal Coordinated Time
+  if CovertUTC then
+    begin
+      TimeZone := TTimeZone.Local;
+
+      ADateTime := TimeZone.ToUniversalTime(ADateTime);
+    end;
+
+  // Convert
+  Result := DateToStr(ADateTime, DateTimeFormat);
 end;
 
 function Yearify(Year: cardinal): string;

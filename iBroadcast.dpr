@@ -14,19 +14,25 @@ uses
   MiniPlay in 'MiniPlay.pas' {MiniPlayer},
   InfoForm in 'InfoForm.pas' {InfoBox},
   HelpForm in 'HelpForm.pas' {HelpUI},
-  NewVersionForm in 'NewVersionForm.pas' {NewVersion};
+  NewVersionForm in 'NewVersionForm.pas' {NewVersion},
+  CreatePlaylistForm in 'CreatePlaylistForm.pas' {CreatePlaylist},
+  Offline in 'Offline.pas' {OfflineForm},
+  PickerDialogForm in 'PickerDialogForm.pas' {PickerDialog},
+  iBroadcastUtils in 'iBroadcastUtils.pas';
 
 {$R *.res}
 
 var
   I: integer;
   Param: string;
-  AllowDebug: boolean;
 begin
   Application.Initialize;
 
   // Close if Other instance
   TerminateIfOtherInstanceExists;
+
+  {Application.CreateForm(TCreatePlaylist, CreatePlaylist);
+  Application.Run;     }
 
   // Initiate Default
   AllowDebug := false;
@@ -52,6 +58,9 @@ begin
 
       if Param = '-logging' then
         EnableLogging := true;
+
+      if Param = '-logtoken' then
+        PrivacyEnabled := false;
     end;
 
   AddToLog('Started creating forms');
@@ -63,14 +72,23 @@ begin
   Application.CreateForm(TMiniPlayer, MiniPlayer);
   Application.CreateForm(TInfoBox, InfoBox);
   Application.CreateForm(TNewVersion, NewVersion);
-
   // Debug
   AddToLog('Checking Debug Mode');
   if AllowDebug then
     begin
+      // Debug form
       Application.CreateForm(TDebugUI, DebugUI);
       DebugUI.Show;
       DebugUi.DataSync.Enabled := true;
+
+      // UI
+      with UIForm do
+        begin
+          CopyID1.Visible := true;
+          CopyID2.Visible := true;
+          CopyID3.Visible := true;
+          CopyID4.Visible := true;
+        end;
     end;
 
   AddToLog('Executing Application');

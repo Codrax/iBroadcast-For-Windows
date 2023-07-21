@@ -4,7 +4,7 @@ object VolumePop: TVolumePop
   BorderStyle = bsNone
   Caption = 'Form1'
   ClientHeight = 61
-  ClientWidth = 200
+  ClientWidth = 238
   Color = 2886678
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
@@ -18,17 +18,28 @@ object VolumePop: TVolumePop
     AlignWithMargins = True
     Left = 3
     Top = 3
-    Width = 194
+    Width = 232
     Height = 21
     Align = alTop
     Caption = 'Volume'
     Transparent = False
     ExplicitWidth = 53
   end
+  object Text_Value: TLabel
+    Left = 198
+    Top = 27
+    Width = 40
+    Height = 34
+    Align = alRight
+    Alignment = taCenter
+    AutoSize = False
+    Caption = '100'
+    Layout = tlCenter
+  end
   object CSlider1: CSlider
     Left = 0
     Top = 27
-    Width = 200
+    Width = 198
     Height = 34
     OnChange = CSlider1Change
     Align = alClient
@@ -37,9 +48,9 @@ object VolumePop: TVolumePop
     ParentColor = False
     AccentColor = acAccentAdjust
     Presets = cslNone
-    Foreground.Enter = 6914986
-    Foreground.Leave = 5270161
-    Foreground.Down = 3625336
+    Foreground.Enter = 11896666
+    Foreground.Leave = 10251841
+    Foreground.Down = 8607016
     Foreground.Border = clGray
     Foreground.BorderThick = 0
     Foreground.MultiColor = False
@@ -69,5 +80,6 @@ object VolumePop: TVolumePop
     Max = 1000
     Min = 0
     Position = 50
+    ExplicitWidth = 200
   end
 end

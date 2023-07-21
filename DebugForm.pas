@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Imaging.pngimage,
   Cod.Visual.Image, Cod.Visual.Button, BroadcastAPI, Vcl.Clipbrd, JSON,
-  Vcl.ExtCtrls, Cod.Types, Bass, Vcl.WinXCtrls;
+  Vcl.ExtCtrls, Cod.Types, Bass, Vcl.WinXCtrls, CreatePlaylistForm,
+  Cod.SysUtils, PickerDialogForm;
 
 type
   TDebugUI = class(TForm)
@@ -18,7 +19,6 @@ type
     CButton2: CButton;
     Label4: TLabel;
     Label5: TLabel;
-    Memo1: TMemo;
     Memo2: TMemo;
     CButton3: CButton;
     CButton4: CButton;
@@ -34,6 +34,8 @@ type
     SearchBox1: TSearchBox;
     Label11: TLabel;
     Label12: TLabel;
+    Memo1: TMemo;
+    CButton7: CButton;
     procedure CButton1Click(Sender: TObject);
     procedure CButton2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -102,18 +104,19 @@ begin
   Label9.Caption := '10s Shrink:' + MainUI.Press10Stat.ToString;
   Label10.Caption := 'Ch Active: ' + BooleanToString( BASS_ChannelIsActive(Player.Stream) = BASS_ACTIVE_PLAYING );
   Label11.Caption := 'Img-Thread: ' + TotalThreads.ToString;
-  Label12.Caption := 'Img-Thread: ' + DownloadThreadsE.ToString;
+  Label12.Caption := 'Downl-Thread: ' + DownloadThreadsE.ToString;
 end;
 
 procedure TDebugUI.FormCreate(Sender: TObject);
 begin
-  Top := Screen.Height - height;
+  Top := Screen.Height - Height - GetTaskbarHeight;
   Left := Screen.Width - Width;
 end;
 
 procedure TDebugUI.SearchBox1InvokeSearch(Sender: TObject);
 begin
   UIForm.FiltrateSearch( SearchBox1.Text );
+  UIForm.RedrawPaintBox;
 end;
 
 end.

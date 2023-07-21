@@ -35,49 +35,254 @@ object InfoBox: TInfoBox
     Align = alClient
     BevelOuter = bvNone
     Caption = 'Panel1'
+    ParentColor = True
     ShowCaption = False
-    TabOrder = 1
-    object Song_Name: TLabel
+    TabOrder = 2
+    ExplicitLeft = 85
+    ExplicitTop = 30
+    object Panel3: TPanel
       AlignWithMargins = True
       Left = 25
       Top = 5
       Width = 384
-      Height = 37
+      Height = 41
       Margins.Left = 25
       Margins.Top = 5
       Margins.Right = 25
       Margins.Bottom = 5
       Align = alTop
-      Caption = 'Song name here'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -27
-      Font.Name = 'Segoe UI Semibold'
-      Font.Style = []
-      ParentFont = False
-      WordWrap = True
-      ExplicitWidth = 199
+      BevelOuter = bvNone
+      Caption = 'Panel3'
+      ParentColor = True
+      ShowCaption = False
+      TabOrder = 0
+      object Song_Name: TEdit
+        Left = 0
+        Top = 0
+        Width = 316
+        Height = 41
+        Align = alClient
+        AutoSelect = False
+        BevelInner = bvNone
+        BevelOuter = bvNone
+        BorderStyle = bsNone
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -27
+        Font.Name = 'Segoe UI Semibold'
+        Font.Style = []
+        ParentColor = True
+        ParentFont = False
+        TabOrder = 0
+        Text = 'Item name'
+        OnChange = Song_NameChange
+        OnKeyUp = Song_NameKeyUp
+        ExplicitLeft = -3
+        ExplicitTop = 2
+      end
+      object Save_Button: CButton
+        AlignWithMargins = True
+        Left = 331
+        Top = 5
+        Width = 38
+        Height = 36
+        Margins.Left = 15
+        Margins.Top = 5
+        Margins.Right = 15
+        Margins.Bottom = 0
+        OnClick = Save_ButtonClick
+        TabOrder = 1
+        Align = alRight
+        Visible = False
+        BSegoeIcon = #57605
+        ButtonIcon = cicSegoeFluent
+        UseAccentColor = acNone
+        GradientOptions.Enabled = False
+        GradientOptions.Enter = clFuchsia
+        GradientOptions.Leave = clRed
+        GradientOptions.Down = clMaroon
+        ControlStyle = []
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 14123546
+        Font.Height = -16
+        Font.Name = 'Segoe UI Semibold'
+        Font.Style = []
+        SubTextFont.Charset = DEFAULT_CHARSET
+        SubTextFont.Color = 14123546
+        SubTextFont.Height = -13
+        SubTextFont.Name = 'Segoe UI'
+        SubTextFont.Style = []
+        FontAutoSize.Enabled = False
+        FontAutoSize.Max = -1
+        FontAutoSize.Min = -1
+        Text = ''
+        SubText = 'Hello World!'
+        AutoExtendImage = False
+        State = mbsLeave
+        Colors.Enter = 5771359
+        Colors.Leave = 4853328
+        Colors.Down = 3539258
+        Colors.BLine = 3539258
+        Preset.Color = clBlue
+        Preset.Kind = cbprCustom
+        Preset.PenColorAuto = True
+        Preset.ApplyOnce = False
+        Preset.IgnoreGlobalSync = False
+        UnderLine.Enable = True
+        UnderLine.UnderLineRound = True
+        UnderLine.UnderLineThicknes = 6
+        TextColors.Enter = clWhite
+        TextColors.Leave = clWhite
+        TextColors.Down = clWhite
+        TextColors.BLine = clBlack
+        Pen.Color = 2886678
+        Pen.Width = 0
+        Pen.EnableAlternativeColors = False
+        Pen.FormSyncedColor = False
+        Pen.AltHoverColor = clBlack
+        Pen.AltPressColor = clBlack
+        Pen.GlobalPresetExcept = False
+        Animations.PressAnimation = True
+        Animations.PADelay = 2
+        Animations.PAShrinkAmount = 4
+        Animations.PAAnimateEngine = cbneAtDraw
+        Animations.FadeAnimation = True
+        Animations.FASpeed = 10
+      end
     end
-    object Song_Info: TLabel
+    object Panel4: TPanel
       AlignWithMargins = True
       Left = 25
-      Top = 52
+      Top = 56
       Width = 384
-      Height = 21
+      Height = 218
       Margins.Left = 25
       Margins.Top = 5
       Margins.Right = 25
-      Margins.Bottom = 5
-      Align = alTop
-      Caption = 'Description and information'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWhite
-      Font.Height = -16
-      Font.Name = 'Segoe UI'
-      Font.Style = []
-      ParentFont = False
-      WordWrap = True
-      ExplicitWidth = 195
+      Margins.Bottom = 25
+      Align = alClient
+      BevelOuter = bvNone
+      Caption = 'Panel3'
+      ParentColor = True
+      ShowCaption = False
+      TabOrder = 1
+      ExplicitHeight = 113
+      object Song_Info: TMemo
+        Left = 0
+        Top = 0
+        Width = 384
+        Height = 218
+        Align = alClient
+        BevelInner = bvNone
+        BorderStyle = bsNone
+        Lines.Strings = (
+          'Description and information')
+        ParentColor = True
+        ReadOnly = True
+        TabOrder = 0
+        OnKeyUp = Song_InfoKeyUp
+        ExplicitTop = -2
+      end
+      object Editor_View: TPanel
+        Left = 0
+        Top = 0
+        Width = 384
+        Height = 218
+        Align = alClient
+        BevelOuter = bvNone
+        Caption = 'Panel5'
+        ParentColor = True
+        ShowCaption = False
+        TabOrder = 1
+        Visible = False
+        ExplicitTop = -2
+        DesignSize = (
+          384
+          218)
+        object Edit_Desc: TMemo
+          Left = 0
+          Top = 0
+          Width = 384
+          Height = 218
+          Align = alClient
+          BevelInner = bvNone
+          BorderStyle = bsNone
+          Lines.Strings = (
+            'Description and information')
+          ParentColor = True
+          TabOrder = 0
+          OnKeyUp = Edit_DescKeyUp
+          ExplicitTop = 80
+        end
+        object Save_Button2: CButton
+          AlignWithMargins = True
+          Left = 331
+          Top = 178
+          Width = 40
+          Height = 40
+          Margins.Left = 15
+          Margins.Top = 5
+          Margins.Right = 15
+          Margins.Bottom = 0
+          OnClick = Save_Button2Click
+          TabOrder = 1
+          Anchors = [akRight, akBottom]
+          BSegoeIcon = #57605
+          ButtonIcon = cicSegoeFluent
+          UseAccentColor = acNone
+          GradientOptions.Enabled = False
+          GradientOptions.Enter = clFuchsia
+          GradientOptions.Leave = clRed
+          GradientOptions.Down = clMaroon
+          ControlStyle = []
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = 14123546
+          Font.Height = -16
+          Font.Name = 'Segoe UI Semibold'
+          Font.Style = []
+          SubTextFont.Charset = DEFAULT_CHARSET
+          SubTextFont.Color = 14123546
+          SubTextFont.Height = -13
+          SubTextFont.Name = 'Segoe UI'
+          SubTextFont.Style = []
+          FontAutoSize.Enabled = False
+          FontAutoSize.Max = -1
+          FontAutoSize.Min = -1
+          Text = ''
+          SubText = 'Hello World!'
+          AutoExtendImage = False
+          State = mbsLeave
+          Colors.Enter = 5771359
+          Colors.Leave = 4853328
+          Colors.Down = 3539258
+          Colors.BLine = 3539258
+          Preset.Color = clBlue
+          Preset.Kind = cbprCustom
+          Preset.PenColorAuto = True
+          Preset.ApplyOnce = False
+          Preset.IgnoreGlobalSync = False
+          UnderLine.Enable = True
+          UnderLine.UnderLineRound = True
+          UnderLine.UnderLineThicknes = 6
+          TextColors.Enter = clWhite
+          TextColors.Leave = clWhite
+          TextColors.Down = clWhite
+          TextColors.BLine = clBlack
+          Pen.Color = 2886678
+          Pen.Width = 0
+          Pen.EnableAlternativeColors = False
+          Pen.FormSyncedColor = False
+          Pen.AltHoverColor = clBlack
+          Pen.AltPressColor = clBlack
+          Pen.GlobalPresetExcept = False
+          Animations.PressAnimation = True
+          Animations.PADelay = 2
+          Animations.PAShrinkAmount = 4
+          Animations.PAAnimateEngine = cbneAtDraw
+          Animations.FadeAnimation = True
+          Animations.FASpeed = 10
+        end
+      end
     end
   end
   object Panel2: TPanel
@@ -95,7 +300,7 @@ object InfoBox: TInfoBox
     Caption = 'Panel1'
     ParentColor = True
     ShowCaption = False
-    TabOrder = 2
+    TabOrder = 1
     object Song_Cover: CImage
       AlignWithMargins = True
       Left = 25
@@ -109,6 +314,8 @@ object InfoBox: TInfoBox
       Align = alTop
       Smooth = True
       Opacity = 255
+      RotationAngle = 0
+      InflationValue = 0
       GifSettings.Enable = False
       GifSettings.AnimationSpeed = 100
       DrawMode = dmCenterFit
@@ -152,6 +359,7 @@ object InfoBox: TInfoBox
       FontAutoSize.Min = -1
       Text = 'Download'
       SubText = 'Hello World!'
+      AutoExtendImage = False
       State = mbsLeave
       Colors.Enter = 5771359
       Colors.Leave = 4853328
@@ -186,8 +394,8 @@ object InfoBox: TInfoBox
   end
   object Popup_Right: TPopupMenu
     OwnerDraw = True
-    Left = 645
-    Top = 222
+    Left = 421
+    Top = 294
     object Information1: TMenuItem
       Caption = 'Save Cover'
       Hint = #59675
@@ -196,7 +404,7 @@ object InfoBox: TInfoBox
   end
   object SavePicture: TSavePictureDialog
     Filter = 'JPEG Image File (*.jpeg)|*.jpeg'
-    Left = 661
-    Top = 58
+    Left = 341
+    Top = 298
   end
 end
