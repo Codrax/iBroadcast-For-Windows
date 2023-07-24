@@ -6167,7 +6167,7 @@ procedure TUIForm.ValidateDownloadFiles;
 { This function deleted files that are no longer needed }
 var
   Files: TArray<string>;
-  Folder: string;
+  Folder, AFolder: string;
 
   Name: string;
   Identifier, A, I: Integer;
@@ -6187,7 +6187,9 @@ begin
     TDirectory.CreateDirectory(Folder);
 
   // Delete Songs
-  Files := TDirectory.GetFiles( Folder, '*.mp3' );
+  Files := [];
+  if TDirectory.Exists(Folder) then
+    Files := TDirectory.GetFiles( Folder, '*.mp3' );
   for I := 0 to High(Files) do
     begin
       // Get ID
@@ -6217,7 +6219,10 @@ begin
     end;
 
   // Delete albums
-  Files := TDirectory.GetFiles( Folder + 'albums\', '*.txt' );
+  Files := [];
+  AFolder := Folder + 'albums\';
+  if TDirectory.Exists(AFolder) then
+    Files := TDirectory.GetFiles( AFolder, '*.txt' );
   for I := 0 to High(Files) do
     begin
       // Get ID
@@ -6232,7 +6237,10 @@ begin
     end;
 
   // Delete artists
-  Files := TDirectory.GetFiles( Folder + 'artists\', '*.txt' );
+  Files := [];
+  AFolder := Folder + 'artists\';
+  if TDirectory.Exists(AFolder) then
+    Files := TDirectory.GetFiles( AFolder, '*.txt' );
   for I := 0 to High(Files) do
     begin
       // Get ID
@@ -6247,7 +6255,10 @@ begin
     end;
 
   // Delete playlists
-  Files := TDirectory.GetFiles( Folder + 'playlists\', '*.txt' );
+  Files := [];
+  AFolder := Folder + 'playlists\';
+  if TDirectory.Exists(AFolder) then
+    Files := TDirectory.GetFiles( AFolder, '*.txt' );
   for I := 0 to High(Files) do
     begin
       // Get ID
