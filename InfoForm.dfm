@@ -4,10 +4,9 @@ object InfoBox: TInfoBox
   BorderIcons = [biSystemMenu]
   BorderStyle = bsSingle
   Caption = 'Song title here'
-  ClientHeight = 374
+  ClientHeight = 461
   ClientWidth = 784
   Color = 2886678
-  Constraints.MinHeight = 360
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
   Font.Height = -16
@@ -27,7 +26,7 @@ object InfoBox: TInfoBox
     Left = 325
     Top = 50
     Width = 434
-    Height = 299
+    Height = 386
     Margins.Left = 25
     Margins.Top = 25
     Margins.Right = 25
@@ -151,7 +150,7 @@ object InfoBox: TInfoBox
       Left = 25
       Top = 56
       Width = 384
-      Height = 218
+      Height = 305
       Margins.Left = 25
       Margins.Top = 5
       Margins.Right = 25
@@ -166,7 +165,7 @@ object InfoBox: TInfoBox
         Left = 0
         Top = 0
         Width = 384
-        Height = 218
+        Height = 305
         Align = alClient
         BevelInner = bvNone
         BorderStyle = bsNone
@@ -181,7 +180,7 @@ object InfoBox: TInfoBox
         Left = 0
         Top = 0
         Width = 384
-        Height = 218
+        Height = 305
         Align = alClient
         BevelOuter = bvNone
         Caption = 'Panel5'
@@ -191,12 +190,12 @@ object InfoBox: TInfoBox
         Visible = False
         DesignSize = (
           384
-          218)
+          305)
         object Edit_Desc: TMemo
           Left = 0
           Top = 0
           Width = 384
-          Height = 218
+          Height = 305
           Align = alClient
           BevelInner = bvNone
           BorderStyle = bsNone
@@ -209,7 +208,7 @@ object InfoBox: TInfoBox
         object Save_Button2: CButton
           AlignWithMargins = True
           Left = 331
-          Top = 178
+          Top = 265
           Width = 40
           Height = 40
           Margins.Left = 15
@@ -282,7 +281,7 @@ object InfoBox: TInfoBox
     Left = 25
     Top = 50
     Width = 250
-    Height = 299
+    Height = 386
     Margins.Left = 25
     Margins.Top = 25
     Margins.Right = 25
@@ -293,6 +292,7 @@ object InfoBox: TInfoBox
     ParentColor = True
     ShowCaption = False
     TabOrder = 1
+    ExplicitTop = 53
     object Song_Cover: CImage
       AlignWithMargins = True
       Left = 25
@@ -382,6 +382,104 @@ object InfoBox: TInfoBox
       Animations.PAAnimateEngine = cbneAtDraw
       Animations.FadeAnimation = True
       Animations.FASpeed = 10
+      ExplicitLeft = 25
+      ExplicitTop = 151
+    end
+    object Song_Rating: CStarRate
+      AlignWithMargins = True
+      Left = 15
+      Top = 288
+      Width = 220
+      Height = 40
+      Margins.Left = 15
+      Margins.Top = 15
+      Margins.Right = 15
+      Margins.Bottom = 0
+      Align = alTop
+      ViewOnly = False
+      Spacing = 5
+      StarDesign.Color = clYellow
+      StarDesign.BorderColor = 4500987
+      StarDesign.InactiveColor = clGray
+      StarDesign.InactiveBorderColor = clWindowFrame
+      StarDesign.Border = True
+      StarDesign.BorderThickness = 10
+      StarsDrawn = 5
+      Rating = 0
+      MaximumRating = 10
+      MinimumRating = 0
+      OnSelect = Song_RatingSelect
+    end
+    object Save_Button_Star: CButton
+      AlignWithMargins = True
+      Left = 190
+      Top = 333
+      Width = 40
+      Height = 40
+      Margins.Left = 190
+      Margins.Top = 5
+      Margins.Right = 15
+      Margins.Bottom = 0
+      OnClick = Save_Button_StarClick
+      TabOrder = 2
+      Align = alTop
+      Constraints.MaxWidth = 40
+      Visible = False
+      BSegoeIcon = #57605
+      ButtonIcon = cicSegoeFluent
+      UseAccentColor = acNone
+      GradientOptions.Enabled = False
+      GradientOptions.Enter = clFuchsia
+      GradientOptions.Leave = clRed
+      GradientOptions.Down = clMaroon
+      ControlStyle = []
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = 14123546
+      Font.Height = -16
+      Font.Name = 'Segoe UI Semibold'
+      Font.Style = []
+      SubTextFont.Charset = DEFAULT_CHARSET
+      SubTextFont.Color = 14123546
+      SubTextFont.Height = -13
+      SubTextFont.Name = 'Segoe UI'
+      SubTextFont.Style = []
+      FontAutoSize.Enabled = False
+      FontAutoSize.Max = -1
+      FontAutoSize.Min = -1
+      Text = ''
+      SubText = 'Hello World!'
+      AutoExtendImage = False
+      State = mbsLeave
+      Colors.Enter = 5771359
+      Colors.Leave = 4853328
+      Colors.Down = 3539258
+      Colors.BLine = 3539258
+      Preset.Color = clBlue
+      Preset.Kind = cbprCustom
+      Preset.PenColorAuto = True
+      Preset.ApplyOnce = False
+      Preset.IgnoreGlobalSync = False
+      UnderLine.Enable = True
+      UnderLine.UnderLineRound = True
+      UnderLine.UnderLineThicknes = 6
+      TextColors.Enter = clWhite
+      TextColors.Leave = clWhite
+      TextColors.Down = clWhite
+      TextColors.BLine = clBlack
+      Pen.Color = 2886678
+      Pen.Width = 0
+      Pen.EnableAlternativeColors = False
+      Pen.FormSyncedColor = False
+      Pen.AltHoverColor = clBlack
+      Pen.AltPressColor = clBlack
+      Pen.GlobalPresetExcept = False
+      Animations.PressAnimation = True
+      Animations.PADelay = 2
+      Animations.PAShrinkAmount = 4
+      Animations.PAAnimateEngine = cbneAtDraw
+      Animations.FadeAnimation = True
+      Animations.FASpeed = 10
+      ExplicitLeft = 220
     end
   end
   object Popup_Right: TPopupMenu

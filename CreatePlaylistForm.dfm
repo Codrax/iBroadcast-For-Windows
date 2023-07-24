@@ -3159,6 +3159,8 @@ object CreatePlaylist: TCreatePlaylist
         ParentFont = False
         TabOrder = 0
         TextHint = 'Playlist name'
+        ExplicitLeft = 0
+        ExplicitTop = -4
       end
     end
     object Panel6: TPanel
@@ -3230,13 +3232,13 @@ object CreatePlaylist: TCreatePlaylist
       Colors.Leave = 16250866
       Colors.Enter = 15658729
       Colors.Down = 15066593
-      Colors.Checked = 6381707
+      Colors.Checked = 9458026
       Colors.CheckIndicator = clWhite
       Colors.TransparentCenter = True
       ColorsBorder.Leave = 9013638
       ColorsBorder.Enter = 9013638
       ColorsBorder.Down = 12434873
-      ColorsBorder.Checked = 6381707
+      ColorsBorder.Checked = 9458026
       Checked = False
       State = cbUnchecked
     end

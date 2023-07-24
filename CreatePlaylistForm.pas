@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.TitleBarCtrls, Vcl.ExtCtrls,
   Vcl.StdCtrls, Cod.Visual.Button, Cod.SysUtils, Cod.Visual.CheckBox,
-  BroadcastAPI, Offline, Vcl.Imaging.pngimage, Cod.Visual.Image;
+  BroadcastAPI, Offline, Vcl.Imaging.pngimage, Cod.Visual.Image,
+  iBroadcastUtils;
 
 type
   TCreatePlaylist = class(TForm)
@@ -85,16 +86,19 @@ end;
 
 procedure TCreatePlaylist.Download_ItemClick(Sender: TObject);
 begin
-  try
-    // Create Playlist
-    if MoodBased then
-      CreateNewPlayList(List_Name.Text, List_Description.Text, Make_Public.Checked, MoodTypes[Mood])
-    else
-      CreateNewPlayList(List_Name.Text, List_Description.Text, Make_Public.Checked, Tracks);
-  except
-    // Offline
-    OfflineDialog('The playlist could not be created.');
-  end;
+  if List_Name.Text = '' then
+    OpenDialog('Playlist need a name', 'The playlist requires a name')
+  else
+    try
+      // Create Playlist
+      if MoodBased then
+        CreateNewPlayList(List_Name.Text, List_Description.Text, Make_Public.Checked, MoodTypes[Mood])
+      else
+        CreateNewPlayList(List_Name.Text, List_Description.Text, Make_Public.Checked, Tracks);
+    except
+      // Offline
+      OfflineDialog('The playlist could not be created.');
+    end;
 end;
 
 procedure TCreatePlaylist.FormCreate(Sender: TObject);

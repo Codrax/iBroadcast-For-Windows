@@ -52,6 +52,7 @@ type
     Title: string;
     InfoShort: string;
     InfoLong: string;
+    Rating: integer;
 
     Active: boolean;
     HiddenItem: boolean;
@@ -688,7 +689,7 @@ const
   // SYSTEM
   V_MAJOR = 1;
   V_MINOR = 6;
-  V_PATCH = 0;
+  V_PATCH = 1;
 
   UPDATE_URL = 'https://www.codrutsoftware.cf/versions/ibroadcast.txt';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -1536,8 +1537,6 @@ begin
 end;
 
 procedure TUIForm.Cleanupplaylist1Click(Sender: TObject);
-var
-  Index: integer;
 begin
   if IsOffline then
     OfflineDialog('Cannot clean playlist in Offline Mode. Please connect to the internet.')
@@ -4267,8 +4266,8 @@ begin
             procedure
               begin
                 LoadItemInfo;
-                RedrawPaintBox;
                 Sort;
+                RedrawPaintBox;
               end);
         except
           // Offline
@@ -6489,6 +6488,7 @@ begin
       ItemID := Tracks[Index].ID;
 
       Title := Tracks[Index].Title;
+      Rating := Tracks[Index].Rating;
 
       // Info
       SetLength(Information, 10);
@@ -6522,6 +6522,7 @@ begin
       ItemID := Albums[Index].ID;
 
       Title := Albums[Index].AlbumName;
+      Rating := Albums[Index].Rating;
 
       // Info
       SetLength(Information, 6);
@@ -6553,6 +6554,7 @@ begin
       ItemID := Artists[Index].ID;
 
       Title := Artists[Index].ArtistName;
+      Rating := Artists[Index].Rating;
 
       // Info
       SetLength(Information, 3);
@@ -6574,6 +6576,7 @@ begin
       ItemID := Playlists[Index].ID;
 
       Title := Playlists[Index].Name;
+      Rating := 0; // Playlists do not have ratings
 
       // Info
       SetLength(Information, 3);
@@ -6618,6 +6621,7 @@ begin
       Caption := Title;
       Song_Name.Text := Title;
       Song_Info.Lines.Text := GetPremadeInfoList;
+      Song_Rating.Rating := Rating;
 
       Download_Item.Visible := not IsOffline;
       Download_Item.Tag := Downloaded.ToInteger;

@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.SysUtils, Vcl.TitleBarCtrls,
   Cod.Visual.Image, Vcl.StdCtrls, Vcl.ExtCtrls, Cod.Visual.Button, Cod.Dialogs,
-  BroadcastAPI, MainUI, Vcl.Menus, Vcl.ExtDlgs, iBroadcastUtils;
+  BroadcastAPI, MainUI, Vcl.Menus, Vcl.ExtDlgs, iBroadcastUtils,
+  Cod.Visual.StarRate, Math;
 
 type
   TInfoBox = class(TForm)
@@ -26,6 +27,8 @@ type
     Editor_View: TPanel;
     Edit_Desc: TMemo;
     Save_Button2: CButton;
+    Song_Rating: CStarRate;
+    Save_Button_Star: CButton;
     procedure FormCreate(Sender: TObject);
     procedure Download_ItemEnter(Sender: TObject);
     procedure Download_ItemClick(Sender: TObject);
@@ -39,6 +42,8 @@ type
     procedure Edit_DescKeyUp(Sender: TObject; var Key: Word;
       Shift: TShiftState);
     procedure Save_Button2Click(Sender: TObject);
+    procedure Save_Button_StarClick(Sender: TObject);
+    procedure Song_RatingSelect(Sender: TObject);
   private
     { Private declarations }
   public
@@ -57,6 +62,38 @@ implementation
 
 
 {$R *.dfm}
+
+procedure TInfoBox.Save_Button_StarClick(Sender: TObject);
+begin
+  // Change Name
+  case InfoBoxPointer.Source of
+    TDataSource.Tracks: with Tracks[InfoBoxPointer.Index] do
+      if UpdateTrackRating(ID, Song_Rating.Rating, false) then
+        // Update
+        Rating := Song_Rating.Rating
+      else
+        Song_Rating.Rating := Rating;
+
+    TDataSource.Albums: with Albums[InfoBoxPointer.Index] do
+      if UpdateAlbumRating(ID, Song_Rating.Rating, false) then
+        // Update
+        Rating := Song_Rating.Rating
+      else
+        Song_Rating.Rating := Rating;
+
+    TDataSource.Artists: with Artists[InfoBoxPointer.Index] do
+      if UpdateArtistRating(ID, Song_Rating.Rating, false) then
+        // Update
+        Rating := Song_Rating.Rating
+      else
+        Song_Rating.Rating := Rating;
+  end;
+
+  InfoBoxPointer.Rating := Song_Rating.Rating;
+
+  // UI
+  Save_Button_Star.Hide;
+end;
 
 procedure TInfoBox.Download_ItemClick(Sender: TObject);
 var
@@ -92,10 +129,29 @@ begin
 end;
 
 procedure TInfoBox.FixUI;
+var
+  NewSize, Default, Val1, Val2: integer;
 begin
-  // Fix Sizing
-  Self.ClientHeight := Panel1.Top + Song_Name.Top + Song_Name.Height
-    + Song_Info.Top + Song_Info.Height + Panel1.Margins.Bottom;
+  // Fix order
+  Save_Button_Star.Top := Song_Rating.BoundsRect.Bottom + 1;
+
+  // Min Size
+  Default := Panel2.Top + Panel2.Margins.Bottom
+    + (Height-ClientHeight) + TitleBarPanel.Height + Song_Cover.Top + Song_Cover.Height + Song_Cover.Margins.Bottom;
+  Val1 := 0;
+  Val2 := 0;
+
+  if Song_Rating.Visible then
+    Val1 := Save_Button_Star.BoundsRect.Bottom;
+
+  if Download_Item.Visible then
+    Val2 := Download_Item.BoundsRect.Bottom;
+
+  NewSize := Max(Val1, Val2) + Panel2.Margins.Top + TitleBarPanel.Height + Panel2.Margins.Bottom + (Height-ClientHeight);
+  NewSize := Max(Default, NewSize);
+
+  // Set
+  Height := NewSize;
 end;
 
 procedure TInfoBox.FormCreate(Sender: TObject);
@@ -149,9 +205,16 @@ end;
 
 procedure TInfoBox.Prepare;
 begin
+  // Starable
+  Song_Rating.Visible := InfoBoxPointer.Source in [TDataSource.Tracks, TDataSource.Albums, TDataSource.Artists];
+
   // Editable
   Song_Name.ReadOnly := (InfoBoxPointer.Source <> TDataSource.Playlists) or IsOffline;
+  Song_Rating.ViewOnly := IsOffline or not Song_Rating.Visible;
+
+  // Edit UI
   Save_Button.Visible := false;
+  Save_Button_Star.Visible := false;
   Editor_View.Hide;
 
   // UI
@@ -163,7 +226,9 @@ begin
   // Change Name
   case InfoBoxPointer.Source of
     TDataSource.Playlists: with Playlists[InfoBoxPointer.Index] do
-      UpdatePlayList(InfoBoxPointer.ItemID, Name, Edit_Desc.Lines.Text);
+      if UpdatePlayList(InfoBoxPointer.ItemID, Name, Edit_Desc.Lines.Text, false) then
+        // Update playlist
+        Description := Edit_Desc.Lines.Text;
   end;
 
   // UI
@@ -179,7 +244,16 @@ begin
   // Change Name
   case InfoBoxPointer.Source of
     TDataSource.Playlists: with Playlists[InfoBoxPointer.Index] do
-      UpdatePlayList(InfoBoxPointer.ItemID, Song_Name.Text, Description);
+      if UpdatePlayList(InfoBoxPointer.ItemID, Song_Name.Text, Description, false) then
+        begin
+          // Update Playlist
+          Name := Song_Name.Text;
+
+          // Draw
+          InfoBoxPointer.Title := Name;
+        end
+      else
+        Song_Name.Text := Name;
   end;
 
   // UI
@@ -213,6 +287,11 @@ begin
         Save_Button.Hide;
       end;
   end;
+end;
+
+procedure TInfoBox.Song_RatingSelect(Sender: TObject);
+begin
+  Save_Button_Star.Show;
 end;
 
 end.

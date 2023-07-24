@@ -2,7 +2,7 @@ object OfflineForm: TOfflineForm
   Left = 0
   Top = 0
   BorderStyle = bsDialog
-  Caption = 'Form1'
+  Caption = 'Network Error'
   ClientHeight = 241
   ClientWidth = 484
   Color = 2886678
@@ -127,6 +127,5 @@ object OfflineForm: TOfflineForm
     Animations.PAAnimateEngine = cbneAtDraw
     Animations.FadeAnimation = True
     Animations.FASpeed = 10
-    ExplicitTop = 160
   end
 end

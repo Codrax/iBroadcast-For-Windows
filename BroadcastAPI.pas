@@ -265,7 +265,14 @@ interface
   procedure InitiateArtworkStore;
 
   // Tracks
+  function UpdateTrackRating(ID: integer; Rating: integer; ReloadLibrary: boolean): boolean;
   function GetSongPlaylists(ID: integer): TArray<integer>;
+
+  // Albums
+  function UpdateAlbumRating(ID: integer; Rating: integer; ReloadLibrary: boolean): boolean;
+
+  // Artists
+  function UpdateArtistRating(ID: integer; Rating: integer; ReloadLibrary: boolean): boolean;
 
   // Playlist
   function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Tracks: TArray<integer>): boolean; overload;
@@ -273,7 +280,7 @@ interface
   function AppentToPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
   function DeleteFromPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
   function TouchupPlaylist(ID: integer): boolean;
-  function UpdatePlayList(ID: integer; Name, Description: string): boolean;
+  function UpdatePlayList(ID: integer; Name, Description: string; ReloadLibrary: boolean): boolean;
   function DeletePlayList(ID: integer): boolean;
 
   // History
@@ -371,6 +378,25 @@ const
     + '"playlist": %D,'
     + '"name": "%S",'
     + '"description": "%S"'
+    + '}';
+
+  // Rating
+  REQUEST_RATE_TRACK = REQUEST_HEADER + ','
+    + '"mode": "ratetrack",'
+    + '"track_id": %D,'
+    + '"rating": %D'
+    + '}';
+
+  REQUEST_RATE_ALBUM = REQUEST_HEADER + ','
+    + '"mode": "ratealbum",'
+    + '"album_id": %D,'
+    + '"rating": %D'
+    + '}';
+
+  REQUEST_RATE_ARTIST = REQUEST_HEADER + ','
+    + '"mode": "rateartist",'
+    + '"artist_id": %D,'
+    + '"rating": %D'
     + '}';
 
   // History
@@ -629,6 +655,33 @@ begin
   TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Playlists));
 end;
 
+function UpdateTrackRating(ID: integer; Rating: integer; ReloadLibrary: boolean): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  JSONValue: TJSONValue;
+begin
+  // Prepare request string
+  Request := Format(REQUEST_RATE_TRACK, [USER_ID, TOKEN, ID, Rating]);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Updating track rating';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  if ReloadLibrary then
+    LoadLibraryAdvanced([TLoad.Track]);
+end;
+
 function GetSongPlaylists(ID: integer): TArray<integer>;
 var
   I: Integer;
@@ -638,6 +691,60 @@ begin
   for I := 0 to High(Playlists) do
     if Playlists[I].TracksID.Find(ID) <> -1 then
       Result.AddValue(Playlists[I].ID);
+end;
+
+function UpdateAlbumRating(ID: integer; Rating: integer; ReloadLibrary: boolean): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  JSONValue: TJSONValue;
+begin
+  // Prepare request string
+  Request := Format(REQUEST_RATE_ALBUM, [USER_ID, TOKEN, ID, Rating]);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Updating album rating';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  if ReloadLibrary then
+    LoadLibraryAdvanced([TLoad.Album]);
+end;
+
+function UpdateArtistRating(ID: integer; Rating: integer; ReloadLibrary: boolean): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  JSONValue: TJSONValue;
+begin
+  // Prepare request string
+  Request := Format(REQUEST_RATE_ARTIST, [USER_ID, TOKEN, ID, Rating]);
+
+  // Parse response and extract numbers
+  WORK_STATUS := 'Updating artist rating';
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  if ReloadLibrary then
+    LoadLibraryAdvanced([TLoad.Artist]);
 end;
 
 function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Tracks: TArray<integer>): boolean;
@@ -850,7 +957,7 @@ begin
   LoadLibraryAdvanced([TLoad.PlayList]);
 end;
 
-function UpdatePlayList(ID: integer; Name, Description: string): boolean;
+function UpdatePlayList(ID: integer; Name, Description: string; ReloadLibrary: boolean): boolean;
 var
   Request: string;
   JResult: ResultType;
@@ -874,7 +981,8 @@ begin
   end;
 
   // Re-load playlists
-  LoadLibraryAdvanced([TLoad.PlayList]);
+  if ReloadLibrary then
+    LoadLibraryAdvanced([TLoad.PlayList]);
 end;
 
 function DeletePlayList(ID: integer): boolean;
