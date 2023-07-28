@@ -20,7 +20,7 @@ uses
   Vcl.ControlList, Vcl.OleCtrls, SHDocVw, Vcl.Menus,
   Cod.MasterVolume, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   IdHTTP, CreatePlaylistForm, Offline, Cod.StringUtils, iBroadcastUtils,
-  PickerDialogForm, Vcl.Clipbrd, DateUtils;
+  PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar;
 
 type
   // Cardinals
@@ -122,7 +122,6 @@ type
     Button_Previous: CButton;
     GeneralDraw: TPanel;
     DrawItem: TPaintBox;
-    ScrollPosition: TScrollBar;
     Page_Home: TPanel;
     Page_Account: TPanel;
     ScrollBox2: TScrollBox;
@@ -163,7 +162,6 @@ type
     CButton9: CButton;
     Page_SubView: TPanel;
     DrawItem_Clone1: TPaintBox;
-    Scrollbar_1: TScrollBar;
     Panel1: TPanel;
     SubView_Cover: CImage;
     Panel4: TPanel;
@@ -182,7 +180,6 @@ type
     Player_Position: CSlider;
     Time_Pass: TLabel;
     QueueDraw: TPaintBox;
-    QueueScroll: TScrollBar;
     QueueSwitchAnimation: TTimer;
     QueueDownGo: TTimer;
     Label3: TLabel;
@@ -222,7 +219,6 @@ type
     Panel19: TPanel;
     SearchBox1: TSearchBox;
     SearchDraw: TPaintBox;
-    ScrollBar_4: TScrollBar;
     Label33: TLabel;
     CButton1: CButton;
     CButton18: CButton;
@@ -336,7 +332,6 @@ type
     Button_ShuffleTracks: CButton;
     HomeDraw: TPaintBox;
     Welcome_Label: TLabel;
-    ScrollBar_6: TScrollBar;
     Panel26: TPanel;
     Page_Title: TLabel;
     Setting_DataSaver: CCheckBox;
@@ -415,6 +410,11 @@ type
     Playartists1: TMenuItem;
     Playplaylist1: TMenuItem;
     Cleanupplaylist1: TMenuItem;
+    ScrollPosition: CScrollbar;
+    Scrollbar_6: CScrollbar;
+    Scrollbar_4: CScrollbar;
+    Scrollbar_1: CScrollbar;
+    QueueScroll: CScrollbar;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -481,8 +481,6 @@ type
     procedure Search_ButtonClick(Sender: TObject);
     procedure Quick_SearchExit(Sender: TObject);
     procedure Quick_SearchChange(Sender: TObject);
-    procedure Quick_SearchKeyUp(Sender: TObject; var Key: Word;
-      Shift: TShiftState);
     procedure LoginItemsBeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
       ARect: TRect; AState: TOwnerDrawState);
     procedure CButton19Click(Sender: TObject);
@@ -538,6 +536,7 @@ type
     procedure Popup_PlaylistPopup(Sender: TObject);
     procedure PopupGeneralViewAlbum(Sender: TObject);
     procedure Cleanupplaylist1Click(Sender: TObject);
+    procedure Quick_SearchKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
     // Detect mouse Back/Forward
@@ -689,7 +688,7 @@ const
   // SYSTEM
   V_MAJOR = 1;
   V_MINOR = 6;
-  V_PATCH = 1;
+  V_PATCH = 2;
 
   UPDATE_URL = 'https://www.codrutsoftware.cf/versions/ibroadcast.txt';
   DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
@@ -726,6 +725,9 @@ const
 
   // DOWNLOAD
   DOWNLOAD_DIR = 'downloaded\';
+
+  // HOME
+  HOME_COLUMNS = 5;
 
 var
   UIForm: TUIForm;
@@ -810,7 +812,7 @@ var
   PopupSource: TDataSource;
 
   // SYSTEM
-  THREAD_MAX: cardinal = 15;
+  THREAD_MAX: cardinal = 10;
   THREAD_EDITOR_MAX: cardinal = 1;
 
   // Logging
@@ -1465,6 +1467,9 @@ procedure TUIForm.SType_SongClick(Sender: TObject);
 begin
   with CButton(Sender) do
     FlatButton := not FlatButton;
+
+  // Draw
+  RedrawPaintBox;
 end;
 
 procedure TUIForm.Button_ToggleMenuClick(Sender: TObject);
@@ -1880,7 +1885,6 @@ begin
             S := ICON_DOWNLOAD;
             TextRect(TempRect, S, [tfCenter, tfVerticalCenter]);
           end;
-
       end
     else
       begin
@@ -2668,15 +2672,15 @@ begin
 
   // Analise - Major
   case GetNumberRelation(V_MAJOR, VMajor) of
-    TNumberRelation.Bigger: ANewVersion := false;
-    TNumberRelation.Equal:
+    TRelation.Bigger: ANewVersion := false;
+    TRelation.Equal:
       // Minor
       case GetNumberRelation(V_MINOR, VMinor) of
-        TNumberRelation.Bigger: ANewVersion := false;
-        TNumberRelation.Equal:
+        TRelation.Bigger: ANewVersion := false;
+        TRelation.Equal:
           // Patch
           case GetNumberRelation(V_PATCH, VPatch) of
-            TNumberRelation.Bigger, TNumberRelation.Equal: ANewVersion := false;
+            TRelation.Bigger, TRelation.Equal: ANewVersion := false;
           end;
       end;
   end;
@@ -2758,22 +2762,27 @@ begin
       Y := -ScrollPosition.Position;
       X := 0;
 
-      // Font
-      Font.Assign( Self.Font );
 
       // Albums
-      for A := 1 to 4 do
+      for A := 1 to HOME_COLUMNS do
         begin
           case A of
             1: S := 'Recently played albums';
             2: S := 'Favorite Tracks';
             3: S := 'Recently played tracks';
             4: S := 'From your playlists';
+            5: S := 'Recently added tracks';
           end;
+
+          // Font
+          Font.Assign( Self.Font );
           Font.Size := 16;
           TextOut(X, Y, S);
+
+          // Draw Text
           Inc(Y, TextHeight(S) + CoverSpacing);
 
+          // Items
           Start := (A-1) * HomeFitItems;
           for I := Start to Start + HomeFitItems - 1 do
             begin
@@ -3016,7 +3025,7 @@ var
   Contained: boolean;
 begin
   // No items
-  SetLength( DrawItems, 0 );
+  DrawItems := [];
 
   // Get root
   ARoot := BareRoot;
@@ -3188,7 +3197,7 @@ begin
         end;
 
       (* Total Colums *)
-      SetLength( DrawItems, HomeFitItems * 4 );
+      SetLength( DrawItems, HomeFitItems * HOME_COLUMNS );
 
       AddToLog('LoadItemInfo.Home.RecentAlbums');
       (* Recent Albums *)
@@ -3251,6 +3260,25 @@ begin
         begin
           if P < Length(Playlists) then
             DrawItems[I].LoadSource(P, TDataSource.Playlists)
+          else
+            DrawItems[I].HiddenItem := true;
+
+          Inc(P);
+        end;
+
+      AddToLog('LoadItemInfo.Home.RecentlyAdded');
+      (* Recently added *)
+      P := 0;
+      for I := HomeFitItems * 4 to HomeFitItems * 5 - 1 do
+        begin
+          A := GetPlaylistOfType('recently-uploaded');
+          if A = -1 then
+            Continue;
+
+          SelectItems := Playlists[A].TracksID;
+
+          if P < Length(SelectItems) then
+            DrawItems[I].LoadSourceID(SelectItems[P], TDataSource.Tracks)
           else
             DrawItems[I].HiddenItem := true;
 
@@ -4665,10 +4693,9 @@ begin
   Search_Button.Show;
 end;
 
-procedure TUIForm.Quick_SearchKeyUp(Sender: TObject; var Key: Word;
-  Shift: TShiftState);
+procedure TUIForm.Quick_SearchKeyPress(Sender: TObject; var Key: Char);
 begin
-  if Key = 27 then
+  if Key = #27 then
     begin
       Self.FiltrateSearch('');
       RedrawPaintBox;
@@ -5309,14 +5336,14 @@ end;
 
 procedure TUIForm.ScrollPositionChange(Sender: TObject);
 begin
-  if LastScrollValue <> TScrollBar(Sender).Position then
+  if LastScrollValue <> CScrollBar(Sender).Position then
     begin
       // Draw
       RedrawPaintBox;
-      LastScrollValue := TScrollBar(Sender).Position;
+      LastScrollValue := CScrollBar(Sender).Position;
 
       // Update others
-      ScrollPosition.Position := TScrollBar(Sender).Position;
+      ScrollPosition.Position := CScrollBar(Sender).Position;
 
       Scrollbar_1.PageSize := ScrollPosition.PageSize;
       Scrollbar_4.PageSize := ScrollPosition.PageSize;
@@ -5326,9 +5353,9 @@ begin
       Scrollbar_4.Max := ScrollPosition.Max;
       Scrollbar_6.Max := ScrollPosition.Max;
 
-      Scrollbar_1.Position := TScrollBar(Sender).Position;
-      Scrollbar_4.Position := TScrollBar(Sender).Position;
-      ScrollBar_6.Position := TScrollBar(Sender).Position;
+      Scrollbar_1.Position := CScrollBar(Sender).Position;
+      Scrollbar_4.Position := CScrollBar(Sender).Position;
+      ScrollBar_6.Position := CScrollBar(Sender).Position;
     end;
 end;
 
@@ -5431,7 +5458,7 @@ begin
       LastType := TDataSource.None;
 
       // Draw All Items
-      for I := 0 to GetItemCount do
+      for I := 0 to GetItemCount-1 do
         begin
           // Hidden
           if DrawItems[I].Hidden or not(DrawItems[I].Source in AllowedSources) then
