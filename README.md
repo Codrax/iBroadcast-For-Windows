@@ -37,6 +37,7 @@ iBroadcast Apps Page
 | -tray  | Start hidden in system tray  |
 | -logging  | Output application log of tasks and errors on user desktop  |
 | -logtoken  | Output login token in log  |
+| -exportpost  | Output all recieved POST requests to desktop  |
 | -debug  | Enable application debugging features  |
 
 ## Screenshots
