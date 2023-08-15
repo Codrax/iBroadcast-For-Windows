@@ -32,11 +32,8 @@ object NewVersion: TNewVersion
     Top = 43
     Width = 75
     Height = 75
-    Smooth = True
-    Opacity = 255
     GifSettings.Enable = False
     GifSettings.AnimationSpeed = 100
-    DrawMode = dmCenterFit
     Picture.Data = {
       0954506E67496D61676589504E470D0A1A0A0000000D49484452000002000000
       02000806000000F478D4FA000000017352474200AECE1CE90000000467414D41
@@ -2710,9 +2707,9 @@ object NewVersion: TNewVersion
   object Label2: TLabel
     Left = 120
     Top = 94
-    Width = 180
+    Width = 313
     Height = 21
-    Caption = 'Would you like to update?'
+    Caption = 'Would you like to downlaod the update now?'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -16
@@ -2780,9 +2777,9 @@ object NewVersion: TNewVersion
     CustomButtons = <>
   end
   object CButton1: CButton
-    Left = 262
+    Left = 296
     Top = 213
-    Width = 214
+    Width = 180
     Height = 40
     ModalResult = 1
     TabOrder = 1
@@ -2807,8 +2804,9 @@ object NewVersion: TNewVersion
     FontAutoSize.Enabled = False
     FontAutoSize.Max = -1
     FontAutoSize.Min = -1
-    Text = 'Open Download Page'
+    Text = 'Download now'
     SubText = 'Hello World!'
+    AutoExtendImage = False
     State = mbsLeave
     Colors.Enter = 16559182
     Colors.Leave = 13927462
@@ -2841,7 +2839,7 @@ object NewVersion: TNewVersion
     Animations.FASpeed = 10
   end
   object CButton2: CButton
-    Left = 136
+    Left = 120
     Top = 213
     Width = 120
     Height = 40
@@ -2870,12 +2868,75 @@ object NewVersion: TNewVersion
     FontAutoSize.Min = -1
     Text = 'Cancel'
     SubText = 'Hello World!'
+    AutoExtendImage = False
     State = mbsLeave
     FlatButton = True
     Colors.Enter = 13959381
     Colors.Leave = clFuchsia
     Colors.Down = 11141290
     Colors.BLine = 11141290
+    Preset.Color = clBlue
+    Preset.Kind = cbprCustom
+    Preset.PenColorAuto = True
+    Preset.ApplyOnce = False
+    Preset.IgnoreGlobalSync = False
+    UnderLine.Enable = True
+    UnderLine.UnderLineRound = True
+    UnderLine.UnderLineThicknes = 6
+    TextColors.Enter = clWhite
+    TextColors.Leave = clWhite
+    TextColors.Down = clWhite
+    TextColors.BLine = clBlack
+    Pen.Color = 2886678
+    Pen.Width = 0
+    Pen.EnableAlternativeColors = False
+    Pen.FormSyncedColor = False
+    Pen.AltHoverColor = clBlack
+    Pen.AltPressColor = clBlack
+    Pen.GlobalPresetExcept = False
+    Animations.PressAnimation = False
+    Animations.PADelay = 2
+    Animations.PAShrinkAmount = 6
+    Animations.PAAnimateEngine = cbneAtDraw
+    Animations.FadeAnimation = True
+    Animations.FASpeed = 10
+  end
+  object CButton3: CButton
+    Left = 246
+    Top = 213
+    Width = 44
+    Height = 40
+    OnClick = CButton3Click
+    TabOrder = 3
+    BSegoeIcon = #63226
+    ButtonIcon = cicSegoeFluent
+    UseAccentColor = acNone
+    GradientOptions.Enabled = True
+    GradientOptions.Enter = 13959381
+    GradientOptions.Leave = clFuchsia
+    GradientOptions.Down = 11141290
+    ControlStyle = []
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = 14123546
+    Font.Height = -16
+    Font.Name = 'Segoe UI Semibold'
+    Font.Style = []
+    SubTextFont.Charset = DEFAULT_CHARSET
+    SubTextFont.Color = 14123546
+    SubTextFont.Height = -13
+    SubTextFont.Name = 'Segoe UI'
+    SubTextFont.Style = []
+    FontAutoSize.Enabled = False
+    FontAutoSize.Max = -1
+    FontAutoSize.Min = -1
+    Text = ''
+    SubText = 'Hello World!'
+    AutoExtendImage = False
+    State = mbsLeave
+    Colors.Enter = 16559182
+    Colors.Leave = 13927462
+    Colors.Down = 11295744
+    Colors.BLine = 11295744
     Preset.Color = clBlue
     Preset.Kind = cbprCustom
     Preset.PenColorAuto = True

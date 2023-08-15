@@ -431,13 +431,8 @@ object CreatePlaylist: TCreatePlaylist
       Top = 11
       Width = 209
       Height = 254
-      Smooth = True
-      Opacity = 255
-      RotationAngle = 0
-      InflationValue = 0
       GifSettings.Enable = False
       GifSettings.AnimationSpeed = 100
-      DrawMode = dmCenterFit
       Picture.Data = {
         0954506E67496D61676589504E470D0A1A0A0000000D49484452000002000000
         02000806000000F478D4FA000000017352474200AECE1CE90000000467414D41
@@ -3159,8 +3154,6 @@ object CreatePlaylist: TCreatePlaylist
         ParentFont = False
         TabOrder = 0
         TextHint = 'Playlist name'
-        ExplicitLeft = 0
-        ExplicitTop = -4
       end
     end
     object Panel6: TPanel
@@ -3232,13 +3225,13 @@ object CreatePlaylist: TCreatePlaylist
       Colors.Leave = 16250866
       Colors.Enter = 15658729
       Colors.Down = 15066593
-      Colors.Checked = 9458026
+      Colors.Checked = 4745881
       Colors.CheckIndicator = clWhite
       Colors.TransparentCenter = True
       ColorsBorder.Leave = 9013638
       ColorsBorder.Enter = 9013638
       ColorsBorder.Down = 12434873
-      ColorsBorder.Checked = 9458026
+      ColorsBorder.Checked = 4745881
       Checked = False
       State = cbUnchecked
     end

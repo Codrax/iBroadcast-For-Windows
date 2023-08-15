@@ -8,7 +8,7 @@ interface
     Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
     Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL,
     IdHTTP, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
-    Cod.VarHelpers, Cod.Dialogs, Cod.SysUtils;
+    Cod.VarHelpers, Cod.Dialogs, Cod.SysUtils, Cod.Files;
 
   type
     // Cardinals
@@ -411,6 +411,9 @@ var
   // App Device token
   LOGIN_TOKEN: string;
 
+  // Post export
+  ExportPost: boolean = false;
+
   // Cover Settings
   DefaultArtSize: TArtSize = TArtSize.Medium;
 
@@ -449,10 +452,11 @@ uses
 
 function SendClientRequest(RequestJSON, Endpoint: string): TJSONValue;
 var
-  Response: string;
+  Response, AFolder, APath: string;
   HTTP: TIdHTTP;
   SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
   RequestStream: TStringStream;
+  I: integer;
 begin
   // Endpoint
   if Endpoint = '' then
@@ -472,6 +476,22 @@ begin
 
     // Send request and receive response
     Response := HTTP.Post(Endpoint, RequestStream);
+
+    // POST Exporter
+    if ExportPost then
+      begin
+        AFolder := ReplaceWinPath('shell:desktop\POST Export\');
+        if not TDirectory.Exists(AFolder) then
+          TDirectory.CreateDirectory(AFolder);
+
+        I := 0;
+        repeat
+          APath := AFolder + 'apirequest' + i.ToString + '.json';
+          Inc(I);
+        until not TFile.Exists(APath);
+
+        TFile.WriteAllText(APath, Response);
+      end;
 
     // Parse response and extract numbers
     Result := TJSONObject.ParseJSONValue(Response);
@@ -1620,9 +1640,22 @@ begin
   Genre := (JSON.Items[3].AsType<TJSONString>).Value;
 
   LengthSeconds := (JSON.Items[4].AsType<TJSONNumber>).AsInt;
-  AlbumID := (JSON.Items[5].AsType<TJSONNumber>).AsInt;
-  ArtworkID := (JSON.Items[6].AsType<TJSONNumber>).AsInt.ToString;
-  ArtistID := (JSON.Items[7].AsType<TJSONNumber>).AsInt;
+  // Typecast as number, then as string for legacy accounts
+  try
+    AlbumID := (JSON.Items[5].AsType<TJSONNumber>).AsInt;
+  except
+    AlbumID := (JSON.Items[5].AsType<TJSONString>).Value.ToInteger;
+  end;
+  try
+    ArtworkID := (JSON.Items[6].AsType<TJSONNumber>).AsInt.ToString;
+  except
+    ArtworkID := (JSON.Items[6].AsType<TJSONString>).Value;
+  end;
+  try
+    ArtistID := (JSON.Items[7].AsType<TJSONNumber>).AsInt;
+  except
+    ArtistID := (JSON.Items[7].AsType<TJSONString>).Value.ToInteger;
+  end;
 
   // ?
   DayUploaded := StringToDateTime( (JSON.Items[9].AsType<TJSONString>).Value );

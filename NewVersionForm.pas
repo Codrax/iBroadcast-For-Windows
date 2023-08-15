@@ -19,7 +19,9 @@ type
     Version_New: TLabel;
     CButton1: CButton;
     CButton2: CButton;
+    CButton3: CButton;
     procedure FormCreate(Sender: TObject);
+    procedure CButton3Click(Sender: TObject);
   private
     { Private declarations }
   public
@@ -32,6 +34,11 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TNewVersion.CButton3Click(Sender: TObject);
+begin
+  ShellRun('https://www.codrutsoft.com/apps/ibroadcast/', true);
+end;
 
 procedure TNewVersion.FormCreate(Sender: TObject);
 begin

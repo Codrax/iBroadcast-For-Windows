@@ -55,11 +55,8 @@ object MiniPlayer: TMiniPlayer
       Top = 16
       Width = 56
       Height = 56
-      Smooth = True
-      Opacity = 255
       GifSettings.Enable = False
       GifSettings.AnimationSpeed = 100
-      DrawMode = dmCenterFit
       OnMouseDown = MoveMoveDown
     end
     object Mini_Artist: TLabel
@@ -110,6 +107,7 @@ object MiniPlayer: TMiniPlayer
       FontAutoSize.Min = -1
       Text = ''
       SubText = 'Hello World!'
+      AutoExtendImage = False
       State = mbsLeave
       Colors.Enter = 5771359
       Colors.Leave = 4853328
@@ -172,6 +170,7 @@ object MiniPlayer: TMiniPlayer
       FontAutoSize.Min = -1
       Text = ''
       SubText = 'Hello World!'
+      AutoExtendImage = False
       State = mbsLeave
       Colors.Enter = 5771359
       Colors.Leave = 4853328
@@ -233,6 +232,7 @@ object MiniPlayer: TMiniPlayer
       FontAutoSize.Min = -1
       Text = ''
       SubText = 'Hello World!'
+      AutoExtendImage = False
       State = mbsLeave
       Colors.Enter = 5771359
       Colors.Leave = 4853328
@@ -295,6 +295,7 @@ object MiniPlayer: TMiniPlayer
       FontAutoSize.Min = -1
       Text = ''
       SubText = 'Hello World!'
+      AutoExtendImage = False
       State = mbsLeave
       Colors.Enter = 5771359
       Colors.Leave = 4853328
@@ -359,6 +360,7 @@ object MiniPlayer: TMiniPlayer
       FontAutoSize.Min = -1
       Text = ''
       SubText = 'Hello World!'
+      AutoExtendImage = False
       State = mbsLeave
       Colors.Enter = 5771359
       Colors.Leave = 4853328
@@ -472,9 +474,9 @@ object MiniPlayer: TMiniPlayer
       ParentColor = False
       AccentColor = acAccentAdjust
       Presets = cslNone
-      Foreground.Enter = 6914986
-      Foreground.Leave = 5270161
-      Foreground.Down = 3625336
+      Foreground.Enter = 6390706
+      Foreground.Leave = 4745881
+      Foreground.Down = 3101056
       Foreground.Border = clGray
       Foreground.BorderThick = 0
       Foreground.MultiColor = False
@@ -538,6 +540,7 @@ object MiniPlayer: TMiniPlayer
       FontAutoSize.Min = -1
       Text = ''
       SubText = 'Hello World!'
+      AutoExtendImage = False
       State = mbsLeave
       Colors.Enter = 5771359
       Colors.Leave = 4853328
@@ -602,6 +605,7 @@ object MiniPlayer: TMiniPlayer
       FontAutoSize.Min = -1
       Text = ''
       SubText = 'Hello World!'
+      AutoExtendImage = False
       State = mbsLeave
       Colors.Enter = 5771359
       Colors.Leave = 4853328
@@ -666,6 +670,7 @@ object MiniPlayer: TMiniPlayer
       FontAutoSize.Min = -1
       Text = ''
       SubText = 'Hello World!'
+      AutoExtendImage = False
       State = mbsLeave
       Colors.Enter = 5771359
       Colors.Leave = 4853328

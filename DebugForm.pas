@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.Imaging.pngimage,
   Cod.Visual.Image, Cod.Visual.Button, BroadcastAPI, Vcl.Clipbrd, JSON,
   Vcl.ExtCtrls, Cod.Types, Bass, Vcl.WinXCtrls, CreatePlaylistForm,
-  Cod.SysUtils, PickerDialogForm;
+  Cod.SysUtils, PickerDialogForm, Cod.Windows;
 
 type
   TDebugUI = class(TForm)

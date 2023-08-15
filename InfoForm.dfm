@@ -292,7 +292,6 @@ object InfoBox: TInfoBox
     ParentColor = True
     ShowCaption = False
     TabOrder = 1
-    ExplicitTop = 53
     object Song_Cover: CImage
       AlignWithMargins = True
       Left = 25
@@ -304,13 +303,8 @@ object InfoBox: TInfoBox
       Margins.Right = 25
       Margins.Bottom = 5
       Align = alTop
-      Smooth = True
-      Opacity = 255
-      RotationAngle = 0
-      InflationValue = 0
       GifSettings.Enable = False
       GifSettings.AnimationSpeed = 100
-      DrawMode = dmCenterFit
       PopupMenu = Popup_Right
       ExplicitWidth = 372
     end
@@ -382,8 +376,6 @@ object InfoBox: TInfoBox
       Animations.PAAnimateEngine = cbneAtDraw
       Animations.FadeAnimation = True
       Animations.FASpeed = 10
-      ExplicitLeft = 25
-      ExplicitTop = 151
     end
     object Song_Rating: CStarRate
       AlignWithMargins = True
@@ -414,7 +406,7 @@ object InfoBox: TInfoBox
       AlignWithMargins = True
       Left = 190
       Top = 333
-      Width = 40
+      Width = 45
       Height = 40
       Margins.Left = 190
       Margins.Top = 5
@@ -423,7 +415,7 @@ object InfoBox: TInfoBox
       OnClick = Save_Button_StarClick
       TabOrder = 2
       Align = alTop
-      Constraints.MaxWidth = 40
+      Constraints.MaxWidth = 45
       Visible = False
       BSegoeIcon = #57605
       ButtonIcon = cicSegoeFluent
@@ -479,7 +471,6 @@ object InfoBox: TInfoBox
       Animations.PAAnimateEngine = cbneAtDraw
       Animations.FadeAnimation = True
       Animations.FASpeed = 10
-      ExplicitLeft = 220
     end
   end
   object Popup_Right: TPopupMenu

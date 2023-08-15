@@ -20,7 +20,8 @@ uses
   Vcl.ControlList, Vcl.OleCtrls, SHDocVw, Vcl.Menus,
   Cod.MasterVolume, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   IdHTTP, CreatePlaylistForm, Offline, Cod.StringUtils, iBroadcastUtils,
-  PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar;
+  PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar, Cod.Windows,
+  Cod.VersionUpdate;
 
 type
   // Cardinals
@@ -663,6 +664,7 @@ type
     // Update
     procedure StartCheckForUpdate;
     procedure GetVersionUpdateData;
+    procedure BeginUpdate(DownloadURL: string);
 
     // Library
     procedure ReloadLibrary;
@@ -670,9 +672,6 @@ type
     // Application Tray
     procedure MinimiseToTray;
     procedure OpenFromTray;
-
-    // System
-    function Version: string;
 
     procedure CloseApplication;
 
@@ -686,12 +685,10 @@ type
 
 const
   // SYSTEM
-  V_MAJOR = 1;
-  V_MINOR = 6;
-  V_PATCH = 2;
+  Version: TVersionRec = (Major:1; Minor:6; Maintanance: 3);
 
-  UPDATE_URL = 'https://www.codrutsoftware.cf/versions/ibroadcast.txt';
-  DOWNLOAD_UPDATE_URL = 'https://github.com/Codrax/iBroadcast-For-Windows/releases/';
+  API_APPNAME = 'ibroadcast';
+  API_ENDPOINT = 'https://www.codrutsoft.com/api/';
 
   // UI
   ICON_FILL = #$E73B;
@@ -725,6 +722,9 @@ const
 
   // DOWNLOAD
   DOWNLOAD_DIR = 'downloaded\';
+
+  // Sizes
+  QUEUE_MIN_SIZE = 1;
 
   // HOME
   HOME_COLUMNS = 5;
@@ -1125,7 +1125,7 @@ procedure TUIForm.Button_ExtendClick(Sender: TObject);
 begin
   if EqualApprox(DestQueuePopup, Queue_Extend.Constraints.MaxHeight, 10) then
     begin
-      DestQueuePopup := 1;
+      DestQueuePopup := QUEUE_MIN_SIZE;
       CButton(Sender).BSegoeIcon := #$E70E;
     end
   else
@@ -1280,6 +1280,22 @@ begin
     end);
 end;
 
+procedure TUIForm.BeginUpdate(DownloadURL: string);
+var
+  Installer: string;
+begin
+  try
+    Installer := ReplaceWinPath('%TMP%\installer_ibroadcast.exe');
+    if DownloadFile(DownloadURL, Installer) then
+      begin
+        ShellRun(Installer, true, '-ad', true);
+        Application.Terminate;
+      end;
+  except
+    OpenDialog('Update failed.', 'An error occured downloading the latest version.');
+  end;
+end;
+
 procedure TUIForm.Button_ClearQueueClick(Sender: TObject);
 begin
   QueueClear;
@@ -1323,7 +1339,7 @@ var
 begin
   // Social Exec
   case CButton(Sender).Tag of
-    1: URL  := 'https://www.codrutsoftware.cf/';
+    1: URL  := 'https://www.codrutsoft.com/';
     2: URL  := 'https://www.youtube.com/LavaTechnology/';
     3: URL  := 'https://www.twitter.com/LAVAplanks/';
     4: URL  := 'mailto:petculescucodrut@outlook.com';
@@ -1357,11 +1373,15 @@ end;
 
 procedure TUIForm.CButton23Click(Sender: TObject);
 begin
-  if OpenDialog('Advanced Login', 'Would you like to toggle Advanced Login?', ctQuestion, [mbYes, mbNo]) = mrYes then
+  if Advanced_Login.Visible
+    or (OpenDialog('Advanced Login', 'Would you like to toggle Advanced Login?', ctQuestion, [mbYes, mbNo]) = mrYes) then
     Advanced_Login.Visible := not Advanced_Login.Visible;
 
   if Advanced_Login.Visible then
     Advanced_Login.Top := 0;
+
+  // Draw
+  LoginBox.Invalidate;
 end;
 
 procedure TUIForm.CButton25Click(Sender: TObject);
@@ -2406,7 +2426,7 @@ begin
   // UI Preparation
   Queue_Extend.Height := 0;
   ICON_CONNECT.Font.Name := GetSegoeIconFont;
-  Version_Label.Caption := 'Version ' + VERSION;
+  Version_Label.Caption := 'Version ' + Version.ToString();
 
   AddToLog('Form.Create.CalculateGeneralStorage');
   // Storage
@@ -2639,72 +2659,42 @@ end;
 
 procedure TUIForm.GetVersionUpdateData;
 var
-  HTML: string;
+  Local,
+  Server: TVersionRec;
 
-  VerStr: TArray<string>;
-  VMajor, VMinor, VPatch: integer;
-
-  ANewVersion: boolean;
+  Download: string;
 begin
   // Get HTML
+  Local := Version;
   try
-    HTML := IdHTTP1.Get(UPDATE_URL);
+    Server.APILoad(API_APPNAME, API_ENDPOINT);
   except
-    Latest_Version.Caption := 'Latest version on server: Unknown';
-    Exit;
+    Latest_Version.Caption := 'Latest version on server: Server Error';
+    exit;
   end;
 
-  // Trim
-  HTML := Trim(HTML);
-
-  // Get Str
-  VerStr := GetAllSeparatorItems(HTML, '.');
-
-  try
-    VMajor := VerStr[0].ToInteger;
-    VMinor := VerStr[1].ToInteger;
-    VPatch := VerStr[2].ToInteger;
-  except
-    Exit;
-  end;
-
-  ANewVersion := true;
-
-  // Analise - Major
-  case GetNumberRelation(V_MAJOR, VMajor) of
-    TRelation.Bigger: ANewVersion := false;
-    TRelation.Equal:
-      // Minor
-      case GetNumberRelation(V_MINOR, VMinor) of
-        TRelation.Bigger: ANewVersion := false;
-        TRelation.Equal:
-          // Patch
-          case GetNumberRelation(V_PATCH, VPatch) of
-            TRelation.Bigger, TRelation.Equal: ANewVersion := false;
-          end;
-      end;
-  end;
-
-  // New Version
-  if ANewVersion then
+  if Server.NewerThan(Local) then
     begin
-      NewVersion := TNewVersion.Create(Application);
-      try
-        with NewVersion do
-          begin
-            Version_Old.Caption := Version;
-            Version_New.Caption := HTML;
+      NewVersion := TNewVersion.Create(Self);
+      with NewVersion do
+        try
+          Version_Old.Caption := Local.ToString();
+          Version_New.Caption := Server.ToString();
 
-            if ShowModal = mrOk then
-              ShellRun( DOWNLOAD_UPDATE_URL, false );
-          end;
-      finally
-        NewVersion.Free;
-      end;
+          if ShowModal = mrOk then
+            begin
+              // Open new
+              Download := Server.APIResponse.GetValue<string>('updateurl');
+
+              BeginUpdate(Download);
+            end;
+        finally
+          Free;
+        end;
     end;
 
   // Update version
-  Latest_Version.Caption := 'Latest version on server: ' + VMajor.ToString + '.' + VMinor.ToString + '.' + VPatch.ToString;
+  Latest_Version.Caption := 'Latest version on server: ' + Server.ToString;
 end;
 
 function TUIForm.HasOfflineBackup: boolean;
@@ -3173,10 +3163,10 @@ begin
 
           Identifier := -1;
           P := GetTrack(SomeArray[I]);
-          if P > 0 then
+          if P > -1 then
             Identifier := Tracks[P].AlbumID;
           if Identifier = -1 then
-            Break;
+            Continue;
 
           // Validate if it exists
           for A := 0 to High(SelectItems) do
@@ -4224,7 +4214,7 @@ begin
       if Menu.Default then
         Font.Style := [fsBold];
       Text := Menu.Caption;
-      DrawTextRect( ACanvas, TextR, Text, [tffVerticalCenter], 5);
+      DrawTextRect( ACanvas, TextR, Text, [TTextFlag.VerticalCenter], 5);
     end;
 end;
 
@@ -4787,7 +4777,7 @@ begin
   Inc(QueueAnProgress, 10);
 
   // Anim
-  if DestQueuePopup > 0 then
+  if DestQueuePopup > QUEUE_MIN_SIZE then
     Queue_Extend.Height := trunc(Power(Queue_Extend.Constraints.MaxHeight, QueueAnProgress/100) )
   else
     Queue_Extend.Height := Queue_Extend.Constraints.MaxHeight - trunc(Power(Queue_Extend.Constraints.MaxHeight, QueueAnProgress/100) );
@@ -5113,9 +5103,12 @@ const
   ARTRES_NAME = 'Artwork';
 var
   AName: string;
-  Pict: TPngImage;
-  Bmp: TBitMap;
   LoadID: integer;
+  ResStream: TResourceStream;
+procedure LoadDefaultArtwork;
+begin
+  DefaultPicture := GetSongArtwork('0', TArtSize.Small);
+end;
 begin
   // Free
   if (DefaultPicture <> nil) and (not DefaultPicture.Empty) then
@@ -5131,27 +5124,24 @@ begin
     1..4: begin
       AName := ARTRES_NAME + ArtworkID.ToString;
 
-      Pict := TPngImage.Create;
       try
-        Pict.LoadFromResourceName(0, AName);
+        ResStream := TResourceStream.Create(0, AName, RT_RCDATA);
 
-        Bmp := TBitMap.Create;
         try
-          Bmp.Assign( Pict );
-
           DefaultPicture := TJpegImage.Create;
-          DefaultPicture.Assign( Bmp );
+          DefaultPicture.LoadFromStream(ResStream);
         finally
-          Bmp.Free;
+          ResStream.Free;
         end;
-      finally
-        Pict.Free;
+      except
+        LoadDefaultArtwork;
+
+        AddToLog('Error loading custom artwork from memory stream.');
       end;
     end;
-
-    // Default Artwork
-    else
-      DefaultPicture := GetSongArtwork('0', TArtSize.Small);
+      // Default Artwork
+      else
+        LoadDefaultArtwork;
   end;
 
   // Buttons
@@ -5174,27 +5164,33 @@ begin
 
   // Get Status
   WORK_STATUS := 'Loading your account...';
+  AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
   LoadStatus;
 
   // Get Library
   WORK_STATUS := 'Loading your library...';
+  AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
   LoadLibrary;
 
   // Update Downloads
   WORK_STATUS := 'Updating Downloads...';
+  AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
   UpdateDownloads;
 
   // Get last queue
   WORK_STATUS := 'Updating Queue...';
+  AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
   if Setting_QueueSaver.Checked and (PlayQueue.Count = 0) then
     QueueSettings(true);
 
   // Default Artwork
   WORK_STATUS := 'Loading Artwork...';
+  AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
   ReloadArtwork;
 
   // UI
   WORK_STATUS := 'Preparing User Interface...';
+  AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
   Welcome_Label.Caption := Format(WELCOME_STRING, [Account.Username]);
   Complete_Email.Caption := Format(CAPTION_EMAIL, [MaskEmailAdress(Account.EmailAdress)]);
   Complete_Email.Hint := Format(CAPTION_EMAIL, [Account.EmailAdress]);
@@ -5758,6 +5754,9 @@ begin
       Exit;
     end;
 
+  if UpdateCheck.Enabled then
+    UpdateCheck.Enabled := false;
+
   // Status
   Latest_Version.Caption := 'Latest version on server: Checking...';
 
@@ -6073,6 +6072,7 @@ procedure TUIForm.UpdateCheckTimer(Sender: TObject);
 begin
   UpdateCheck.Enabled := false;
 
+  // Check
   if Settings_CheckUpdate.Checked then
     StartCheckForUpdate;
 end;
@@ -6298,11 +6298,6 @@ begin
           // Thread is still using the file. To be deleted on next launch
         end;
     end;
-end;
-
-function TUIForm.Version: string;
-begin
-  Result := V_MAJOR.ToString + '.' + V_MINOR.ToString + '.' + V_PATCH.ToString ;
 end;
 
 procedure TUIForm.PopupGeneralViewAlbum(Sender: TObject);

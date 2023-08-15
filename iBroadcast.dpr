@@ -61,8 +61,13 @@ begin
 
       if Param = '-logtoken' then
         PrivacyEnabled := false;
+
+      if Param = '-exportpost' then
+        ExportPost := true;
     end;
 
+  AddToLog('======================');
+  AddToLog('Started iBroadcast version ' + Version);
   AddToLog('Started creating forms');
 
   Application.MainFormOnTaskbar := True;

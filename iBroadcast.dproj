@@ -4,7 +4,7 @@
         <ProjectVersion>19.5</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>2</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -123,7 +123,7 @@
         <Icon_MainIcon>iBroadcast_Icon.ico</Icon_MainIcon>
         <VerInfo_MinorVer>3</VerInfo_MinorVer>
         <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.3.0.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <Debugger_RunParams>-debug</Debugger_RunParams>
+        <Debugger_RunParams>-debug -exportpost</Debugger_RunParams>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -188,19 +188,19 @@
             <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="iBroadcastUtils.pas"/>
-        <RcItem Include="Artwork\Box.png">
+        <RcItem Include="Artwork\Box.jpg">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>Artwork1</ResourceId>
         </RcItem>
-        <RcItem Include="Artwork\Broadcast.png">
+        <RcItem Include="Artwork\Broadcast.jpg">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>Artwork2</ResourceId>
         </RcItem>
-        <RcItem Include="Artwork\SongArt.png">
+        <RcItem Include="Artwork\SongArt.jpg">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>Artwork3</ResourceId>
         </RcItem>
-        <RcItem Include="Artwork\Speaker.png">
+        <RcItem Include="Artwork\Speaker.jpg">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>Artwork4</ResourceId>
         </RcItem>
@@ -230,14 +230,14 @@
                 </Excluded_Packages>
             </Delphi.Personality>
             <Deployment Version="4">
-                <DeployFile LocalName="Artwork\Box.png" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win32">
+                <DeployFile LocalName="Artwork\Box.jpg" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Artwork\Box.png" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win64">
+                    <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
@@ -248,14 +248,14 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Artwork\Broadcast.png" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win32">
+                <DeployFile LocalName="Artwork\Broadcast.jpg" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Artwork\Broadcast.png" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win64">
+                    <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
@@ -266,14 +266,14 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Artwork\SongArt.png" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win32">
+                <DeployFile LocalName="Artwork\SongArt.jpg" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Artwork\SongArt.png" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win64">
+                    <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
@@ -284,14 +284,14 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Artwork\Speaker.png" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win32">
+                <DeployFile LocalName="Artwork\Speaker.jpg" Configuration="Debug" Class="ProjectFile">
+                    <Platform Name="Win64">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="Artwork\Speaker.png" Configuration="Debug" Class="ProjectFile">
-                    <Platform Name="Win64">
+                    <Platform Name="Win32">
                         <RemoteDir>.\</RemoteDir>
                         <Overwrite>true</Overwrite>
                     </Platform>
