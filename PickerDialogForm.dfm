@@ -168,7 +168,7 @@ object PickerDialog: TPickerDialog
       Align = alLeft
       BSegoeIcon = #59153
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -236,7 +236,7 @@ object PickerDialog: TPickerDialog
       Align = alRight
       BSegoeIcon = #57345
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed

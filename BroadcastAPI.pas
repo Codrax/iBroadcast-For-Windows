@@ -8,7 +8,7 @@ interface
     Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
     Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL,
     IdHTTP, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
-    Cod.VarHelpers, Cod.Dialogs, Cod.SysUtils, Cod.Files;
+    Cod.VarHelpers, Cod.Dialogs, Cod.SysUtils, Cod.Files, Cod.ArrayHelpers;
 
   type
     // Cardinals
@@ -295,6 +295,12 @@ interface
   function GetSongArtwork(ID: string; Size: TArtSize = TArtSize.Small): TJpegImage;
   function SongArtCollage(ID1, ID2, ID3, ID4: integer): TJpegImage;
 
+  // Status
+  procedure SetWorkStatus(Status: string);
+  procedure SetDataWorkStatus(Status: string);
+
+  procedure ResetWork;
+
 const
   // Formattable Strings
   DEVICE_NAME_CONST = '%S' + ' iBroadcast for Windows';
@@ -377,6 +383,7 @@ const
     + '"mode": "updateplaylist",'
     + '"playlist": %D,'
     + '"name": "%S",'
+    + 'supported_types: false,'
     + '"description": "%S"'
     + '}';
 
@@ -411,6 +418,10 @@ var
   // App Device token
   LOGIN_TOKEN: string;
 
+  // Notify
+  OnWorkStatusChange: procedure(Status: string);
+  OnDataWorkStatusChange: procedure(Status: string);
+
   // Post export
   ExportPost: boolean = false;
 
@@ -423,6 +434,11 @@ var
 
   // Verbose Loggins
   WORK_STATUS: string;
+  DATA_WORK_STATUS: string;
+
+  // Work
+  WorkCount: int64;
+  TotalWorkCount: int64;
 
   // Artwork Store
   ArtworkStore: boolean = true;
@@ -686,7 +702,7 @@ begin
   Request := Format(REQUEST_RATE_TRACK, [USER_ID, TOKEN, ID, Rating]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Updating track rating';
+  SetWorkStatus('Updating track rating');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -724,7 +740,7 @@ begin
   Request := Format(REQUEST_RATE_ALBUM, [USER_ID, TOKEN, ID, Rating]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Updating album rating';
+  SetWorkStatus('Updating album rating');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -751,7 +767,7 @@ begin
   Request := Format(REQUEST_RATE_ARTIST, [USER_ID, TOKEN, ID, Rating]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Updating artist rating';
+  SetWorkStatus('Updating artist rating');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -794,7 +810,7 @@ begin
     Name, Description, booleantostring(MakePublic), ATracks]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Creating Playlist by Songs';
+  SetWorkStatus('Creating Playlist by Songs');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -821,7 +837,7 @@ begin
     Name, Description, booleantostring(MakePublic), Mood]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Creating Playlist by Mood';
+  SetWorkStatus('Creating Playlist by Mood');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -863,7 +879,7 @@ begin
     ID, ATracks]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Adding songs to playlist';
+  SetWorkStatus('Adding songs to playlist');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -911,7 +927,7 @@ begin
     ID, ATracks]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Changing songs of playlist';
+  SetWorkStatus('Changing songs of playlist');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -962,7 +978,7 @@ begin
     ID, ATracks]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Repairing playlist';
+  SetWorkStatus('Repairing playlist');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -989,7 +1005,7 @@ begin
     ID, Name, Description]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Updating playlist';
+  SetWorkStatus('Updating playlist');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -1016,7 +1032,7 @@ begin
   Request := Format(REQUEST_LIST_DELETE, [USER_ID, TOKEN, ID]);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Deleting playlist';
+  SetWorkStatus('Deleting playlist');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -1124,7 +1140,7 @@ begin
   end;
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Pushing history update to server';
+  SetWorkStatus('Pushing history update to server');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -1154,7 +1170,7 @@ begin
   Request := Format(REQUEST_DATA, [USER_ID, TOKEN, 'status']);
 
   // Parse response and extract numbers
-  WORK_STATUS := 'Contacting iBroadcast API servers...';
+  SetWorkStatus('Contacting iBroadcast API servers...');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -1165,18 +1181,18 @@ begin
         JResult.TerminateSession;
 
     // Load status
-    WORK_STATUS := 'Loading library status...';
+    SetWorkStatus('Loading library status...');
     JSONItem := JSONValue.GetValue<TJSONObject>('status');
     LibraryStatus.LoadFrom(JSONItem);
 
     // Account
-    WORK_STATUS := 'Loading your account...';
+    SetWorkStatus('Loading your account...');
     JSONAccount := JSONValue.GetValue<TJSONObject>('user');
 
     Account.LoadFrom( JSONAccount );
 
     // Sessions
-    WORK_STATUS := 'Loading sessions...';
+    SetWorkStatus('Loading sessions...');
     JSONSessions := JSONAccount.GetValue<TJSONObject>('session').GetValue<TJSONArray>('sessions');
 
     SetLength( Sessions, JSONSessions.Count );
@@ -1209,8 +1225,11 @@ begin
   // Prepare request string
   Request := Format(REQUEST_LIBRARY, [USER_ID, TOKEN]);
 
+  // Work
+  ResetWork;
+
   // Parse response and extract numbers
-  WORK_STATUS := 'Downloading iBroadcast Library...';
+  SetWorkStatus('Downloading iBroadcast Library...');
   JSONValue := SendClientRequest(Request, LIBRARY_ENDPOINT);
   try
     // Error
@@ -1221,19 +1240,31 @@ begin
         JResult.TerminateSession;
 
     // Load library
-    WORK_STATUS := 'Loading library...';
+    SetWorkStatus('Loading library...');
     JSONLibrary := JSONValue.GetValue<TJSONObject>('library');
 
     // Tracks
     if TLoad.Track in LoadSet then
       begin
-        WORK_STATUS := 'Loading tracks...';
+        SetWorkStatus('Loading tracks...');
         JSONItem := JSONLibrary.GetValue<TJSONObject>('tracks');
         SetLength( Tracks, 0 );
 
+        // Work
+        ResetWork;
+        TotalWorkCount := JSONItem.Count;
+
         for I := 0 to JSONItem.Count - 1 do
           begin
-            JSONPair := JSONItem.Pairs[I];
+            try
+              JSONPair := JSONItem.Pairs[I];
+            except
+              if I >= JSONItem.Count - 1 then
+                Break;
+              Continue;
+            end;
+
+            WorkCount := I;
 
             if JSONPair.JsonString.Value = 'map' then
               Continue;
@@ -1248,13 +1279,19 @@ begin
     // Albums
     if TLoad.Album in LoadSet then
       begin
-        WORK_STATUS := 'Loading albums...';
+        SetWorkStatus('Loading albums...');
         JSONItem := JSONLibrary.GetValue<TJSONObject>('albums');
         SetLength( Albums, 0 );
+
+        // Work
+        ResetWork;
+        TotalWorkCount := JSONItem.Count;
 
         for I := 0 to JSONItem.Count - 1 do
           begin
             JSONPair := JSONItem.Pairs[I];
+
+            WorkCount := I;
 
             if JSONPair.JsonString.Value = 'map' then
               Continue;
@@ -1269,13 +1306,19 @@ begin
     // Artists
     if TLoad.Artist in LoadSet then
       begin
-        WORK_STATUS := 'Loading artists...';
+        SetWorkStatus('Loading artists...');
         JSONItem := JSONLibrary.GetValue<TJSONObject>('artists');
         SetLength( Artists, 0 );
+
+        // Work
+        ResetWork;
+        TotalWorkCount := JSONItem.Count;
 
         for I := 0 to JSONItem.Count - 1 do
           begin
             JSONPair := JSONItem.Pairs[I];
+
+            WorkCount := I;
 
             if JSONPair.JsonString.Value = 'map' then
               Continue;
@@ -1290,13 +1333,19 @@ begin
     // PlayLists
     if TLoad.PlayList in LoadSet then
       begin
-        WORK_STATUS := 'Loading playlists...';
+        SetWorkStatus('Loading playlists...');
         JSONItem := JSONLibrary.GetValue<TJSONObject>('playlists');
         SetLength( PlayLists, 0 );
+
+        // Work
+        ResetWork;
+        TotalWorkCount := JSONItem.Count;
 
         for I := 0 to JSONItem.Count - 1 do
           begin
             JSONPair := JSONItem.Pairs[I];
+
+            WorkCount := I;
 
             if JSONPair.JsonString.Value = 'map' then
               Continue;
@@ -1310,6 +1359,9 @@ begin
   finally
     JSONValue.Free;
   end;
+
+  // Work
+  ResetWork;
 end;
 
 function GetSongArtwork(ID: string; Size: TArtSize): TJpegImage;
@@ -1415,6 +1467,28 @@ begin
   end;
 end;
 
+procedure SetWorkStatus(Status: string);
+begin
+  WORK_STATUS := Status;
+
+  if Assigned(OnWorkStatusChange) then
+    OnWorkStatusChange(Status);
+end;
+
+procedure SetDataWorkStatus(Status: string);
+begin
+  DATA_WORK_STATUS := Status;
+
+  if Assigned(OnDataWorkStatusChange) then
+    OnDataWorkStatusChange(Status);
+end;
+
+procedure ResetWork;
+begin
+  WorkCount := 0;
+  TotalWorkCount := 0;
+end;
+
 { ResultType }
 
 procedure ResultType.AnaliseFrom(JSON: TJSONValue);
@@ -1485,11 +1559,15 @@ end;
 function GetPlaylistOfType(AType: string): integer;
 var
   I: Integer;
+  ListType: string;
 begin
   Result := -1;
   for I := 0 to High(Playlists) do
-    if Playlists[I].PlaylistType = AType then
-      Exit( I );
+    begin
+      ListType := Playlists[I].PlaylistType;
+      if ListType = AType then
+        Exit( I );
+    end;
 end;
 
 function StringToDateTime(const ADateTimeStr: string; CovertUTC: boolean = true): TDateTime;
@@ -1633,6 +1711,8 @@ begin
   // Data
   ID := JSONPair.JsonString.Value.ToInteger;
 
+  SetDataWorkStatus(Format('Loading song with ID of %D', [ID]));
+
   TrackNumber := (JSON.Items[0].AsType<TJSONNumber>).AsInt;
   Year := (JSON.Items[1].AsType<TJSONNumber>).AsInt;
 
@@ -1672,7 +1752,11 @@ begin
   AudioType := (JSON.Items[17].AsType<TJSONString>).Value;
 
   ReplayGain := (JSON.Items[18].AsType<TJSONString>).Value;
-  UploadTime := StringToDateTime( (JSON.Items[19].AsType<TJSONString>).Value );
+  try
+    UploadTime := StringToDateTime( (JSON.Items[19].AsType<TJSONString>).Value );
+  except
+    UploadTime := 0;
+  end;
   // ?
 end;
 
@@ -1684,6 +1768,8 @@ const
 var
   S: string;
 begin
+  SetDataWorkStatus('Loading account from post request');
+
   if not JSON.TryGetValue<string>('username', Username) then
     Username := 'User';
   //ShowMessage(JSOn.ToString);
@@ -1761,6 +1847,8 @@ begin
 
   // Data
   ID := JSONPair.JsonString.Value.ToInteger;
+
+  SetDataWorkStatus(Format('Loading album with ID of %D', [ID]));
 
   AlbumName := (JSON.Items[0].AsType<TJSONString>).Value;
 
@@ -1845,6 +1933,8 @@ begin
   // Data
   ID := JSONPair.JsonString.Value.ToInteger;
 
+  SetDataWorkStatus(Format('Loading artist with ID of %D', [ID]));
+
   ArtistName := (JSON.Items[0].AsType<TJSONString>).Value;
 
   // TRACKS
@@ -1924,6 +2014,8 @@ begin
   // Data
   ID := JSONPair.JsonString.Value.ToInteger;
 
+  SetDataWorkStatus(Format('Loading playlist with ID of %D', [ID]));
+
   Name := (JSON.Items[0].AsType<TJSONString>).Value;
 
   // TRACKS
@@ -1957,6 +2049,8 @@ end;
 
 procedure TSession.LoadFrom(JSON: TJSONValue);
 begin
+  SetDataWorkStatus('Loading session');
+
   DeviceName := JSON.GetValue<TJSONString>('device_name').Value;
 
   Joinable := JSON.GetValue<TJSONBool>('joinable').Value.ToBoolean;

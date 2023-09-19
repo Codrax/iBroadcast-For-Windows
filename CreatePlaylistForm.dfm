@@ -49,7 +49,7 @@ object CreatePlaylist: TCreatePlaylist
       Align = alRight
       BSegoeIcon = #59152
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -117,7 +117,7 @@ object CreatePlaylist: TCreatePlaylist
       Align = alRight
       BSegoeIcon = #59153
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -261,7 +261,7 @@ object CreatePlaylist: TCreatePlaylist
       Align = alLeft
       BSegoeIcon = #59176
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = True
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -328,7 +328,7 @@ object CreatePlaylist: TCreatePlaylist
       Align = alLeft
       BSegoeIcon = #59189
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -3210,7 +3210,7 @@ object CreatePlaylist: TCreatePlaylist
       Presets.Kind = ccpNone
       Presets.PenColorAuto = True
       TrueTransparency = True
-      AccentColor = acAccentAdjust
+      AccentColor = AccentAdjust
       Animation.Enable = True
       Animation.Interval = 1
       Animation.Step = 4
@@ -3273,7 +3273,7 @@ object CreatePlaylist: TCreatePlaylist
         Align = alTop
         BSegoeIcon = #60589
         ButtonIcon = cicSegoeFluent
-        UseAccentColor = acNone
+        UseAccentColor = None
         GradientOptions.Enabled = False
         GradientOptions.Enter = clBlue
         GradientOptions.Leave = 16755471
@@ -3339,7 +3339,7 @@ object CreatePlaylist: TCreatePlaylist
         Align = alTop
         BSegoeIcon = #60589
         ButtonIcon = cicSegoeFluent
-        UseAccentColor = acNone
+        UseAccentColor = None
         GradientOptions.Enabled = False
         GradientOptions.Enter = clBlue
         GradientOptions.Leave = 16755471
@@ -3405,7 +3405,7 @@ object CreatePlaylist: TCreatePlaylist
         Align = alTop
         BSegoeIcon = #60589
         ButtonIcon = cicSegoeFluent
-        UseAccentColor = acNone
+        UseAccentColor = None
         GradientOptions.Enabled = False
         GradientOptions.Enter = clBlue
         GradientOptions.Leave = 16755471
@@ -3471,7 +3471,7 @@ object CreatePlaylist: TCreatePlaylist
         Align = alTop
         BSegoeIcon = #60589
         ButtonIcon = cicSegoeFluent
-        UseAccentColor = acNone
+        UseAccentColor = None
         GradientOptions.Enabled = False
         GradientOptions.Enter = clBlue
         GradientOptions.Leave = 16755471
@@ -3537,7 +3537,7 @@ object CreatePlaylist: TCreatePlaylist
         Align = alTop
         BSegoeIcon = #60589
         ButtonIcon = cicSegoeFluent
-        UseAccentColor = acNone
+        UseAccentColor = None
         GradientOptions.Enabled = False
         GradientOptions.Enter = clBlue
         GradientOptions.Leave = 16755471
@@ -3603,7 +3603,7 @@ object CreatePlaylist: TCreatePlaylist
         Align = alTop
         BSegoeIcon = #60589
         ButtonIcon = cicSegoeFluent
-        UseAccentColor = acNone
+        UseAccentColor = None
         GradientOptions.Enabled = False
         GradientOptions.Enter = clBlue
         GradientOptions.Leave = 16755471

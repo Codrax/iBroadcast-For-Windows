@@ -86,7 +86,7 @@ object MiniPlayer: TMiniPlayer
       TabOrder = 0
       BSegoeIcon = #60999
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -149,7 +149,7 @@ object MiniPlayer: TMiniPlayer
       TabOrder = 1
       BSegoeIcon = #59538
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -211,7 +211,7 @@ object MiniPlayer: TMiniPlayer
       TabOrder = 2
       BSegoeIcon = #59240
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -274,7 +274,7 @@ object MiniPlayer: TMiniPlayer
       TabOrder = 3
       BSegoeIcon = #59539
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -339,7 +339,7 @@ object MiniPlayer: TMiniPlayer
       TabOrder = 4
       BSegoeIcon = #57676
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -472,11 +472,11 @@ object MiniPlayer: TMiniPlayer
       Color = 2886677
       ParentBackground = False
       ParentColor = False
-      AccentColor = acAccentAdjust
+      AccentColor = AccentCustom
       Presets = cslNone
-      Foreground.Enter = 6390706
-      Foreground.Leave = 4745881
-      Foreground.Down = 3101056
+      Foreground.Enter = 14585392
+      Foreground.Leave = 12940567
+      Foreground.Down = 11295744
       Foreground.Border = clGray
       Foreground.BorderThick = 0
       Foreground.MultiColor = False
@@ -519,7 +519,7 @@ object MiniPlayer: TMiniPlayer
       TabOrder = 1
       BSegoeIcon = #57680
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -584,7 +584,7 @@ object MiniPlayer: TMiniPlayer
       TabOrder = 2
       BSegoeIcon = #59630
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -649,7 +649,7 @@ object MiniPlayer: TMiniPlayer
       TabOrder = 3
       BSegoeIcon = #60770
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed

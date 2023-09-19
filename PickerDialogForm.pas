@@ -9,7 +9,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Dialogs, Vcl.TitleBarCtrls, Cod.SysUtils,
   Vcl.StdCtrls, Vcl.ExtCtrls, BroadcastAPI, Cod.Visual.Button, Cod.VarHelpers,
   Cod.Types, Cod.ColorUtils, Math, Imaging.jpeg, Vcl.WinXCtrls, Types,
-  iBroadcastUtils;
+  iBroadcastUtils, Cod.ArrayHelpers;
 
 type
   TPickType = (Song, Album, Artist, Playlist);

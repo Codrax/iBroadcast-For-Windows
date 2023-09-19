@@ -75,7 +75,7 @@ object OfflineForm: TOfflineForm
     Anchors = [akRight, akBottom]
     BSegoeIcon = #57345
     ButtonIcon = cicSegoeFluent
-    UseAccentColor = acNone
+    UseAccentColor = None
     GradientOptions.Enabled = False
     GradientOptions.Enter = clFuchsia
     GradientOptions.Leave = clRed

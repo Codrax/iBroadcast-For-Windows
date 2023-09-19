@@ -123,9 +123,10 @@ begin
         Amplify := 1;
 
       // Info
-      TextOut( TextH, 0, 'Peak %: ' + (trunc(Max * 100) / 100).ToString );
+      S := Format('Peak: %G%%', [trunc(Max * 100) / 100]);
+      TextOut( TextH, 0, S );
 
-      S := 'Current: ' + (trunc(ValuesList[High(ValuesList)] * 100) / 100).ToString;
+      S := Format('Current: %G%%', [trunc(ValuesList[High(ValuesList)] * 100) / 100]);
       TextOut( PaintBox1.Width - TextWidth(S) - TextH, 0, S );
 
       // Lines Separate

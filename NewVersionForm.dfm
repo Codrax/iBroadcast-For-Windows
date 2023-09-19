@@ -2785,7 +2785,7 @@ object NewVersion: TNewVersion
     TabOrder = 1
     BSegoeIcon = #59542
     ButtonIcon = cicSegoeFluent
-    UseAccentColor = acNone
+    UseAccentColor = None
     GradientOptions.Enabled = True
     GradientOptions.Enter = 13959381
     GradientOptions.Leave = clFuchsia
@@ -2847,7 +2847,7 @@ object NewVersion: TNewVersion
     TabOrder = 2
     BSegoeIcon = #59540
     ButtonIcon = cicSegoeFluent
-    UseAccentColor = acNone
+    UseAccentColor = None
     GradientOptions.Enabled = False
     GradientOptions.Enter = 13959381
     GradientOptions.Leave = clFuchsia
@@ -2910,7 +2910,7 @@ object NewVersion: TNewVersion
     TabOrder = 3
     BSegoeIcon = #63226
     ButtonIcon = cicSegoeFluent
-    UseAccentColor = acNone
+    UseAccentColor = None
     GradientOptions.Enabled = True
     GradientOptions.Enter = 13959381
     GradientOptions.Leave = clFuchsia

@@ -91,7 +91,7 @@ object InfoBox: TInfoBox
         Visible = False
         BSegoeIcon = #57605
         ButtonIcon = cicSegoeFluent
-        UseAccentColor = acNone
+        UseAccentColor = None
         GradientOptions.Enabled = False
         GradientOptions.Enter = clFuchsia
         GradientOptions.Leave = clRed
@@ -220,7 +220,7 @@ object InfoBox: TInfoBox
           Anchors = [akRight, akBottom]
           BSegoeIcon = #57605
           ButtonIcon = cicSegoeFluent
-          UseAccentColor = acNone
+          UseAccentColor = None
           GradientOptions.Enabled = False
           GradientOptions.Enter = clFuchsia
           GradientOptions.Leave = clRed
@@ -324,7 +324,7 @@ object InfoBox: TInfoBox
       Align = alTop
       BSegoeIcon = #59542
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -419,7 +419,7 @@ object InfoBox: TInfoBox
       Visible = False
       BSegoeIcon = #57605
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed

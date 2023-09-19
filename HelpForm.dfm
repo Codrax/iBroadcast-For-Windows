@@ -50,7 +50,7 @@ object HelpUI: THelpUI
       Align = alLeft
       BSegoeIcon = #60770
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -119,7 +119,7 @@ object HelpUI: THelpUI
       Align = alLeft
       BSegoeIcon = #60770
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -188,7 +188,7 @@ object HelpUI: THelpUI
       Align = alLeft
       BSegoeIcon = #60770
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed
@@ -257,7 +257,7 @@ object HelpUI: THelpUI
       Align = alLeft
       BSegoeIcon = #60770
       ButtonIcon = cicSegoeFluent
-      UseAccentColor = acNone
+      UseAccentColor = None
       GradientOptions.Enabled = False
       GradientOptions.Enter = clFuchsia
       GradientOptions.Leave = clRed

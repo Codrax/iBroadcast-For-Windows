@@ -46,11 +46,11 @@ object VolumePop: TVolumePop
     Color = 2886677
     ParentBackground = False
     ParentColor = False
-    AccentColor = acAccentAdjust
+    AccentColor = AccentCustom
     Presets = cslNone
-    Foreground.Enter = 11896666
-    Foreground.Leave = 10251841
-    Foreground.Down = 8607016
+    Foreground.Enter = 14585392
+    Foreground.Leave = 12940567
+    Foreground.Down = 11295744
     Foreground.Border = clGray
     Foreground.BorderThick = 0
     Foreground.MultiColor = False
@@ -80,6 +80,5 @@ object VolumePop: TVolumePop
     Max = 1000
     Min = 0
     Position = 50
-    ExplicitWidth = 200
   end
 end

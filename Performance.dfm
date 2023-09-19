@@ -23,8 +23,6 @@ object PerfForm: TPerfForm
     Align = alClient
     OnPaint = PaintBox1Paint
     ExplicitTop = 31
-    ExplicitWidth = 635
-    ExplicitHeight = 274
   end
   object TitleBarPanel: TTitleBarPanel
     Left = 0

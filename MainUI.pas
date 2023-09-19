@@ -21,7 +21,7 @@ uses
   Cod.MasterVolume, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   IdHTTP, CreatePlaylistForm, Offline, Cod.StringUtils, iBroadcastUtils,
   PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar, Cod.Windows,
-  Cod.VersionUpdate;
+  Cod.VersionUpdate, Cod.ArrayHelpers, Cod.Components;
 
 type
   // Cardinals
@@ -81,6 +81,9 @@ type
     (* When Clicked *)
     procedure Execute;
     procedure OpenInformation;
+
+    (* UI *)
+    function Invalid: boolean;
 
     (* Manage Library *)
     procedure DeleteFromLibrary;
@@ -416,6 +419,8 @@ type
     Scrollbar_4: CScrollbar;
     Scrollbar_1: CScrollbar;
     QueueScroll: CScrollbar;
+    N15: TMenuItem;
+    Addtracks2: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -538,6 +543,7 @@ type
     procedure PopupGeneralViewAlbum(Sender: TObject);
     procedure Cleanupplaylist1Click(Sender: TObject);
     procedure Quick_SearchKeyPress(Sender: TObject; var Key: Char);
+    procedure Addtracks2Click(Sender: TObject);
   private
     { Private declarations }
     // Detect mouse Back/Forward
@@ -683,9 +689,12 @@ type
   // Logging
   procedure AddToLog(ALog: string);
 
+  procedure WorkStatusChange(Status: string);
+  procedure WorkDataStatusChange(Status: string);
+
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:6; Maintanance: 3);
+  Version: TVersionRec = (Major:1; Minor:7; Maintanance: 0);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://www.codrutsoft.com/api/';
@@ -1038,7 +1047,7 @@ begin
           I: integer;
 
         // Status
-        ThreadSyncStatus('Changing playlist...');
+        ThreadSyncStatus('Changing playlists...');
 
         // Increase
         Inc(EditorThread);
@@ -1077,6 +1086,64 @@ begin
       Index := GetTrack(Songs[I]);
       AddQueue(Index);
     end;
+end;
+
+procedure TUIForm.Addtracks2Click(Sender: TObject);
+var
+  Existing,
+  Selected: TArray<integer>;
+  I: Integer;
+  AIndex: integer;
+  ID: integer;
+begin
+  ID := DrawItems[PopupDrawIndex].ItemID;
+
+  // Load
+  Existing := Playlists[GetPlaylist(ID)].TracksID;
+  if not PickItems(Selected, TPickType.Song, true, Existing, []) then
+    Exit;
+
+  // Remove same
+  for I := High(Existing) downto 0 do
+    begin
+      AIndex := Selected.Find(Existing[I]);
+
+      if AIndex <> -1 then
+        begin
+          // Remove from playlists
+          Selected.Delete(AIndex);
+          Existing.Delete(I);
+        end;
+    end;
+
+  // Thread
+  if EditorThread < THREAD_EDITOR_MAX then
+    with TThread.CreateAnonymousThread(procedure
+      begin
+        // Status
+        ThreadSyncStatus('Changing playlist...');
+
+        // Increase
+        Inc(EditorThread);
+
+        // Add new tracks
+        AppentToPlaylist(ID, Selected);
+
+        // Delete tracks
+        DeleteFromPlaylist(ID, Existing);
+
+        // Decrease
+        Dec(EditorThread);
+
+        // Finish
+        EdidThreadFinalised
+      end) do
+          begin
+            Priority := tpLowest;
+
+            FreeOnTerminate := true;
+            Start;
+          end;
 end;
 
 procedure TUIForm.AddView(APageRoot: string; AView: TViewStyle);
@@ -2345,6 +2412,14 @@ procedure TUIForm.FormCreate(Sender: TObject);
 var
   I, J: Integer;
 begin
+  // Style
+  Cod.Components.CustomAccentColor := $00E60073;
+
+  // Log Config
+  OnWorkStatusChange := WorkStatusChange;
+  OnDataWorkStatusChange := WorkDataStatusChange;
+
+  // Log
   AddToLog('Loading Form.Create.UX');
   // UX
   Color := BG_COLOR;
@@ -2643,18 +2718,44 @@ begin
 end;
 
 function TUIForm.GetTracksID: TArray<integer>;
+var
+  Index: integer;
 begin
   if BareRoot = 'viewalbum' then
-    Result := Albums[GetAlbum(LocationExtra.ToInteger)].TracksID;
+    begin
+      Index := GetAlbum(LocationExtra.ToInteger);
+      if Index <> -1 then
+        Result := Albums[Index].TracksID
+      else
+        Result := [];
+    end;
 
   if BareRoot = 'viewartist' then
-    Result := Artists[GetArtist(LocationExtra.ToInteger)].TracksID;
+    begin
+      Index := GetArtist(LocationExtra.ToInteger);
+      if Index <> -1 then
+        Result := Artists[Index].TracksID
+      else
+        Result := [];
+    end;
 
   if BareRoot = 'viewplaylist' then
-    Result := Playlists[GetPlaylist(LocationExtra.ToInteger)].TracksID;
+    begin
+      Index := GetPlaylist(LocationExtra.ToInteger);
+      if Index <> -1 then
+        Result := Playlists[Index].TracksID
+      else
+        Result := [];
+    end;
 
   if BareRoot = 'history' then
-    Result := Playlists[GetPlaylistOfType('recently-played')].TracksID;
+    begin
+      Index := GetPlaylistOfType('recently-played');
+      if Index <> -1 then
+        Result := Playlists[Index].TracksID
+      else
+        Result := [];
+    end;
 end;
 
 procedure TUIForm.GetVersionUpdateData;
@@ -2743,15 +2844,25 @@ var
   S: string;
   I, A, Start: integer;
   ARect: TRect;
+  FitX, ExtraSpacing: integer;
+  AWidth: integer;
 begin
   ViewStyle := TViewStyle.Cover;
 
+  // Common
+  AWidth := TPaintBox(Sender).Width;
+
+  // Draw
   with HomeDraw.Canvas do
     begin
       // Prepare
       Y := -ScrollPosition.Position;
       X := 0;
 
+      FitX := (AWidth div (CoverWidth + CoverSpacing));
+      if FitX = 0 then
+        Exit;
+      ExtraSpacing := round((AWidth - FitX * (CoverWidth + CoverSpacing)) / FitX);
 
       // Albums
       for A := 1 to HOME_COLUMNS do
@@ -2764,6 +2875,14 @@ begin
             5: S := 'Recently added tracks';
           end;
 
+          // Data
+          Start := (A-1) * HomeFitItems;
+
+          if Start+3 <= High(DrawItems) then
+            if DrawItems[Start].Invalid and DrawItems[Start+1].Invalid
+              and DrawItems[Start+2].Invalid and DrawItems[Start+3].Invalid then
+                Continue;
+
           // Font
           Font.Assign( Self.Font );
           Font.Size := 16;
@@ -2773,7 +2892,6 @@ begin
           Inc(Y, TextHeight(S) + CoverSpacing);
 
           // Items
-          Start := (A-1) * HomeFitItems;
           for I := Start to Start + HomeFitItems - 1 do
             begin
               if Start > High(DrawItems) then
@@ -2800,7 +2918,7 @@ begin
                   DrawItems[I].Active, DrawItems[I].Downloaded);
 
               // Mext
-              Inc(X, CoverWidth + CoverSpacing);
+              Inc(X, CoverWidth + CoverSpacing + ExtraSpacing);
             end;
 
           Inc(Y, CoverHeight + CoverSpacing);
@@ -3655,6 +3773,16 @@ begin
     end;
 end;
 
+procedure WorkStatusChange(Status: string);
+begin
+  AddToLog('Work Status Changed: ' + Status);
+end;
+
+procedure WorkDataStatusChange(Status: string);
+begin
+  AddToLog('Work Data Status Changed: ' + Status);
+end;
+
 procedure TUIForm.QueueDownGoTimer(Sender: TObject);
 begin
   QueueScroll.Position := QueueScroll.Position + TTimer(Sender).Tag;
@@ -4303,7 +4431,7 @@ begin
         EdidThreadFinalised
       end) do
         begin
-          Priority := tpLowest;
+          Priority := tpHigher;
 
           FreeOnTerminate := true;
           Start;
@@ -4340,7 +4468,10 @@ procedure TUIForm.Popup_PlaylistPopup(Sender: TObject);
 begin
   // Disable delete for system playlists
   if DrawItems[PopupDrawIndex].Index <> -1 then
-    Delete1.Enabled := Playlists[DrawItems[PopupDrawIndex].Index].PlaylistType = '';
+    begin
+      Delete1.Enabled := Playlists[DrawItems[PopupDrawIndex].Index].PlaylistType = '';
+      Addtracks2.Enabled := Delete1.Enabled;
+    end;
 end;
 
 procedure TUIForm.Popup_TrayPopup(Sender: TObject);
@@ -5826,7 +5957,11 @@ procedure TUIForm.StatusUpdaterMsTimer(Sender: TObject);
 begin
   if not Status_Work.Visible then
     Exit;
-  Status_Work.Caption := WORK_STATUS;
+
+  if TotalWorkCount <> 0 then
+    Status_Work.Caption := Format('%S %D%%', [WORK_STATUS, round(WorkCount/TotalWorkCount*100)])
+  else
+    Status_Work.Caption := WORK_STATUS;
 end;
 
 function TUIForm.StrToIntArray(Str: string): TArray<integer>;
@@ -6497,6 +6632,11 @@ end;
 function TDrawableItem.Hidden: boolean;
 begin
   Result := HiddenItem or HiddenSearch;
+end;
+
+function TDrawableItem.Invalid: boolean;
+begin
+  Result := (Index = -1) or (ItemID = 0) or (Title = '');
 end;
 
 procedure TDrawableItem.LoadSource(AIndex: integer; From: TDataSource);
