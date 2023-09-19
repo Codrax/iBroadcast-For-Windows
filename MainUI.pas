@@ -176,7 +176,6 @@ type
     Sort_Alphabetic: CButton;
     Sort_Date: CButton;
     Sort_Rating: CButton;
-    WebSync: TTimer;
     Button_Extend: CButton;
     Queue_Extend: TPanel;
     QueuePopupAnimate: TTimer;
@@ -2982,7 +2981,7 @@ begin
   WORK_STATUS := 'Contacting iBroadcast for login...';
 
   // Initiate Log in
-  TTask.Run(procedure
+  with TThread.CreateAnonymousThread(procedure
     begin
       // Attempt log in
       try
@@ -3056,7 +3055,13 @@ begin
               PrepareForLogin;
           end);
       end;
-    end);
+    end) do
+      begin
+        Priority := tpHigher;
+
+        FreeOnTerminate := true;
+        Start;
+      end;
 end;
 
 procedure TUIForm.InitiateOfflineMode;
@@ -4179,10 +4184,14 @@ begin
   if not PrimaryUIContainer.Visible then
     Exit;
 
-  // Play
-  PlaySong(PlayQueue[QueuePos], false);
-
   QueueLoadWhenFinished.Enabled := false;
+
+  // Play
+  try
+    PlaySong(PlayQueue[QueuePos], false);
+  except
+    PlayQueue.Clear;
+  end;
 end;
 
 procedure TUIForm.Playartists1Click(Sender: TObject);
@@ -5030,11 +5039,11 @@ begin
     var
       I: integer;
       Server, Local, Repo: string;
-      Identifier, TrackIndex, Total, ThreadID: integer;
+      Identifier, TrackIndex, Index, Total, ThreadID: integer;
       ST: TStringList;
     begin
       ThreadID := DownloadThreadsE + 1;
-      
+
       // Write Album, Artist Playlist metadata
       Repo := Folder + 'albums\';
       TDirectory.CreateDirectory(Repo);
@@ -5046,12 +5055,15 @@ begin
 
           // Get File
           Local := Repo + DownloadedAlbums[I] + '.txt';
-            
+
           // Write
+          Index := GetAlbum(DownloadedAlbums[I].ToInteger);
+          if Index = -1 then
+            Continue;
           ST := TStringList.Create;
           try
-            with Albums[GetAlbum(DownloadedAlbums[I].ToInteger)] do
-              begin              
+            with Albums[Index] do
+              begin
                 ST.Add( AlbumName );
                 ST.Add( IntArrayToStr(TracksID) );
                 ST.Add( ArtistID.ToString );
@@ -5077,10 +5089,13 @@ begin
           Local := Repo + DownloadedArtists[I] + '.txt';
             
           // Write
+          Index := GetArtist(DownloadedArtists[I].ToInteger);
+          if Index = -1 then
+            Continue;
           ST := TStringList.Create;
           try
-            with Artists[GetArtist(DownloadedArtists[I].ToInteger)] do
-              begin              
+            with Artists[Index] do
+              begin
                 ST.Add( ArtistName );
                 ST.Add( IntArrayToStr(TracksID) );
                 ST.Add( Rating.ToString );
@@ -5097,17 +5112,20 @@ begin
       for I := 0 to DownloadedPlaylists.Count - 1 do
         begin
           // Status
-          ThreadSyncStatus( 'Writing artist metadata (' + (I+1).ToString + '/'
+          ThreadSyncStatus( 'Writing playlist metadata (' + (I+1).ToString + '/'
               + DownloadedPlaylists.Count.ToString + ')');
 
           // Get Playlist File
           Local := Repo + DownloadedPlaylists[I] + '.txt';
 
           // Write
+          Index := GetPlaylist(DownloadedPlaylists[I].ToInteger);
+          if Index = -1 then
+            Continue;
           ST := TStringList.Create;
           try
-            with Playlists[GetPlaylist(DownloadedPlaylists[I].ToInteger)] do
-              begin              
+            with Playlists[Index] do
+              begin
                 ST.Add( Name );
                 ST.Add( IntArrayToStr(TracksID) );
                 ST.Add( PlaylistType );
@@ -5119,7 +5137,7 @@ begin
             ST.Free;
           end;
         end;
-        
+
       // Download Tracks
       Total := DownloadQueue.Count - 1;
       for I := Total downto 0 do
