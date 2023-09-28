@@ -16,18 +16,48 @@ unit Cod.Internet;
 interface
   uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, IdHTTP,
-  VCL.Graphics, Winapi.ActiveX, URLMon, IOUtils, Imaging.GIFImg, Imaging.jpeg, Imaging.pngimage;
+  VCL.Graphics, Winapi.ActiveX, URLMon, IOUtils, Imaging.GIFImg, Imaging.jpeg,
+  Imaging.pngimage, IdSSLOpenSSL;
 
   function GetInternetImage(imageurl: string; downloadfallback: boolean = true): TGraphic;
 
-  function DownloadFile(Source, Dest: string): Boolean;
+  function DownloadFile(Source, Destination: string): Boolean;
+  function DownloadFileEx(Source, Dest: string): Boolean;
 
   // String Data
   function MaskEmailAdress(Adress: string): string;
 
 implementation
 
-function DownloadFile(Source, Dest: string): Boolean;
+function DownloadFile(Source, Destination: string): Boolean;
+var
+  IdHTTP1: TIdHTTP;
+  FileStream: TFileStream;
+begin
+  try
+    // Attempt 1 - IDHTTP
+    IdHTTP1 := TIdHTTP.Create(nil);
+    FileStream := TFileStream.Create(Destination, fmCreate);
+    try
+      IdHTTP1.Get(Source, FileStream);
+
+      Result := TFile.Exists(Destination);
+    finally
+      IdHTTP1.Free;
+      FileStream.Free;
+    end;
+  except
+    // Attempt 2 - UrlMon
+    try
+      Result := UrlDownloadToFile( nil, PChar(source), PChar( Destination ) , 0, nil ) = 0;
+    except
+      // Failure
+      Result := False;
+    end;
+  end;
+end;
+
+function DownloadFileEx(Source, Dest: string): Boolean;
 begin
     try
       Result := UrlDownloadToFile( nil, PChar(source), PChar( Dest ) , 0, nil ) = 0;
@@ -39,12 +69,16 @@ end;
 function GetInternetImage(imageurl: string; downloadfallback: boolean = true): TGraphic;
 var
   MS : TMemoryStream;
-  HTP: TIdHTTP;
+  HTTP: TIdHTTP;
+  SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
   fname, ext: string;
 begin
   // Create stream
   MS := TMemoryStream.Create;
-  HTP := TIdHTTP.Create;
+  HTTP := TIdHTTP.Create;
+  SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
+  SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
+  HTTP.IOHandler := SSLIOHandler;
 
   ext := Copy(imageurl, imageurl.LastIndexOf('.') + 2, imageurl.Length);
 
@@ -65,7 +99,7 @@ begin
   try
     try
       // Get Image
-      HTP.get(imageurl, MS);
+      HTTP.get(imageurl, MS);
       Ms.Seek(0,soFromBeginning);
       Result.LoadFromStream(MS);
     except
@@ -88,7 +122,7 @@ begin
 
     // Free Memory
     FreeAndNil(MS);
-    HTP.Free;
+    HTTP.Free;
   end;
 end;
 

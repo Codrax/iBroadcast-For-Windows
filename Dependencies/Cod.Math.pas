@@ -12,14 +12,13 @@
 {***********************************************************}
 
 unit Cod.Math;
+{$SCOPEDENUMS ON}
 
 interface
   uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Math,
-  Cod.SysUtils, System.Generics.Collections, Cod.VarHelpers, Cod.StringUtils;
-
-  type
-    TNumberRelation = (nrSmaller, nrBigger, ntEqual);
+  Cod.SysUtils, System.Generics.Collections, Cod.VarHelpers, Cod.StringUtils,
+  Cod.Types;
 
   // This function gets a string and automaticly calculates any
   // indics such as =time =eq = cell
@@ -45,12 +44,16 @@ interface
   function GenerateRandomSequence(count: Integer): TArray<Integer>;
 
   // Basic Mathematical Function
+  function Sign(Value: integer): integer;
   function EqualApprox(number1, number2: int64; span: real = 1): boolean; overload;
   function EqualApprox(number1, number2: real; span: real = 1): boolean; overload;
   function PercOf(number: int64; percentage: integer): integer;
   function PercOfR(number: Real; percentage: int64): real;
-  function GetNumberRelation(Primary, Secondary: int64): TNumberRelation; overload;
-  function GetNumberRelation(Primary, Secondary: real): TNumberRelation; overload;
+  function GetNumberRelation(Primary, Secondary: int64): TRelation; overload;
+  function GetNumberRelation(Primary, Secondary: real): TRelation; overload;
+  {$IFDEF WIN32}
+  procedure ConstraintASM(var Number: integer; Min: integer; Max: integer);
+  {$ENDIF}
   procedure Constraint(var Number: integer; Min: integer = integer.MinValue; Max: integer = integer.MaxValue); overload;
   procedure Constraint(var Number: int64; Min: int64 = int64.MinValue; Max: int64 = int64.MaxValue); overload;
   procedure Constraint(var Number: Real; Min: Real = int64.MinValue; Max: Real = int64.MaxValue); overload;
@@ -95,6 +98,11 @@ begin
   end;
 end;
 
+function Sign(Value: integer): integer;
+begin
+  Result := Value div abs(Value);
+end;
+
 function EqualApprox(number1, number2: int64; span: real): boolean;
 begin
   if (number1 <= number2 + span) and (number1 >= number2 - span) then
@@ -121,21 +129,63 @@ begin
   Result := percentage / 100 * number;
 end;
 
-function GetNumberRelation(Primary, Secondary: int64): TNumberRelation;
+function GetNumberRelation(Primary, Secondary: int64): TRelation;
 begin
   Result := GetNumberRelation( real(Primary), real(Secondary) );
 end;
 
-function GetNumberRelation(Primary, Secondary: real): TNumberRelation;
+function GetNumberRelation(Primary, Secondary: real): TRelation;
 begin
   if Primary = Secondary then
-    Result := ntEqual
+    Result := TRelation.Equal
       else
         if Primary > Secondary then
-          Result := nrBigger
+          Result := TRelation.Bigger
             else
-              Result := nrSmaller;
+              Result := TRelation.Smaller;
 end;
+
+{$IFDEF WIN32}
+procedure ConstraintASM(var Number: integer; Min: integer; Max: integer);
+label
+  min_succeed, min_analise, max_begin, max_succeed, write_value, exit_comp;
+asm
+    // Load values
+    mov ebx, Min
+    mov ecx, Max
+
+    // Load registry location
+    lea edx, [Number]
+
+    // Load value
+    mov eax, [edx]
+
+    // Min
+    cmp eax, ebx
+    jle min_analise
+
+    jmp max_begin
+
+  min_analise:
+    je exit_comp
+    mov eax, ebx
+    jmp write_value
+
+    // Max
+  max_begin:
+    cmp eax, ecx
+    jle exit_comp
+
+    mov eax, ecx
+
+    // Write
+  write_value:
+    mov [edx], eax
+
+    // Exit
+  exit_comp:
+end;
+{$ENDIF}
 
 procedure Constraint(var Number: integer; Min: integer; Max: integer);
 begin

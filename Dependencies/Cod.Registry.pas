@@ -13,23 +13,47 @@
 
 
 unit Cod.Registry;
+{$SCOPEDENUMS ON}
 
 interface
   uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Registry, Vcl.Dialogs;
+  Registry, Vcl.Dialogs, Cod.ArrayHelpers, Cod.MesssageConst;
 
   type
-    TRegistryMode = (rmUnloaded, rmWindows32, rmWindows64, rmAutomatic);
-    TRegistryError = (reNone, reAccessDenied, reKeyNoExist, reReadError);
-    TRegistryNeed = (rnRead, rnWrite, rnComplete);
+    TRegistryMode = (Unloaded, Windows32, Windows64, Automatic);
+    TRegistryError = (None, AccessDenied, KeyNoExist, ReadError);
+    TRegistryErrorKind = (Disabled, Receive, OperatingSystem);
+    TRegistryNeed = (Read, Write, Complete);
+
+    TRegistryOnError = procedure(AError: TRegistryError) of object;
 
     // Moved Helper from Cod.VarHelpers for FMX compatability
     TRegHelper = class helper for TRegistry
       procedure RenameKey(const OldName, NewName: string);
       function CloneKey(const KeyName: string): string;
 
+      function ReadCardinal(const Name: string): Cardinal;
+
       procedure MoveKeyTo(const OldName, NewKeyPath: string; Delete: Boolean);
+    end;
+
+    // Predefine
+    TWinRegistry = class;
+
+    // TQuickReg Class
+    TQuickReg = class
+    public
+      class function CreateKey(KeyLocation: string): boolean;
+      class function KeyExists(KeyLocation: string): boolean;
+      class function DeleteKey(KeyLocation: string): boolean;
+      class function RenameKey(KeyLocation, NewName: string): boolean;
+
+      class function GetStringValue(KeyLocation, ValueName: string): string;
+      class function GetIntValue(KeyLocation, ValueName: string): integer;
+
+      class function GetValueExists(KeyLocation, ValueName: string): boolean;
+      class function DeleteValue(KeyLocation, ValueName: string): boolean;
     end;
 
     // TWinRegistry Class
@@ -37,11 +61,12 @@ interface
     private
       // Vars
       FLastError: TRegistryError;
-      FErrorMessage: boolean;
       FRegistry: TRegistry;
       FRegistryMode: TRegistryMode;
       FHive, FDefaultHive: HKEY;
       FAutoHive: boolean;
+      FOnError: TRegistryOnError;
+      FErrorKind: TRegistryErrorKind;
 
       // Registry Edit
       procedure CreateReg(AType: TRegistryNeed; APosition: string = '');
@@ -52,7 +77,7 @@ interface
       procedure RemovePathLevels(var Path: string; Levels: integer);
 
       // Error
-      procedure RaiseError(Error: TRegistryError);
+      procedure RaiseError(AError: TRegistryError);
 
       // Registry Mode
       function ApplyRegMode(mode: Cardinal = KEY_ALL_ACCESS): Cardinal;
@@ -60,6 +85,7 @@ interface
       // Imported Utils
       function IsWOW64Emulated: Boolean;
       function IsWow64Executable: Boolean;
+    procedure SetManualHive(const Value: HKEY);
 
     public
       // Create
@@ -73,7 +99,7 @@ interface
       function CreateKey(KeyLocation: string): boolean;
       function KeyExists(KeyLocation: string): boolean;
       function DeleteKey(KeyLocation: string): boolean;
-      function CloneKey(KeyLocation: string; hiveid: HKEY = HKEY_LOCAL_MACHINE; emessage: boolean = false): string;
+      function CloneKey(KeyLocation: string): string;
       function RenameKey(KeyLocation, NewName: string): boolean;
       function MoveKey(KeyLocation, NewLocation: string; AlsoDelete: boolean = true): boolean;
       function CopyKey(KeyLocation, NewLocation: string): boolean;
@@ -115,9 +141,18 @@ interface
       procedure WriteDate(KeyLocation, ItemName: string; Value: TDate);
 
       (* Properties *)
-      property LastError: TRegistryError read FLastError;
-      property ErrorMessage: boolean read FErrorMessage write FErrorMessage;
       property RegistryMode: TRegistryMode read FRegistryMode write FRegistryMode;
+
+      // Error Handeling
+      property LastError: TRegistryError read FLastError;
+      { This property defines who will handle errors. Windows, the OnRecieve
+        procedure or to just ignore them }
+      property ErrorKind: TRegistryErrorKind read FErrorKind write FErrorKind;
+
+      // Error Procedures
+      property OnRaiseError: TRegistryOnError read FOnError write FOnError;
+
+      procedure RegistryReceiveError(AError: TRegistryError);
 
       // Registry Mode
       procedure ResetRegistryMode;
@@ -125,13 +160,27 @@ interface
 
       // Hive
       property AutomaticHive: boolean read FAutoHive write FAutoHive;
+      property ManualHive: HKEY read FDefaultHive write SetManualHive;
       (* Detect the hive automatically from the KeyLocation, overriden by DefaultHive *)
       property DefaultHive: HKEY read FDefaultHive write FDefaultHive;
+
+      // Utilities
+      class function HiveToString(Hive: HKEY): string;
+      class function StringToHive(AString: string; Default: HKEY = HKEY_CURRENT_USER): HKEY;
+      class function StringToHiveEx(AString: string; var Hive: HKEY): boolean;
     end;
 
 const
   KEY_SEPAR = '\';
   COMPUTER_BEGIN = 'Computer' + KEY_SEPAR;
+
+  HIVE_CLASSES_ROOT: TArray<string> = ['HKEY_CLASSES_ROOT', 'HKCR', 'HKEY_CLASSES'];
+  HIVE_CURRENT_USER: TArray<string> = ['HKEY_CURRENT_USER', 'HKCU', 'HKEY_USER'];
+  HIVE_LOCAL_MACHINE: TArray<string> = ['HKEY_LOCAL_MACHINE', 'HKLM', 'HKEY_MACHINE'];
+  HIVE_USERS: TArray<string> = ['HKEY_USERS', 'HKU'];
+  HIVE_CURRENT_CONFIG: TArray<string> = ['HKEY_CURRENT_CONFIG', 'HKCC', 'HKEY_CONFIG'];
+  HIVE_PERFORMANCE_DATA: TArray<string> = ['HKEY_PERFORMANCE_DATA', 'HKPD'];
+  HIVE_DYN_DATA: TArray<string> = ['HKEY_DYN_DATA', 'HKEY_DD'];
 
 implementation
 
@@ -139,7 +188,7 @@ implementation
 
 function TWinRegistry.WinModeLoaded: boolean;
 begin
-  Result := FRegistryMode <> rmUnloaded;
+  Result := FRegistryMode <> TRegistryMode.Unloaded;
 
   if not Result then
     begin
@@ -154,9 +203,9 @@ procedure TWinRegistry.ResetRegistryMode;
 begin
   // Registry Variant
   if IsWOW64Emulated or IsWow64Executable then
-    FRegistryMode := rmWindows64
+    FRegistryMode := TRegistryMode.Windows64
   else
-    FRegistryMode := rmWindows32;
+    FRegistryMode := TRegistryMode.Windows32;
 end;
 
 function TWinRegistry.IsWOW64Emulated: Boolean;
@@ -205,9 +254,10 @@ begin
 
   // Default
   FDefaultHive := HKEY_CURRENT_USER;
-  FErrorMessage := true;
-  FLastError := reNone;
+  FErrorKind := TRegistryErrorKind.Receive;
+  FLastError := TRegistryError.None;
   FAutoHive := true;
+  FOnError := RegistryReceiveError;
 end;
 
 destructor TWinRegistry.Destroy;
@@ -222,8 +272,8 @@ function TWinRegistry.ApplyRegMode(mode: Cardinal): Cardinal;
 begin
   // Select a registry based on arhitecture
   case FRegistryMode of
-    rmWindows32: Result := mode OR KEY_WOW64_32KEY;
-    rmWindows64: Result := mode OR KEY_WOW64_64KEY;
+    TRegistryMode.Windows32: Result := mode OR KEY_WOW64_32KEY;
+    TRegistryMode.Windows64: Result := mode OR KEY_WOW64_64KEY;
     else Result := mode;
   end;
 end;
@@ -232,14 +282,14 @@ function TWinRegistry.CreateKey(KeyLocation: string): boolean;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, GetPathItem(KeyLocation) );
+  CreateReg( TRegistryNeed.Write, GetPathItem(KeyLocation) );
 
   // Create Key
   Result := false;
   try
     Result := FRegistry.CreateKey( GetPathEnd(KeyLocation) );
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -247,14 +297,14 @@ function TWinRegistry.DeleteKey(KeyLocation: string): boolean;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, GetPathItem(KeyLocation) );
+  CreateReg( TRegistryNeed.Write, GetPathItem(KeyLocation) );
 
   // Create Key
   Result := false;
   try
     Result := FRegistry.DeleteKey( GetPathEnd(KeyLocation) );
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -262,14 +312,14 @@ function TWinRegistry.DeleteValue(KeyLocation, ValueName: string): boolean;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, KeyLocation );
+  CreateReg( TRegistryNeed.Write, KeyLocation );
 
   // Create Key
   Result := false;
   try
     Result := FRegistry.DeleteValue( ValueName );
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -277,13 +327,13 @@ function TWinRegistry.GetStringValue(KeyLocation, ValueName: string): string;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   try
     Result := FRegistry.ReadString(ValueName);
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -291,14 +341,14 @@ function TWinRegistry.GetTimeValue(KeyLocation, ValueName: string): TTime;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := 0;
   try
     Result := FRegistry.ReadTime(ValueName);
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -306,14 +356,14 @@ function TWinRegistry.GetDateTimeValue(KeyLocation, ValueName: string): TDateTim
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := 0;
   try
     Result := FRegistry.ReadDateTime(ValueName);
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -321,14 +371,14 @@ function TWinRegistry.GetDateValue(KeyLocation, ValueName: string): TDate;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := 0;
   try
     Result := FRegistry.ReadDate(ValueName);
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -336,14 +386,14 @@ function TWinRegistry.GetFloatValue(KeyLocation, ValueName: string): double;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := 0;
   try
     Result := FRegistry.ReadFloat(ValueName);
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -351,28 +401,53 @@ function TWinRegistry.GetValueType(KeyLocation, ValueName: string): TRegDataType
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := rdUnknown;
   try
     Result := FRegistry.GetDataType( ValueName );
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
+end;
+
+
+class function TWinRegistry.HiveToString(Hive: HKEY): string;
+begin
+  // Constant expression violates subrange bounds, IF STATEMENT instead of CASE to fix
+  if Hive = HKEY_CLASSES_ROOT then
+    Result := HIVE_CLASSES_ROOT[0]
+  else
+  if Hive = HKEY_CURRENT_USER then
+    Result := HIVE_CURRENT_USER[0]
+  else
+  if Hive = HKEY_LOCAL_MACHINE then
+    Result := HIVE_LOCAL_MACHINE[0]
+  else
+  if Hive = HKEY_USERS then
+    Result := HIVE_USERS[0]
+  else
+  if Hive = HKEY_PERFORMANCE_DATA then
+    Result := HIVE_PERFORMANCE_DATA[0]
+  else
+  if Hive = HKEY_DYN_DATA then
+    Result := HIVE_DYN_DATA[0]
+  else
+    Result := STRING_UNKNOWN;
 end;
 
 function TWinRegistry.GetValueAsStringEx(KeyLocation, ValueName: string): string;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   try
     Result := FRegistry.GetDataAsString(ValueName);
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -382,7 +457,7 @@ var
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   try
@@ -394,7 +469,7 @@ begin
       rdBinary: GetStringValue(KeyLocation, ValueName);
     end;
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -402,14 +477,14 @@ function TWinRegistry.GetValueExists(KeyLocation, ValueName: string): boolean;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := false;
   try
     Result := FRegistry.ValueExists( ValueName );
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -417,14 +492,14 @@ function TWinRegistry.GetValueNames(KeyLocation: string): TStringList;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := TStringList.Create;
   try
     FRegistry.GetValueNames( Result );
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -432,28 +507,28 @@ function TWinRegistry.KeyExists(KeyLocation: string): boolean;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, GetPathItem(KeyLocation) );
+  CreateReg( TRegistryNeed.Read, GetPathItem(KeyLocation) );
 
   // Create Key
   Result := false;
   try
     Result := FRegistry.KeyExists( GetPathEnd(KeyLocation) );
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
-function TWinRegistry.CloneKey(KeyLocation: string; hiveid: HKEY = HKEY_LOCAL_MACHINE; emessage: boolean = false): string;
+function TWinRegistry.CloneKey(KeyLocation: string): string;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnComplete, GetPathItem(KeyLocation) );
+  CreateReg( TRegistryNeed.Complete, GetPathItem(KeyLocation) );
 
   // Create Key
   try
     Result := FRegistry.CloneKey( GetPathEnd(KeyLocation) );
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -461,7 +536,7 @@ function TWinRegistry.RenameKey(KeyLocation, NewName: string): boolean;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnComplete, GetPathItem(KeyLocation) );
+  CreateReg( TRegistryNeed.Complete, GetPathItem(KeyLocation) );
 
   // Create Key
   Result := false;
@@ -470,8 +545,14 @@ begin
 
     Result := FRegistry.KeyExists( NewName );
   except
-    RaiseError( TRegistryError.reKeyNoExist );
+    RaiseError( TRegistryError.KeyNoExist );
   end;
+end;
+
+procedure TWinRegistry.SetManualHive(const Value: HKEY);
+begin
+  FAutoHive := false;
+  FDefaultHive := Value;
 end;
 
 procedure TWinRegistry.SetNewRegistryMode(AMode: TRegistryMode);
@@ -479,11 +560,64 @@ begin
   FRegistryMode := AMode;
 end;
 
+class function TWinRegistry.StringToHive(AString: string; Default: HKEY): HKEY;
+begin
+  if not StringToHiveEx(AString, Result) then
+    Result := Default;
+end;
+
+class function TWinRegistry.StringToHiveEx(AString: string; var Hive: HKEY): boolean;
+begin
+  if HIVE_CLASSES_ROOT.Find(AString) <> -1 then
+    begin
+      Hive := HKEY_CLASSES_ROOT;
+      Exit(true);
+    end;
+
+  if HIVE_CURRENT_USER.Find(AString) <> -1 then
+    begin
+      Hive := HKEY_CURRENT_USER;
+      Exit(true);
+    end;
+
+  if HIVE_LOCAL_MACHINE.Find(AString) <> -1 then
+    begin
+      Hive := HKEY_LOCAL_MACHINE;
+      Exit(true);
+    end;
+
+  if HIVE_USERS.Find(AString) <> -1 then
+    begin
+      Hive := HKEY_USERS;
+      Exit(true);
+    end;
+
+  if HIVE_CURRENT_CONFIG.Find(AString) <> -1 then
+    begin
+      Hive := HKEY_CURRENT_CONFIG;
+      Exit(true);
+    end;
+
+  if HIVE_PERFORMANCE_DATA.Find(AString) <> -1 then
+    begin
+      Hive := HKEY_PERFORMANCE_DATA;
+      Exit(true);
+    end;
+
+  if HIVE_DYN_DATA.Find(AString) <> -1 then
+    begin
+      Hive := HKEY_DYN_DATA;
+      Exit(true);
+    end;
+
+  Exit(false);
+end;
+
 function TWinRegistry.MoveKey(KeyLocation, NewLocation: string; AlsoDelete: boolean = true): boolean;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnComplete, GetPathItem(KeyLocation) );
+  CreateReg( TRegistryNeed.Complete, GetPathItem(KeyLocation) );
 
   // Create Key
   Result := false;
@@ -491,7 +625,7 @@ begin
     FRegistry.MoveKeyTo( GetPathEnd(KeyLocation), NewLocation, AlsoDelete );
     Result := true;
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -504,14 +638,14 @@ function TWinRegistry.GetBooleanValue(KeyLocation, ValueName: string): boolean;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := false;
   try
     Result := FRegistry.ReadBool(ValueName);
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -519,14 +653,14 @@ function TWinRegistry.GetCurrencyValue(KeyLocation, ValueName: string): currency
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := 0;
   try
     Result := FRegistry.ReadCurrency(ValueName);
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -534,14 +668,14 @@ function TWinRegistry.GetIntValue(KeyLocation, ValueName: string): integer;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := 0;
   try
     Result := FRegistry.ReadInteger(ValueName);
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -549,14 +683,14 @@ function TWinRegistry.GetKeyNames(KeyLocation: string): TStringList;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnRead, KeyLocation );
+  CreateReg( TRegistryNeed.Read, KeyLocation );
 
   // Create Key
   Result := TStringList.Create;
   try
     FRegistry.GetKeyNames( Result );
   except
-    RaiseError( TRegistryError.reReadError );
+    RaiseError( TRegistryError.ReadError );
   end;
 end;
 
@@ -566,18 +700,20 @@ var
 begin
   // Select Type
   case AType of
-    rnRead: Access := ApplyRegMode(KEY_READ);
-    rnWrite: Access := ApplyRegMode(KEY_WRITE);
-    rnComplete: Access := ApplyRegMode(KEY_ALL_ACCESS);
+    TRegistryNeed.Read: Access := ApplyRegMode(KEY_READ);
+    TRegistryNeed.Write: Access := ApplyRegMode(KEY_WRITE);
+    TRegistryNeed.Complete: Access := ApplyRegMode(KEY_ALL_ACCESS);
     else Access := ApplyRegMode(KEY_ALL_ACCESS);
   end;
 
   // Create
   FRegistry := TRegistry.Create( Access );
 
+  // Open Hive
+  FRegistry.RootKey := FHive;
+
   // Position
-  if APosition <> '' then
-    FRegistry.OpenKey( APosition, false );
+  FRegistry.OpenKey( APosition, false );
 end;
 
 function TWinRegistry.GetPathEnd(Path: string): string;
@@ -607,51 +743,24 @@ begin
 
   if FAutoHive then
     begin
-      StrRoot := Copy( Path, 1, Pos(KEY_SEPAR, Path) - 1 );
+      StrRoot := AnsiUpperCase(Copy( Path, 1, Pos(KEY_SEPAR, Path) - 1 ));
 
       // Cases
-      if StrRoot = 'HKEY_CLASSES_ROOT' then
-        begin
-          FHive := HKEY_CLASSES_ROOT;
-          goto FoundItem;
-        end;
-
-      if StrRoot = 'HKEY_CURRENT_USER' then
-        begin
-          FHive := HKEY_CURRENT_USER;
-          goto FoundItem;
-        end;
-
-      if StrRoot = 'HKEY_LOCAL_MACHINE' then
-        begin
-          FHive := HKEY_LOCAL_MACHINE;
-          goto FoundItem;
-        end;
-
-      if StrRoot = 'HKEY_USERS' then
-        begin
-          FHive := HKEY_USERS;
-          goto FoundItem;
-        end;
-
-      if StrRoot = 'HKEY_CURRENT_CONFIG' then
-        begin
-          FHive := HKEY_CURRENT_CONFIG;
-          goto FoundItem;
-        end;
-
-      // Exit Portal
-      goto ExitSearch;
-
-      // Found
-      FoundItem:
-        begin
-          RemovePathLevels( Path, 1 );
-        end;
+      if StringToHiveEx(StrRoot, FHive) then
+        RemovePathLevels( Path, 1 );
 
       // Exit
       ExitSearch:
     end;
+end;
+
+procedure TWinRegistry.RegistryReceiveError(AError: TRegistryError);
+begin
+  case AError of
+    TRegistryError.AccessDenied: ShowMessage( 'Windows Registry Error: Access Denied' );
+    TRegistryError.KeyNoExist: ShowMessage( 'Windows Registry Error: The specified key does not exist' );
+    TRegistryError.ReadError: ShowMessage( 'Windows Registry Error: Cannot read from the Windows Registry' );
+  end;
 end;
 
 procedure TWinRegistry.RemovePathLevels(var Path: string; Levels: integer);
@@ -668,26 +777,30 @@ begin
     end;
 end;
 
-procedure TWinRegistry.RaiseError(Error: TRegistryError);
+procedure TWinRegistry.RaiseError(AError: TRegistryError);
 begin
-  case Error of
-    reAccessDenied: ShowMessage( 'Windows Registry Error: Access Denied' );
-    reKeyNoExist: ShowMessage( 'Windows Registry Error: The specified key does not exist' );
-    reReadError: ShowMessage( 'Windows Registry Error: Cannot read from the Windows Registry' );
+  // Error Message
+  case FErrorKind of
+    TRegistryErrorKind.Receive: if Assigned(FOnError) then
+        FOnError(AError);
+    TRegistryErrorKind.OperatingSystem: RaiseLastOSError;
   end;
+
+  // Set Property
+  FLastError := AError;
 end;
 
 procedure TWinRegistry.WriteStringValue(KeyLocation, ItemName: string; Value: string);
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, KeyLocation );
+  CreateReg( TRegistryNeed.Write, KeyLocation );
 
   // Create Key
   try
     FRegistry.WriteString(ItemName, Value);
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -695,13 +808,13 @@ procedure TWinRegistry.WriteTime(KeyLocation, ItemName: string; Value: TTime);
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, KeyLocation );
+  CreateReg( TRegistryNeed.Write, KeyLocation );
 
   // Create Key
   try
     FRegistry.WriteTime(ItemName, Value);
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -745,13 +858,13 @@ procedure TWinRegistry.WriteBooleanValue(KeyLocation, ItemName: string; Value: b
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, KeyLocation );
+  CreateReg( TRegistryNeed.Write, KeyLocation );
 
   // Create Key
   try
     FRegistry.WriteBool(ItemName, Value);
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -759,13 +872,13 @@ procedure TWinRegistry.WriteCurrency(KeyLocation, ItemName: string; Value: Curre
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, KeyLocation );
+  CreateReg( TRegistryNeed.Write, KeyLocation );
 
   // Create Key
   try
     FRegistry.WriteCurrency(ItemName, Value);
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -773,13 +886,13 @@ procedure TWinRegistry.WriteDate(KeyLocation, ItemName: string; Value: TDate);
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, KeyLocation );
+  CreateReg( TRegistryNeed.Write, KeyLocation );
 
   // Create Key
   try
     FRegistry.WriteDate(ItemName, Value);
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -787,13 +900,13 @@ procedure TWinRegistry.WriteDateTimeValue(KeyLocation, ItemName: string; Value: 
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, KeyLocation );
+  CreateReg( TRegistryNeed.Write, KeyLocation );
 
   // Create Key
   try
     FRegistry.WriteDateTime(ItemName, Value);
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -801,13 +914,13 @@ procedure TWinRegistry.WriteFloatValue(KeyLocation, ItemName: string; Value: dou
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, KeyLocation );
+  CreateReg( TRegistryNeed.Write, KeyLocation );
 
   // Create Key
   try
     FRegistry.WriteFloat(ItemName, Value);
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
@@ -815,17 +928,32 @@ procedure TWinRegistry.WriteIntValue(KeyLocation, ItemName: string; Value: integ
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  CreateReg( TRegistryNeed.rnWrite, KeyLocation );
+  CreateReg( TRegistryNeed.Write, KeyLocation );
 
   // Create Key
   try
     FRegistry.WriteInteger(ItemName, Value);
   except
-    RaiseError( TRegistryError.reAccessDenied );
+    RaiseError( TRegistryError.AccessDenied );
   end;
 end;
 
 { TRegHelper }
+function TRegHelper.ReadCardinal(const Name: string): Cardinal;
+var
+  Int: integer;
+begin
+  Int := ReadInteger(Name);
+  if Int < 0 then
+    begin
+      (* Substract negative value  *)
+      Result := Abs(Int + 1);
+      Result := Cardinal.MaxValue - Result;
+    end
+  else
+    Result := Int;
+ end;
+
 procedure TRegHelper.RenameKey(const OldName, NewName: string);
 begin
   Self.MoveKey(OldName, NewName, true);
@@ -929,6 +1057,105 @@ begin
 
     if Delete then
       Self.DeleteKey(OldName);
+  end;
+end;
+
+{ TQuickReg }
+
+class function TQuickReg.CreateKey(KeyLocation: string): boolean;
+var
+  Registry: TWinRegistry;
+begin
+  Registry := TWinRegistry.Create;
+  try
+    Result := Registry.CreateKey(KeyLocation);
+  finally
+    Registry.Free;
+  end;
+end;
+
+class function TQuickReg.DeleteKey(KeyLocation: string): boolean;
+var
+  Registry: TWinRegistry;
+begin
+  Registry := TWinRegistry.Create;
+  try
+    Result := Registry.DeleteKey(KeyLocation);
+  finally
+    Registry.Free;
+  end;
+end;
+
+class function TQuickReg.DeleteValue(KeyLocation, ValueName: string): boolean;
+var
+  Registry: TWinRegistry;
+begin
+  Registry := TWinRegistry.Create;
+  try
+    Result := Registry.DeleteValue(KeyLocation, ValueName);
+  finally
+    Registry.Free;
+  end;
+end;
+
+class function TQuickReg.GetIntValue(KeyLocation, ValueName: string): integer;
+var
+  Registry: TWinRegistry;
+begin
+  Registry := TWinRegistry.Create;
+  try
+    Result := Registry.GetIntValue(KeyLocation, ValueName);
+  finally
+    Registry.Free;
+  end;
+end;
+
+class function TQuickReg.GetStringValue(KeyLocation, ValueName: string): string;
+var
+  Registry: TWinRegistry;
+begin
+  Registry := TWinRegistry.Create;
+  try
+    Result := Registry.GetStringValue(KeyLocation, ValueName);
+  finally
+    Registry.Free;
+  end;
+end;
+
+class function TQuickReg.GetValueExists(KeyLocation,
+  ValueName: string): boolean;
+var
+  Registry: TWinRegistry;
+begin
+  Registry := TWinRegistry.Create;
+  try
+    Result := Registry.GetValueExists(KeyLocation, ValueName);
+  finally
+    Registry.Free;
+  end;
+end;
+
+class function TQuickReg.KeyExists(KeyLocation: string): boolean;
+var
+  Registry: TWinRegistry;
+begin
+  Registry := TWinRegistry.Create;
+  try
+    Result := Registry.KeyExists(KeyLocation);
+  finally
+    Registry.Free;
+  end;
+end;
+
+class function TQuickReg.RenameKey(KeyLocation, NewName: string): boolean;
+var
+  Registry: TWinRegistry;
+begin
+  Registry := TWinRegistry.Create;
+  try
+    Result := Registry.RenameKey(KeyLocation, NewName);
+  finally
+    Registry.Free;
   end;
 end;
 

@@ -3,8 +3,8 @@ object VolumePop: TVolumePop
   Top = 0
   BorderStyle = bsNone
   Caption = 'Form1'
-  ClientHeight = 61
-  ClientWidth = 238
+  ClientHeight = 125
+  ClientWidth = 280
   Color = 2886678
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
@@ -12,73 +12,165 @@ object VolumePop: TVolumePop
   Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poDesigned
+  OnCreate = FormCreate
   OnDeactivate = FormDeactivate
   TextHeight = 21
-  object Label1: TLabel
+  object Panel1: TPanel
     AlignWithMargins = True
     Left = 3
     Top = 3
-    Width = 232
-    Height = 21
-    Align = alTop
-    Caption = 'Volume'
-    Transparent = False
-    ExplicitWidth = 53
-  end
-  object Text_Value: TLabel
-    Left = 198
-    Top = 27
-    Width = 40
-    Height = 34
-    Align = alRight
-    Alignment = taCenter
-    AutoSize = False
-    Caption = '100'
-    Layout = tlCenter
-  end
-  object CSlider1: CSlider
-    Left = 0
-    Top = 27
-    Width = 198
-    Height = 34
-    OnChange = CSlider1Change
+    Width = 274
+    Height = 119
     Align = alClient
-    Color = 2886677
-    ParentBackground = False
-    ParentColor = False
-    AccentColor = AccentCustom
-    Presets = cslNone
-    Foreground.Enter = 14585392
-    Foreground.Leave = 12940567
-    Foreground.Down = 11295744
-    Foreground.Border = clGray
-    Foreground.BorderThick = 0
-    Foreground.MultiColor = False
-    Background.Enter = 14211288
-    Background.Leave = 14211288
-    Background.Down = clGray
-    Background.Border = clGray
-    Background.BorderThick = 0
-    Background.MultiColor = False
-    SliderOptions.Height = 10
-    SliderOptions.WidthMargin = 10
-    SliderOptions.Roundness = 5
-    SliderOptions.FlatEnd = False
-    Indicator.Height = 15
-    Indicator.Width = 15
-    Indicator.Roundness = 50
-    Indicator.Enabled = True
-    IndicatorColor.Enter = 16744448
-    IndicatorColor.Leave = 16744448
-    IndicatorColor.Down = 16744448
-    IndicatorColor.Border = 4603449
-    IndicatorColor.BorderThick = 5
-    IndicatorColor.MultiColor = True
-    IndicatorColor.DynamicBorderSize = 3
-    IndicatorColor.DynamicBorder = True
-    State = cssLeave
-    Max = 1000
-    Min = 0
-    Position = 50
+    BevelOuter = bvNone
+    Caption = 'Panel1'
+    ParentColor = True
+    ShowCaption = False
+    TabOrder = 0
+    object Label1: TLabel
+      AlignWithMargins = True
+      Left = 3
+      Top = 3
+      Width = 268
+      Height = 21
+      Align = alTop
+      Caption = 'Volume'
+      Transparent = False
+      ExplicitWidth = 53
+    end
+    object Text_Value: TLabel
+      Left = 234
+      Top = 27
+      Width = 40
+      Height = 52
+      Align = alRight
+      Alignment = taCenter
+      AutoSize = False
+      Caption = '100'
+      Layout = tlCenter
+      ExplicitLeft = 198
+      ExplicitHeight = 34
+    end
+    object CSlider1: CSlider
+      Left = 40
+      Top = 27
+      Width = 194
+      Height = 52
+      OnChange = CSlider1Change
+      Align = alClient
+      Color = 2886677
+      ParentBackground = False
+      ParentColor = False
+      AccentColor = AccentCustom
+      Presets = cslNone
+      Foreground.Enter = 14585392
+      Foreground.Leave = 12940567
+      Foreground.Down = 11295744
+      Foreground.Border = clGray
+      Foreground.BorderThick = 0
+      Foreground.MultiColor = False
+      Background.Enter = 14211288
+      Background.Leave = 14211288
+      Background.Down = clGray
+      Background.Border = clGray
+      Background.BorderThick = 0
+      Background.MultiColor = False
+      SliderOptions.Height = 10
+      SliderOptions.WidthMargin = 10
+      SliderOptions.Roundness = 5
+      SliderOptions.FlatEnd = False
+      Indicator.Height = 15
+      Indicator.Width = 15
+      Indicator.Roundness = 50
+      Indicator.Enabled = True
+      IndicatorColor.Enter = 16744448
+      IndicatorColor.Leave = 16744448
+      IndicatorColor.Down = 16744448
+      IndicatorColor.Border = 4603449
+      IndicatorColor.BorderThick = 5
+      IndicatorColor.MultiColor = True
+      IndicatorColor.DynamicBorderSize = 3
+      IndicatorColor.DynamicBorder = True
+      State = cssLeave
+      Max = 1000
+      Min = 0
+      Position = 50
+    end
+    object Speaker_Pick: TComboBox
+      AlignWithMargins = True
+      Left = 8
+      Top = 82
+      Width = 258
+      Height = 34
+      Margins.Left = 8
+      Margins.Right = 8
+      Align = alBottom
+      Style = csOwnerDrawFixed
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -15
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ItemHeight = 28
+      ParentColor = True
+      ParentFont = False
+      TabOrder = 1
+      OnChange = Speaker_PickChange
+      OnDrawItem = Speaker_PickDrawItem
+      OnMeasureItem = Speaker_PickMeasureItem
+    end
+    object Panel2: TPanel
+      Left = 0
+      Top = 27
+      Width = 40
+      Height = 52
+      Align = alLeft
+      BevelOuter = bvNone
+      Caption = 'Panel2'
+      ShowCaption = False
+      TabOrder = 2
+      object Icon_Background: TLabel
+        Left = 0
+        Top = 0
+        Width = 40
+        Height = 52
+        Align = alClient
+        Alignment = taCenter
+        AutoSize = False
+        Caption = #59797
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = 5322836
+        Font.Height = -21
+        Font.Name = 'Segoe Fluent Icons'
+        Font.Style = []
+        ParentFont = False
+        Layout = tlCenter
+        ExplicitLeft = 198
+        ExplicitTop = 27
+        ExplicitHeight = 34
+      end
+      object Icon_Volume: TLabel
+        Left = 0
+        Top = 0
+        Width = 40
+        Height = 52
+        Cursor = crHandPoint
+        Align = alClient
+        Alignment = taCenter
+        AutoSize = False
+        Caption = #59797
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -21
+        Font.Name = 'Segoe Fluent Icons'
+        Font.Style = []
+        ParentFont = False
+        Layout = tlCenter
+        OnClick = Icon_VolumeClick
+        ExplicitLeft = 198
+        ExplicitTop = 27
+        ExplicitHeight = 34
+      end
+    end
   end
 end

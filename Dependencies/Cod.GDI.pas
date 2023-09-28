@@ -16,8 +16,8 @@ unit Cod.GDI;
 interface
   uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
-  Vcl.Graphics, Imaging.pngimage, Imaging.GIFImg, Imaging.jpeg, GDIPAPI,
-  GDIPOBJ, Cod.ColorUtils, Cod.Types;
+  Vcl.Graphics, Imaging.pngimage, Imaging.GIFImg, Imaging.jpeg, Winapi.GDIPAPI,
+  Winapi.GDIPOBJ, Cod.ColorUtils, Cod.Types;
 
   type
     // Requirements
@@ -45,7 +45,7 @@ interface
     procedure DrawCircle(Canvas: TCanvas; Rectangle: TRect; Brush: TGDIBrush; Pen: TGDIPen; Buffered: boolean = true);
     procedure DrawPolygon(Canvas: TCanvas; Points: TArray<TPoint>; Brush: TGDIBrush; Pen: TGDIPen; Buffered: boolean = true);
     procedure DrawLine(Canvas: TCanvas; Line: TLine; Pen: TGDIPen; Buffered: boolean = true);
-    procedure DrawGraphic(Canvas: TCanvas; Graphic: TGraphic; Rect: TRect; Buffered: boolean = true);
+    procedure DrawGraphic(Canvas: TCanvas; Graphic: TGraphic; Rect: TRect; Angle: integer = 0; Buffered: boolean = true);
     procedure DrawGraphicRound(Canvas: TCanvas; Graphic: TGraphic; Rect: TRect; Roundness: real; Buffered: boolean = true);
     procedure GraphicStretchDraw(Canvas: TCanvas; Rect: TRect; Graphic: TGraphic; Opacity: Byte); overload;
     procedure GraphicStretchDraw(Canvas: TCanvas; DestRect, SrcRect: TRect; Bitmap: TBitmap; Opacity: Byte); overload;
@@ -418,7 +418,7 @@ begin
   end;
 end;
 
-procedure DrawGraphic(Canvas: TCanvas; Graphic: TGraphic; Rect: TRect; Buffered: boolean);
+procedure DrawGraphic(Canvas: TCanvas; Graphic: TGraphic; Rect: TRect; Angle: integer; Buffered: boolean);
 var
   G: TGPGRaphics;
   P: TGPImage;
@@ -436,7 +436,7 @@ begin
         R := Rect;
         R.Offset(-Rect.Left, -Rect.Top);
 
-        DrawGraphic( BMP.Canvas, Graphic, R, false);
+        DrawGraphic( BMP.Canvas, Graphic, R, 0, false);
 
         Canvas.Draw(Rect.Left, Rect.Top, BMP);
       finally
@@ -451,7 +451,13 @@ begin
   try
     G.SetSmoothingMode(SmoothingModeHighQuality);
 
+    G.TranslateTransform(Rect.Left + Rect.Width div 2, Rect.Top + Rect.Height div 2);
+    Rect.Offset(-Rect.Left - Rect.Width div 2, -Rect.Top - Rect.Height div 2);
     BitMap.Assign(Graphic);
+
+    if Angle <> 0 then
+      // Rotate
+      G.RotateTransform(Angle);
 
     P := TGPBitmap.Create(Bitmap.Handle, Bitmap.Palette);
     try
@@ -459,6 +465,9 @@ begin
     finally
       P.Free;
     end;
+
+    // Reset Rotation
+    G.ResetTransform;
 
     // Canvas Notify
     if Assigned(Canvas.OnChange) then

@@ -693,7 +693,7 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:7; Maintanance: 0);
+  Version: TVersionRec = (Major:1; Minor:7; Maintanance: 1);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://www.codrutsoft.com/api/';
@@ -746,6 +746,7 @@ var
   SeekPoint: integer;
   IsSeeking: boolean;
   NeedSeekUpdate: boolean;
+  SeekUpdateStatus: TPlayStatus;
   SeekTimeout: integer;
 
   // Application Data
@@ -1585,13 +1586,7 @@ begin
           VolumePop.Top := Button_Volume.ClientToScreen(Point(0, 0)).Y - VolumePop.Height;
           VolumePop.Left := Button_Volume.ClientToScreen(Point(0, 0)).X - VolumePop.Width + Button_Volume.Width;
 
-          try
-            VolumePop.CSlider1.Position := trunc(GetMasterVolume * 1000);
-          except
-            VolumePop.CSlider1.Position := trunc(Player.Volume * 1000);
-          end;
-          VolumePop.Text_Value.Caption := (VolumePop.CSlider1.Position div 10).ToString;
-
+          VolumePop.FullUpdate;
 
           VolumePop.Show;
         end;
@@ -4237,6 +4232,7 @@ procedure TUIForm.Player_PositionMouseUp(Sender: TObject; Button: TMouseButton;
 begin
   if SeekPoint <> -1 then
     begin
+      SeekUpdateStatus := Player.PlayStatus;
       Player.Position := SeekPoint;
       NeedSeekUpdate := true;
     end
@@ -5935,12 +5931,14 @@ begin
     VolPosition := ceil(Player.Volume * 4);
   end;
   case VolPosition of
-    0: Button_Volume.BSegoeIcon := #$E74F;
-    1: Button_Volume.BSegoeIcon := #$E992;
-    2: Button_Volume.BSegoeIcon := #$E993;
-    3: Button_Volume.BSegoeIcon := #$E994;
+    0: Button_Volume.BSegoeIcon := #$E992;
+    1: Button_Volume.BSegoeIcon := #$E993;
+    2: Button_Volume.BSegoeIcon := #$E994;
     else Button_Volume.BSegoeIcon := #$E995;
   end;
+
+  if GetMute then
+    Button_Volume.BSegoeIcon := #$E74F;
 
   // Repeat
   case RepeatMode of
@@ -6060,6 +6058,10 @@ begin
           NeedSeekUpdate := false;
 
           SeekTimeout := 0;
+
+          // Was paused in Audio Stream
+          if SeekUpdateStatus = psPaused then
+            Player.Pause;
         end;
     end;
 
@@ -6071,7 +6073,6 @@ begin
       else
         QueueNext;
     end;
-
 
   // Mini Player
   if (MiniPlayer <> nil) and MiniPlayer.Visible then

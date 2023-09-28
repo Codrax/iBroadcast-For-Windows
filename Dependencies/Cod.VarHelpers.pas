@@ -18,10 +18,10 @@ unit Cod.VarHelpers;
 interface
   uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, IdHTTP,
-  VCL.Graphics, Winapi.ActiveX, URLMon, IOUtils, System.Generics.Collections,
+  VCL.Graphics, Winapi.ActiveX, Winapi.URLMon, IOUtils, System.Generics.Collections,
   Cod.ColorUtils, System.Generics.Defaults, Vcl.Imaging.pngimage,
   WinApi.GdipObj, WinApi.GdipApi, Win.Registry, Cod.GDI, Cod.Types,
-  DateUtils, Cod.WinRegister;
+  DateUtils, Cod.Registry;
 
   type
     // Color Helper
@@ -55,31 +55,6 @@ interface
       class function GetIndex(const x : T; const anArray : array of T) : integer;
     end;
 
-    // TArray generic types
-    TArrayArrayHelper = record helper for TArray<TArray>
-    public
-      function Count: integer; overload; inline;
-      procedure SetToLength(ALength: integer);
-    end;
-
-    TStringArrayHelper = record helper for TArray<string>
-    public
-      function Count: integer; overload; inline;
-      procedure SetToLength(ALength: integer);
-    end;
-
-    TIntegerArrayHelper = record helper for TArray<integer>
-    public
-      function Count: integer; overload; inline;
-      procedure SetToLength(ALength: integer);
-    end;
-
-    TRealArrayHelper = record helper for TArray<real>
-    public
-      function Count: integer; overload; inline;
-      procedure SetToLength(ALength: integer);
-    end;
-
     // TFont
     TAdvFont = type string;
 
@@ -96,18 +71,21 @@ interface
       procedure StretchDraw(DestRect, SrcRect: TRect; Bitmap: TBitmap; Opacity: Byte); overload;
       procedure StretchDraw(Rect: TRect; Graphic: TGraphic; AOpacity: Byte); overload;
 
+      procedure CopyRect(const Dest: TRect; Canvas: TCanvas; const Source: TRect; Opacity: Byte); overload;
+
       procedure GDITint(Rectangle: TRect; Color: TColor; Opacity: byte = 75);
       procedure GDIRectangle(Rectangle: TRect; Brush: TGDIBrush; Pen: TGDIPen);
       procedure GDIRoundRect(RoundRect: TRoundRect; Brush: TGDIBrush; Pen: TGDIPen);
       procedure GDICircle(Rectangle: TRect; Brush: TGDIBrush; Pen: TGDIPen);
       procedure GDIPolygon(Points: TArray<TPoint>; Brush: TGDIBrush; Pen: TGDIPen);
       procedure GDILine(Line: TLine; Pen: TGDIPen);
-      procedure GDIGraphic(Graphic: TGraphic; Rect: TRect);
+      procedure GDIGraphic(Graphic: TGraphic; Rect: TRect); overload;
+      procedure GDIGraphic(Graphic: TGraphic; Rect: TRect; Angle: integer); overload;
       procedure GDIGraphicRound(Graphic: TGraphic; Rect: TRect; Round: real);
     end;
 
     // Registry
-    TRegHelper = Cod.WinRegister.TRegHelper;
+    TRegHelper = Cod.Registry.TRegHelper;
 
 implementation
 
@@ -206,48 +184,6 @@ begin
   Result := MillisecondOf( Self );
 end;
 
-// TArray Generic Helpers
-
-function TArrayArrayHelper.Count: integer;
-begin
-  Result := length(Self);
-end;
-
-function TStringArrayHelper.Count: integer;
-begin
-  Result := length(Self);
-end;
-
-function TIntegerArrayHelper.Count: integer;
-begin
-  Result := length(Self);
-end;
-
-function TRealArrayHelper.Count: integer;
-begin
-  Result := length(Self);
-end;
-
-procedure TArrayArrayHelper.SetToLength(ALength: integer);
-begin
-  SetLength(Self, ALength);
-end;
-
-procedure TStringArrayHelper.SetToLength(ALength: integer);
-begin
-  SetLength(Self, ALength);
-end;
-
-procedure TIntegerArrayHelper.SetToLength(ALength: integer);
-begin
-  SetLength(Self, ALength);
-end;
-
-procedure TRealArrayHelper.SetToLength(ALength: integer);
-begin
-  SetLength(Self, ALength);
-end;
-
 // TFont
 function TAdvFontHelper.ToString: string;
 begin
@@ -278,6 +214,24 @@ end;
 procedure TCanvasHelper.StretchDraw(Rect: TRect; Graphic: TGraphic; AOpacity: Byte);
 begin
   GraphicStretchDraw(Self, Rect, Graphic, AOpacity);
+end;
+
+procedure TCanvasHelper.CopyRect(const Dest: TRect; Canvas: TCanvas; const Source: TRect; Opacity: Byte);
+var
+  BlendFunction: TBlendFunction;
+begin
+  // Set up the blending parameters
+  BlendFunction.BlendOp := AC_SRC_OVER;
+  BlendFunction.BlendFlags := 0;
+  BlendFunction.SourceConstantAlpha := Opacity;
+  BlendFunction.AlphaFormat := AC_SRC_OVER;
+
+  // Perform the alpha blending
+  AlphaBlend(
+    Self.Handle, Dest.Left, Dest.Top, Dest.Width, Dest.Height,
+    Canvas.Handle, Source.Left, Source.Top, Source.Width, Source.Height,
+    BlendFunction
+  );
 end;
 
 procedure TCanvasHelper.GDITint(Rectangle: TRect; Color: TColor; Opacity: byte = 75);
@@ -312,7 +266,12 @@ end;
 
 procedure TCanvasHelper.GDIGraphic(Graphic: TGraphic; Rect: TRect);
 begin
-  DrawGraphic(Self, Graphic, Rect);
+  DrawGraphic(Self, Graphic, Rect, 0);
+end;
+
+procedure TCanvasHelper.GDIGraphic(Graphic: TGraphic; Rect: TRect; Angle: integer);
+begin
+  DrawGraphic(Self, Graphic, Rect, Angle);
 end;
 
 procedure TCanvasHelper.GDIGraphicRound(Graphic: TGraphic; Rect: TRect; Round: real);

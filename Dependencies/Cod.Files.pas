@@ -18,8 +18,8 @@ unit Cod.Files;
 interface
   uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, IOUtils, ShellAPI, Vcl.Forms, Cod.WinRegister, ComObj, Math,
-  Registry;
+  Vcl.Graphics, IOUtils, ShellAPI, Vcl.Forms, Cod.Registry, ComObj, Math,
+  Registry, Cod.MesssageConst;
 
   type
     // Disk Item
@@ -27,6 +27,8 @@ interface
 
     TFileAttribute = (atrHidden, atrReadOnly, atrSysFile, atrCompressed, atrEncrypted);
     TFileAttributes = set of TFileAttribute;
+
+    TFileDateType = (fdtCreate, fdtModify, fdfAccess);
 
     TAppDataType = (adtLocal, adtRoaming, adtLocalLow);
 
@@ -80,7 +82,7 @@ interface
       procedure Load(foldername: string; restrictinfo: boolean = false);
     end;
 
-    //Disk Item
+    // Disk Item
     CDiskItem = class
       constructor Create;
       destructor Destroy; override;
@@ -115,6 +117,8 @@ interface
   function GetSystemDrive: string;
   function GetSystemRoot: string;
 
+  function GetPathDepth(Path: string): integer;
+
   function GetUserShellLocation(ShellLocation: TUserShellLocation): string;
   function GetPathInAppData(appname: string; codsoft: boolean = true;
                             create: boolean = true;
@@ -137,6 +141,8 @@ interface
 
   (* File Information *)
   function IsFileInUse(const FileName: string): Boolean;
+  function GetFileDate(const FileName: string; AType: TFileDateType): TDateTime;
+  procedure SetFileDate(const FileName: string; AType: TFileDateType; NewDate: TDateTime);
 
   (* Size *)
   function SizeInString(Size: int64; MaxDecimals: cardinal = 2): string;
@@ -154,7 +160,7 @@ interface
   (* NTFT Compression *)
   function  CompressItem(const Path:string;Compress:Boolean; FolderRecursive: boolean = true):integer;
   function  CompressFile(const FileName:string;Compress:Boolean):integer;
-  function  CompressFolder(const FolderName:string;Recursive, Compress:Boolean):integer;
+  function  CompressFolder(const FolderName:string;Recursive, Compress:Boolean): integer;
 
   // Utilities
   function GetNTVersion: single;
@@ -211,7 +217,7 @@ begin
   begin
     Wnd := Application.Handle;
     wFunc := FO_DELETE;
-    pFrom := PChar( ReplaceWinPath(Path) );
+    pFrom := PChar( ReplaceWinPath(Path) + #0 );
 
     // Flags
     fFlags := FileIOFlags( Flags );
@@ -323,6 +329,33 @@ begin
   else
   begin
     CloseHandle(HFileRes);
+  end;
+end;
+
+function GetFileDate(const FileName: string; AType: TFileDateType): TDateTime;
+begin
+  if NOT fileexists(FileName) then
+    Exit(0);
+
+  // Get by Type
+  case AType of
+    fdtCreate: Result := TFile.GetCreationTime(FileName);
+    fdtModify: Result := TFile.GetLastWriteTime(FileName);
+    fdfAccess: Result := TFile.GetLastAccessTime(FileName);
+    else Result := 0;
+  end;
+end;
+
+procedure SetFileDate(const FileName: string; AType: TFileDateType; NewDate: TDateTime);
+begin
+  if NOT fileexists(FileName) then
+    Exit;
+
+  // Get by Type
+  case AType of
+    fdtCreate: TFile.SetCreationTime(FileName, NewDate);
+    fdtModify: TFile.SetLastWriteTime(FileName, NewDate);
+    fdfAccess: TFile.SetLastAccessTime(FileName, NewDate);
   end;
 end;
 
@@ -451,6 +484,12 @@ end;
 function GetSystemRoot: string;
 begin
   Result := ReplaceEnviromentVariabiles( '%SYSTEMROOT%' );
+end;
+
+function GetPathDepth(Path: string): integer;
+begin
+  Path := IncludeTrailingPathDelimiter(Path);
+  Result := Path.CountChar('\');
 end;
 
 function GetAttributes(Path: string): TFileAttributes;
@@ -612,14 +651,15 @@ begin
           case foldertype of
             adtLocal: result := ReplaceWinPath('%LOCALAPPDATA%\');
             adtRoaming: result := ReplaceWinPath('%APPDATA%\');
-            adtLocalLow: result := ReplaceWinPath('%userprofile%\LocalLow\');
+            adtLocalLow: result := ReplaceWinPath('%userprofile%\AppData\LocalLow\');
           end;
         end;
 
   // Codrut Software
   if codsoft then begin
     result := result + 'CodrutSoftware\';
-    if create and (not TDirectory.Exists(result)) then TDirectory.CreateDirectory(result);
+    if create and (not TDirectory.Exists(result)) then
+      TDirectory.CreateDirectory(result);
   end;
 
   // Get Result & Create
@@ -725,7 +765,7 @@ begin
   if FileExists(fileName) then begin
     Result := SizeInString(GetFileSize(filename));
   end else
-    Result := 'NaN';
+    Result := NOT_NUMBER;
 end;
 
 { CFileItem }
@@ -826,6 +866,7 @@ end;
 function GetUserShellLocation(ShellLocation: TUserShellLocation): string;
 var
   RegString, RegValue: string;
+  Registry: TWinRegistry;
 begin
   case ShellLocation of
     shlUser: Exit( ReplaceWinPath('%USERPROFILE%') );
@@ -844,7 +885,12 @@ begin
     shlDownloads: RegValue := '{374DE290-123F-4565-9164-39C4925E467B}';
   end;
 
-  RegString := WinReg.GetStringValue(RegValue, 'Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders', HKEY_CURRENT_USER, false);
+  Registry := TWinRegistry.Create;
+  try
+    RegString := Registry.GetStringValue('HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders', RegValue);
+  finally
+    Registry.Free;
+  end;
 
   Result := ReplaceWinPath(RegString);
 end;

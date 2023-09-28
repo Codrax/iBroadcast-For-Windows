@@ -16,6 +16,7 @@ unit Cod.Audio;
 interface
   uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, IOUtils,
+  Math,
 
   (* Bass Library *)
   Bass;
@@ -108,9 +109,21 @@ interface
         destructor Destroy; override;
     end;
 
+  // Audio Utilities
+  function GetSystemVolume: Cardinal;
+  procedure SetSystemVolume(Value: Cardinal);
+
 implementation
 
+function GetSystemVolume: Cardinal;
+begin
+  Result := Round(Power(BASS_GetVolume, 1 / 1.9) * 100);
+end;
 
+procedure SetSystemVolume(Value: Cardinal);
+begin
+  BASS_SetVolume(Value / 100);
+end;
 
 { TAudioPlayer }
 
@@ -303,7 +316,7 @@ procedure TAudioPlayer.SetPlayStauts(AStatus: TPlayStatus);
 begin
   case AStatus of
     psStopped: BASS_ChannelStop( FStream );
-    psPlaying: BASS_ChannelPlay( FStream, true );
+    psPlaying: BASS_ChannelPlay( FStream, false );
     psPaused: BASS_ChannelPause( FStream );
   end;
 end;
