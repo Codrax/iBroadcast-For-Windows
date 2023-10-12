@@ -19,10 +19,15 @@ iBroadcast Apps Page
 - Search library for anything, by type and by filters
 - Mini player view
 - Shuffle all your songs
+- Rate your favorite songs albums and artists
+- Add songs to play history
 - View artwork and Track, Album, Artist or Playlist (Ctrl+Click)
 - Sorting any view
 - View library as list or as grid
 - Home page with recent albums, favorites, history
+- Create & Edit playlists
+- Volume Mixer for App and System
+- Performance graph
 
 ### Dependencies
 - Codrut Visual Library - https://github.com/Codrax/CodrutsVisualLibrary/
