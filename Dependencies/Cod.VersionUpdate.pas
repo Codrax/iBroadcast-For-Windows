@@ -20,7 +20,7 @@ interface
       procedure Parse(From: string);
       procedure NetworkLoad(URL: string);
       procedure HtmlLoad(URL: string);
-      procedure APILoad(AppName: string; Endpoint: string = 'https://www.codrutsoft.com/api/');
+      procedure APILoad(AppName: string; Endpoint: string = 'https://api.codrutsoft.com/');
 
       // Comparation
       function CompareTo(Version: TVersionRec): TRelation;

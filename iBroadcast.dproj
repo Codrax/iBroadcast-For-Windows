@@ -95,9 +95,8 @@
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <Icon_MainIcon>iBroadcast_Icon.ico</Icon_MainIcon>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
-        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.6.1.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_MinorVer>6</VerInfo_MinorVer>
-        <VerInfo_Release>1</VerInfo_Release>
+        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.7.0.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Codrut&apos;s iBroadcast for Windows;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>7</VerInfo_MinorVer>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -121,8 +120,8 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>iBroadcast_Icon.ico</Icon_MainIcon>
-        <VerInfo_MinorVer>3</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.3.0.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>7</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.7.0.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Codrut&apos;s iBroadcast for Windows;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <Debugger_RunParams>-debug</Debugger_RunParams>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
@@ -143,8 +142,8 @@
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <Icon_MainIcon>iBroadcast_Icon.ico</Icon_MainIcon>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_MinorVer>6</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.6.0.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_MinorVer>7</VerInfo_MinorVer>
+        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.7.0.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Codrut&apos;s iBroadcast for Windows;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">

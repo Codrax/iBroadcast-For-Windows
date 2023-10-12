@@ -5,27 +5,41 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.Visual.Slider, Vcl.StdCtrls, BASS,
-  Cod.MasterVolume, Vcl.ExtCtrls, ActiveX, MMDeviceApi, Math;
+  Cod.MasterVolume, Vcl.ExtCtrls, ActiveX, MMDeviceApi, Math, MMSystem;
 
 type
   TVolumePop = class(TForm)
     Panel1: TPanel;
-    CSlider1: CSlider;
-    Label1: TLabel;
     Speaker_Pick: TComboBox;
-    Text_Value: TLabel;
     Panel2: TPanel;
-    Icon_Volume: TLabel;
-    Icon_Background: TLabel;
-    procedure CSlider1Change(Sender: CSlider; Position, Max, Min: Integer);
+    Slider_System: CSlider;
+    Label1: TLabel;
+    Panel3: TPanel;
+    System_Background: TLabel;
+    System_Volume: TLabel;
+    System_Value: TLabel;
+    Panel4: TPanel;
+    Label2: TLabel;
+    App_Value: TLabel;
+    Slider_App: CSlider;
+    Panel5: TPanel;
+    App_Background: TLabel;
+    App_Volume: TLabel;
+    Label6: TLabel;
+    procedure Slider_SystemChange(Sender: CSlider; Position, Max, Min: Integer);
     procedure FormDeactivate(Sender: TObject);
     procedure Speaker_PickChange(Sender: TObject);
     procedure Speaker_PickMeasureItem(Control: TWinControl; Index: Integer;
       var Height: Integer);
     procedure Speaker_PickDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
-    procedure Icon_VolumeClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
+    procedure System_VolumeClick(Sender: TObject);
+    procedure Slider_SystemMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Slider_AppChange(Sender: CSlider; Position, Max, Min: Integer);
+    procedure Slider_AppMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure App_VolumeClick(Sender: TObject);
   private
     { Private declarations }
     procedure UpdateIconStatus;
@@ -50,52 +64,24 @@ uses
 
 {$R *.dfm}
 
-procedure SetDefaultAudioDeviceByIndex(deviceIndex: Integer);
-var
-  MMDeviceEnumerator: IMMDeviceEnumerator;
-  DeviceCollection: IMMDeviceCollection;
-  MMDevice: IMMDevice;
-begin
-  // Initialize COM
-  CoInitialize(nil);
-
-  // Initialize the Core Audio API
-  if Succeeded(CoCreateInstance(CLSID_MMDeviceEnumerator, nil, CLSCTX_ALL, IID_IMMDeviceEnumerator, MMDeviceEnumerator)) then
-  begin
-    // Enumerate audio output devices
-    if Succeeded(MMDeviceEnumerator.EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, DeviceCollection)) then
-    begin
-      // Get the audio device by index
-      if Succeeded(DeviceCollection.Item(deviceIndex, MMDevice)) then
-      begin
-        // Set the selected device as the default audio endpoint for rendering
-        //if Succeeded(MMDeviceEnumerator.SetDefaultAudioEndpoint(eRender, eConsole, MMDevice)) then
-        begin
-          // The audio output device has been successfully changed to the one with the specified index
-          // You can perform additional actions or handle success here
-        end;
-      end;
-    end;
-  end;
-end;
-
-procedure TVolumePop.CSlider1Change(Sender: CSlider; Position, Max, Min: Integer);
+procedure TVolumePop.Slider_AppChange(Sender: CSlider; Position, Max,
+  Min: Integer);
 var
   AMute: boolean;
 begin
   // Set
   try
-    Text_Value.Caption := (Position div 10).ToString;
+    App_Value.Caption := (Position div 10).ToString;
 
-    SetMasterVolume( Position / 1000 );
+    VolumeApplication.Volume := Position / 1000;
 
     // Muting
-    AMute := GetMute;
+    AMute := VolumeApplication.Mute;
     if AMute and (Position > 0) then
-      SetMute(false);
+      VolumeApplication.Mute := false;
 
     if not AMute and (Position = 0) then
-      SetMute(true);
+      VolumeApplication.Mute := true;
   except
     //BASS_SetVolume( Position / 1000 );
   end;
@@ -107,9 +93,41 @@ begin
   UpdateMainForm;
 end;
 
-procedure TVolumePop.FormCreate(Sender: TObject);
+procedure TVolumePop.Slider_AppMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
 begin
-  EnumerateAudioOutputDevicesByName;
+  PlaySound('SYSTEMEXCLAMATION', 0, SND_ASYNC);
+end;
+
+procedure TVolumePop.Slider_SystemChange(Sender: CSlider; Position, Max, Min: Integer);
+var
+  AMute: boolean;
+begin
+  // Set
+  try
+    System_Value.Caption := (Position div 10).ToString;
+
+    VolumeSystem.Volume := Position / 1000;
+
+    // Muting
+    AMute := VolumeSystem.Mute;
+    if AMute and (Position > 0) then
+      VolumeSystem.Mute := false;
+
+    if not AMute and (Position = 0) then
+      VolumeSystem.Mute := true;
+  except
+    //BASS_SetVolume( Position / 1000 );
+  end;
+
+  // Icon
+  UpdateIconStatus;
+end;
+
+procedure TVolumePop.Slider_SystemMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  PlaySound('SYSTEMEXCLAMATION', 0, SND_ASYNC or SND_SYSTEM);
 end;
 
 procedure TVolumePop.FormDeactivate(Sender: TObject);
@@ -126,9 +144,17 @@ begin
   LoadSelectedDevice;
 end;
 
-procedure TVolumePop.Icon_VolumeClick(Sender: TObject);
+procedure TVolumePop.System_VolumeClick(Sender: TObject);
 begin
-  SetMute( not GetMute );
+  VolumeSystem.Mute := not VolumeSystem.Mute;
+  UpdateIconStatus;
+
+  UpdateMainForm;
+end;
+
+procedure TVolumePop.App_VolumeClick(Sender: TObject);
+begin
+  VolumeApplication.Mute := not VolumeApplication.Mute;
   UpdateIconStatus;
 
   UpdateMainForm;
@@ -163,11 +189,13 @@ end;
 procedure TVolumePop.LoadVolume;
 begin
   try
-    CSlider1.Position := trunc(GetMasterVolume * 1000);
+    Slider_App.Position := trunc(VolumeApplication.Volume * 1000);
+    Slider_System.Position := trunc(VolumeSystem.Volume * 1000);
   except
-    CSlider1.Position := trunc(Player.Volume * 1000);
+    Slider_System.Position := trunc(Player.Volume * 1000);
   end;
-  Text_Value.Caption := (VolumePop.CSlider1.Position div 10).ToString;
+  System_Value.Caption := (Slider_System.Position div 10).ToString;
+  App_Value.Caption := (Slider_App.Position div 10).ToString;
 
   // Icon
   UpdateIconStatus;
@@ -234,28 +262,40 @@ end;
 
 procedure TVolumePop.UpdateIconStatus;
 var
-  VolumeIndex: integer;
   AMute: boolean;
 begin
-  VolumeIndex := ceil(CSlider1.Position / CSlider1.Max * 4);
-
-  case VolumeIndex of
-    0: Icon_Volume.Caption := #$E992;
-    1: Icon_Volume.Caption := #$E993;
-    2: Icon_Volume.Caption := #$E994;
-    else Icon_Volume.Caption := #$E995;
+  // App
+  case ceil(VolumeApplication.Volume * 4) of
+    0: App_Volume.Caption := #$E992;
+    1: App_Volume.Caption := #$E993;
+    2: App_Volume.Caption := #$E994;
+    else App_Volume.Caption := #$E995;
   end;
 
-  AMute := GetMute;
+  AMute := VolumeApplication.Mute;
   if AMute then
-    Icon_Volume.Caption := #$E74F;
+    App_Volume.Caption := #$E74F;
 
-  Icon_Background.Visible := not AMute;
+  App_Background.Visible := not AMute;
+
+  // System
+  case ceil(VolumeSystem.Volume * 4) of
+    0: System_Volume.Caption := #$E992;
+    1: System_Volume.Caption := #$E993;
+    2: System_Volume.Caption := #$E994;
+    else System_Volume.Caption := #$E995;
+  end;
+
+  AMute := VolumeSystem.Mute;
+  if AMute then
+    System_Volume.Caption := #$E74F;
+
+  System_Background.Visible := not AMute;
 end;
 
 procedure TVolumePop.UpdateMainForm;
 begin
-  UIForm.StatusChanged;
+  UIForm.UpdateVolumeIcon;
 end;
 
 end.

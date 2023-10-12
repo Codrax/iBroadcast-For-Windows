@@ -31,6 +31,7 @@ type
   TSortTypes = set of TSortType;
   TSearchFlag = (ExactMatch, CaseSensitive, SearchInfo);
   TSearchFlags = set of TSearchFlag;
+  TPlayType = (Streaming, Local, CloudDownload);
 
   // View Save
   TViewSave = record
@@ -380,7 +381,6 @@ type
     Label23: TLabel;
     Button_ClearQueue: CButton;
     QueueLoadWhenFinished: TTimer;
-    IdHTTP1: TIdHTTP;
     ControlBarContainer: TPanel;
     Controlbar_Playlist: TPanel;
     CButton31: CButton;
@@ -420,6 +420,7 @@ type
     QueueScroll: CScrollbar;
     N15: TMenuItem;
     Addtracks2: TMenuItem;
+    Setting_SongStreaming: CCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -543,10 +544,16 @@ type
     procedure Cleanupplaylist1Click(Sender: TObject);
     procedure Quick_SearchKeyPress(Sender: TObject; var Key: Char);
     procedure Addtracks2Click(Sender: TObject);
+    procedure Song_CoverMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Popup_TrackPopup(Sender: TObject);
   private
     { Private declarations }
     // Detect mouse Back/Forward
     procedure WMAppCommand(var Msg: TMessage); message WM_APPCOMMAND;
+
+    // Shutting down / Logging off
+    procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
 
     // Items
     function GetItemCount(OnlyVisible: boolean = false): cardinal;
@@ -560,6 +567,7 @@ type
     procedure DrawItemCanvas(Canvas: TCanvas; ARect: TRect; Title, Info: string;
       Picture: TJpegImage; Active, Downloaded: boolean);
     procedure DrawWasClicked(Shift: TShiftState = []; Button: TMouseButton = mbLeft);
+    procedure SetDownloadIcon(Value: boolean; Source: TDataSource);
 
     // Drawing List
     procedure AddItems(IDArray: TArray<integer>; Source: TDataSource; Clear: boolean = false);
@@ -589,15 +597,24 @@ type
     procedure DownloadSettings(Load: boolean);
     procedure QueueSettings(Load: boolean);
 
+    // Event Proc
+    procedure VolumeAppChange(Sender: TAppAudioManager; const NewVolume: Single; NewMute: boolean);
+    procedure VolumeSysChange(Sender: TSystemAudioManager; const Volume: Single; Muted: boolean);
+
+    procedure DownloadStatusWork(ASender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
+    procedure DownloadStatusWorkBegin(ASender: TObject; AWorkMode: TWorkMode; AWorkCountMax: Int64);
+
   public
     { Public declarations }
     procedure NavigatePath(Path: String; AddHistory: boolean = true);
 
     // Player
     procedure PlaySong(Index: cardinal; StartPlay: boolean = true);
+    procedure PlayCloudSongLocally(Endpoint: string);
 
     procedure SongUpdate;
     procedure StatusChanged;
+    procedure UpdateVolumeIcon;
     procedure TickUpdate;
 
     procedure AddSongToHistory;
@@ -693,7 +710,7 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:7; Maintanance: 1);
+  Version: TVersionRec = (Major:1; Minor:7; Maintanance: 4);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://www.codrutsoft.com/api/';
@@ -730,6 +747,7 @@ const
 
   // DOWNLOAD
   DOWNLOAD_DIR = 'downloaded\';
+  TEMP_DIR = 'temp\';
 
   // Sizes
   QUEUE_MIN_SIZE = 1;
@@ -751,6 +769,10 @@ var
 
   // Application Data
   AppData: string;
+
+  // Audio Manager
+  VolumeApplication: TAppAudioManager;
+  VolumeSystem: TSystemAudioManager;
 
   // Downloads
   AllDownload: TIntegerList;
@@ -818,7 +840,16 @@ var
 
   // Popup Menu
   PopupDrawIndex: integer;
+  PopupDrawItem: TDrawableItem;
   PopupSource: TDataSource;
+
+  // Cloud Download
+  CloudDownloadLocalThread: TThread;
+  ServerCloudDownload,
+  ServerCloudPlay, // Tells to play the song after download
+  LastThreadFileLocked: boolean; // Tells if the file is currrently locked
+  DownloadWorkCount,
+  DownloadLastPercent: integer;
 
   // SYSTEM
   THREAD_MAX: cardinal = 10;
@@ -1016,7 +1047,7 @@ begin
     end;
 end;
 begin
-  ID := DrawItems[PopupDrawIndex].ItemID;
+  ID := PopupDrawItem.ItemID;
 
   // Hide system playlists
   AddToHidden(['thumbsup', 'recently-played', 'recently-uploaded']);
@@ -1096,7 +1127,14 @@ var
   AIndex: integer;
   ID: integer;
 begin
-  ID := DrawItems[PopupDrawIndex].ItemID;
+  ID := PopupDrawItem.ItemID;
+
+  // Offline
+  if IsOffline then
+    begin
+      OfflineDialog('Cannot edit playlist in Offline Mode. Please connect to the internet.');
+      Exit;
+    end;
 
   // Load
   Existing := Playlists[GetPlaylist(ID)].TracksID;
@@ -1120,17 +1158,26 @@ begin
   if EditorThread < THREAD_EDITOR_MAX then
     with TThread.CreateAnonymousThread(procedure
       begin
-        // Status
-        ThreadSyncStatus('Changing playlist...');
-
         // Increase
         Inc(EditorThread);
 
-        // Add new tracks
-        AppentToPlaylist(ID, Selected);
+        // Status
+        ThreadSyncStatus('Changing playlist...');
 
-        // Delete tracks
-        DeleteFromPlaylist(ID, Existing);
+        try
+          // Add new tracks
+          AppentToPlaylist(ID, Selected);
+
+          // Delete tracks
+          DeleteFromPlaylist(ID, Existing);
+        except
+          // Offline
+          TThread.Synchronize(nil,
+            procedure
+              begin
+                OfflineDialog('We can'#39't modify the playlist. Are you connected to the internet?');
+              end);
+        end;
 
         // Decrease
         Dec(EditorThread);
@@ -1542,6 +1589,37 @@ begin
   RedrawPaintBox;
 end;
 
+procedure TUIForm.DownloadStatusWork(ASender: TObject; AWorkMode: TWorkMode;
+  AWorkCount: Int64);
+var
+  Percent: integer;
+begin
+  // Abort Download
+  if not ServerCloudDownload then
+    begin
+      EdidThreadFinalised;
+
+      // Stop
+      TIdHttp(ASender).Disconnect(true);
+    end;
+
+  // Status
+  Percent := round(AWorkCount / DownloadWorkCount * 100);
+
+  if Percent <> DownloadLastPercent then
+    begin
+      DownloadLastPercent := Percent;
+
+      ThreadSyncStatus(Format('Downloading cloud song %D%%', [Percent]));
+    end;
+end;
+
+procedure TUIForm.DownloadStatusWorkBegin(ASender: TObject;
+  AWorkMode: TWorkMode; AWorkCountMax: Int64);
+begin
+  DownloadWorkCount := AWorkCountMax;
+end;
+
 procedure TUIForm.ArtworkSelectClick(Sender: TObject);
 begin
   // Artwork
@@ -1640,7 +1718,7 @@ begin
 
             // Delete
             try
-              TouchupPlaylist(DrawItems[PopupDrawIndex].ItemID);
+              TouchupPlaylist(PopupDrawItem.ItemID);
 
               // Redraw
               TThread.Synchronize(nil,
@@ -1655,7 +1733,7 @@ begin
               TThread.Synchronize(nil,
                 procedure
                   begin
-                    OfflineDialog('We can'#39't delete this item. Are you connected to the internet?');
+                    OfflineDialog('We can'#39't repair the playlist. Are you connected to the internet?');
                   end);
             end;
 
@@ -1722,7 +1800,7 @@ end;
 procedure TUIForm.CopyIDGeneral(Sender: TObject);
 begin
   // Copy to clipboard
-  Clipboard.AsText := DrawItems[PopupDrawIndex].ItemID.ToString;
+  Clipboard.AsText := PopupDrawItem.ItemID.ToString;
 end;
 
 procedure TUIForm.SettingsApplyes2(Sender: CSlider; Position, Max, Min: Integer);
@@ -2219,35 +2297,6 @@ begin
 end;
 
 procedure TUIForm.DrawWasClicked(Shift: TShiftState; Button: TMouseButton);
-procedure SetDownloadIcon(Value: boolean; Source: TDataSource);
-var
-  Icon: string;
-  Text: string;
-
-  Menu: TMenuItem;
-begin
-  if Value then
-    begin
-      Icon := ICON_CLEAR;
-      Text := 'Delete Download';
-    end
-  else
-    begin
-      Icon := ICON_DOWNLOAD;
-      Text := 'Download';
-    end;
-
-  case Source of
-    TDataSource.Tracks: Menu := Download1;
-    TDataSource.Albums: Menu := Download2;
-    TDataSource.Artists: Menu := Download3;
-    TDataSource.Playlists: Menu := Download4;
-    else Exit;
-  end;
-
-  Menu.Caption := Text;
-  Menu.Hint := Icon;
-end;
 var
   Index: integer;
 begin
@@ -2275,10 +2324,15 @@ begin
       PopupDrawIndex := Index;
       PopupSource := DrawItems[Index].Source;
 
+      PopupDrawItem := DrawItems[Index];
+
       SetDownloadIcon( DrawItems[Index].Downloaded, PopupSource );
-      
+
       case PopupSource of
-        TDataSource.Tracks: Popup_Track.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
+        TDataSource.Tracks: begin
+          Popup_Track.Tag := 0;
+          Popup_Track.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
+        end;
         TDataSource.Albums: Popup_Album.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
         TDataSource.Artists: Popup_Artist.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
         TDataSource.Playlists: Popup_Playlist.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
@@ -2381,6 +2435,13 @@ begin
         Exit;
       end;
 
+  // Audio Notifiers
+  VolumeApplication.UnRegisterEventNotifier;
+  VolumeSystem.UnRegisterEventNotifier;
+
+  VolumeApplication.Free;
+  VolumeSystem.Free;
+
   // Save Data
   TokenLoginInfo(false);
   ProgramSettings(false);
@@ -2439,6 +2500,20 @@ begin
 
   // AppData
   AppData := GetPathInAppData('Cods iBroadcast');
+
+  // Audio Manager
+  AddToLog('Form.Create.Create.Audio.Interfaces');
+  // bass allready added application to volume mixer
+  VolumeApplication := TAppAudioManager.CreateApp;
+  VolumeSystem := TSystemAudioManager.Create;
+
+  // Event
+  AddToLog('Form.Create.Create.Audio.NotifyEvents');
+  VolumeApplication.RegisterEventNotifier;
+  VolumeSystem.RegisterEventNotifier;
+
+  VolumeApplication.OnVolumeChange := VolumeAppChange;
+  VolumeSystem.OnVolumeChange := VolumeSysChange;
 
   AddToLog('Preparing Downloads');
   // Prepare Downloading
@@ -2554,15 +2629,16 @@ begin
     begin
       case Key of
         70: if SearchToggle.Visible then
-          Search_ButtonClick(Search_Button);
-        76: Action_Previous.Execute;
-        77: Button_ToggleMenuClick( Button_ToggleMenu );
-        78: Action_Next.Execute;
-        79: Button_MiniPlayerClick( Button_MiniPlayer );
-        80: Action_Play.Execute;
-        82: Button_RepeatClick( Button_Repeat );
-        83: Button_ShuffleClick( Button_Shuffle );
-        86: if ViewModeToggle.Visible then
+          Search_ButtonClick(Search_Button); // F
+        76: Action_Previous.Execute; // L
+        77: Button_ToggleMenuClick( Button_ToggleMenu ); // M
+        78: Action_Next.Execute; // N
+        79: Button_MiniPlayerClick( Button_MiniPlayer ); // O
+        80: Action_Play.Execute; // P
+        81: Button_Extend.OnClick(Button_Extend); // Q
+        82: Button_RepeatClick( Button_Repeat ); // R
+        83: Button_ShuffleClick( Button_Shuffle ); // S
+        86: if ViewModeToggle.Visible then // V
           begin
             if ViewStyle = TViewStyle.List then
               SetView( TViewStyle.Cover )
@@ -2929,7 +3005,7 @@ end;
 procedure TUIForm.PopupGeneralInfo(Sender: TObject);
 begin
   // Click
-  DrawItems[PopupDrawIndex].OpenInformation;
+  PopupDrawItem.OpenInformation;
 end;
 
 procedure TUIForm.PopupGeneralViewArtist(Sender: TObject);
@@ -2939,8 +3015,8 @@ var
 begin
   // View Artist
   case PopupSource of
-    TDataSource.Tracks: ArtistID := Tracks[DrawItems[PopupDrawIndex].Index].ArtistID;
-    TDataSource.Albums: ArtistID := Albums[DrawItems[PopupDrawIndex].Index].ArtistID;
+    TDataSource.Tracks: ArtistID := Tracks[PopupDrawItem.Index].ArtistID;
+    TDataSource.Albums: ArtistID := Albums[PopupDrawItem.Index].ArtistID;
     else Exit;
   end;
 
@@ -3121,7 +3197,28 @@ end;
 
 procedure TUIForm.Latest_VersionClick(Sender: TObject);
 begin
-  StartCheckForUpdate;
+  with TThread.CreateAnonymousThread(procedure
+    begin
+      // Visible UI Wait
+      TThread.Synchronize(nil, procedure
+        begin
+          Latest_Version.Enabled := false;
+          Latest_Version.Caption := 'Latest version on server: 🕑 Checking...';
+        end);
+      Sleep(750);
+
+      // Start
+      TThread.Synchronize(nil, procedure
+        begin
+          Latest_Version.Enabled := true;
+          // Check
+          StartCheckForUpdate;
+        end);
+    end) do
+      begin
+        FreeOnTerminate := true;
+        Start;
+      end;
 end;
 
 procedure TUIForm.LoadItemInfo;
@@ -3255,6 +3352,10 @@ begin
       // Hide All
       for I := 0 to High(DrawItems) do
         DrawItems[I].HiddenSearch := true;
+
+      // Load previous query
+      if SearchBox1.Text <> '' then
+        SearchBox1.OnInvokeSearch(SearchBox1);
     end;
 
   (* Home Items *)
@@ -3879,37 +3980,55 @@ end;
 procedure TUIForm.QueueDrawMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-  if Button <> mbLeft then
-    Exit;
-
-  // Drag
-  if QueueDragPress then
+  if Button = mbRight then
     begin
-      QueueDragPress := false;
-      QueueDownGo.Enabled := false;
-      
-      // Switch
-      PlayQueue.Move(QueueDragItem, QueuePos2);
-      RecalculateQueuePos;
+      if QueueHover <> -1 then
+        begin
+          const ID: integer = Tracks[PlayQueue[QueueHover]].ID;
 
+          PopupDrawItem.LoadSourceID(ID, TDataSource.Tracks);
 
-      // Paint
-      QueueDraw.Repaint;
-    end
-  else
-    // Click
-    begin
-      if (QueueCursor.X > QueueDraw.Width - QListHeight) then
-        (* Delete *)
-        DeleteQueue( QueueHover )
-          else
-            if QueueHover <> -1 then
-              (* Play song *)
-              QueueSetTo(QueueHover);
+          PopupDrawIndex := -1;
+          PopupSource := TDataSource.Tracks;
+
+          SetDownloadIcon( PopupDrawItem.Downloaded, PopupSource );
+
+          // Default
+          Popup_Track.Tag := 1;
+          Popup_Track.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
+        end;
     end;
 
-  // Mouse
-  QueueMouseDown := false;
+  if Button = mbLeft then
+    begin
+      // Drag
+      if QueueDragPress then
+        begin
+          QueueDragPress := false;
+          QueueDownGo.Enabled := false;
+
+          // Switch
+          PlayQueue.Move(QueueDragItem, QueuePos2);
+          RecalculateQueuePos;
+
+          // Paint
+          QueueDraw.Repaint;
+        end
+      else
+        // Click
+        begin
+          if (QueueCursor.X > QueueDraw.Width - QListHeight) then
+            (* Delete *)
+            DeleteQueue( QueueHover )
+              else
+                if QueueHover <> -1 then
+                  (* Play song *)
+                  QueueSetTo(QueueHover);
+        end;
+
+      // Mouse
+      QueueMouseDown := false;
+    end;
 end;
 
 procedure TUIForm.QueueDrawPaint(Sender: TObject);
@@ -4065,6 +4184,7 @@ begin
                   end;
 
                   S := TrimmifyText(QueueDraw.Canvas, S, ARect.Width - QListSpacing);
+                  S := StringReplace(S, '&', '&&', [rfReplaceAll]);
 
                   TextRect(ARect, S, [tfSingleline, tfVerticalCenter]);
                 end;
@@ -4207,6 +4327,115 @@ begin
           AddQueue(Index);
         end;
     end;
+end;
+
+procedure TUIForm.PlayCloudSongLocally(Endpoint: string);
+var
+  Folder,
+  LocalName: string;
+  HTTP: TIdHTTP;
+  FileStream: TFileStream;
+begin
+  // Close file if open
+  Player.Stop;
+  Player.CloseFile;
+
+  // Thread
+  CloudDownloadLocalThread := TThread.CreateAnonymousThread(procedure
+
+  var
+    I: Integer;
+  begin
+      // Timeout for last thread
+      for I := 1 to 10 do
+        begin
+          if not LastThreadFileLocked then
+            Break;
+          Sleep(500);
+        end;
+
+      // Download started
+      ServerCloudDownload := true;
+
+      // Status
+      ThreadSyncStatus('Downloading cloud song...');
+
+      // Prepare
+      Folder := AppData + TEMP_DIR;
+      LocalName := Folder + 'currentsong.mp3';
+
+      if not TDirectory.Exists(Folder) then
+        TDirectory.CreateDirectory(Folder);
+
+      // Download
+      try
+        // Download - IDHTTP
+        HTTP := TIdHTTP.Create(nil);
+
+        // Events
+        HTTP.OnWorkBegin := Self.DownloadStatusWorkBegin;
+        HTTP.OnWork := Self.DownloadStatusWork;
+        LastThreadFileLocked := true;
+
+        // File
+        FileStream := TFileStream.Create(LocalName, fmCreate);
+        try
+          HTTP.Get(Endpoint, FileStream);
+        finally
+          HTTP.Free;
+          FileStream.Free;
+
+          // Not locked
+          LastThreadFileLocked := false;
+        end;
+
+        // Check not cancelled in the meantime
+        if ServerCloudDownload then
+          TThread.Synchronize(nil,
+            procedure
+              begin
+                // Open
+                Player.OpenFile( LocalName );
+
+                // Play
+                if ServerCloudPlay then
+                  Player.Play;
+
+                // Status
+                SongUpdate;
+              end);
+      except
+        // Offline
+        if ServerCloudDownload then
+          TThread.Synchronize(nil,
+            procedure
+              begin
+                OfflineDialog('The song could not be downloaded');
+              end);
+      end;
+
+      if ServerCloudDownload then
+        begin
+          // Finish
+          EdidThreadFinalised;
+
+          // Mark Done
+          TThread.Synchronize(nil,
+            procedure
+            begin
+              ServerCloudDownload := false;
+            end);
+        end;
+    end);
+
+  with CloudDownloadLocalThread do
+      begin
+        // High priority
+        Priority := tpHigher;
+
+        FreeOnTerminate := true;
+        Start;
+      end;
 end;
 
 procedure TUIForm.Player_PositionChange(Sender: CSlider; Position, Max,
@@ -4362,7 +4591,7 @@ begin
   NextPlay := (PlayQueue.Count = 0) and (Player.PlayStatus <> psPlaying);
 
   // Add Tracks
-  AIndex := DrawItems[PopupDrawIndex].Index;
+  AIndex := PopupDrawItem.Index;
   case PopupSource of
     TDataSource.Tracks: ATracks := [Tracks[AIndex].ID];
     TDataSource.Albums: ATracks := Albums[AIndex].TracksID;
@@ -4393,7 +4622,7 @@ end;
 procedure TUIForm.PopupGeneralClick(Sender: TObject);
 begin
   // Click
-  DrawItems[PopupDrawIndex].Execute;
+  PopupDrawItem.Execute;
 end;
 
 procedure TUIForm.PopupGeneralDelete(Sender: TObject);
@@ -4410,7 +4639,7 @@ begin
 
         // Delete
         try
-          DrawItems[PopupDrawIndex].DeleteFromLibrary;
+          PopupDrawItem.DeleteFromLibrary;
 
           // Redraw
           TThread.Synchronize(nil,
@@ -4446,7 +4675,7 @@ end;
 procedure TUIForm.PopupGeneralDownload(Sender: TObject);
 begin
   // Download
-  DrawItems[PopupDrawIndex].ToggleDownloaded;
+  PopupDrawItem.ToggleDownloaded;
 
   // Update
   UIForm.UpdateDownloads;
@@ -4472,11 +4701,17 @@ end;
 procedure TUIForm.Popup_PlaylistPopup(Sender: TObject);
 begin
   // Disable delete for system playlists
-  if DrawItems[PopupDrawIndex].Index <> -1 then
+  if PopupDrawItem.Index <> -1 then
     begin
-      Delete1.Enabled := Playlists[DrawItems[PopupDrawIndex].Index].PlaylistType = '';
+      Delete1.Enabled := Playlists[PopupDrawItem.Index].PlaylistType = '';
       Addtracks2.Enabled := Delete1.Enabled;
     end;
+end;
+
+procedure TUIForm.Popup_TrackPopup(Sender: TObject);
+begin
+  // Check not started from play icon
+  PlayQueue1.Visible := Popup_Track.Tag = 0;
 end;
 
 procedure TUIForm.Popup_TrayPopup(Sender: TObject);
@@ -4542,8 +4777,10 @@ end;
 
 procedure TUIForm.PlaySong(Index: cardinal; StartPlay: boolean);
 var
+  NetworkName,
   LocalName: string;
   Local: boolean;
+  APlay: TPlayType;
 begin
   // Play State
   PlayID := Tracks[Index].ID;
@@ -4554,18 +4791,45 @@ begin
   if StartPlay and not IsOffline then
     AddSongToHistory;
 
+  // Network location
+  NetworkName := STREAMING_ENDPOINT + Tracks[Index].StreamLocations;
+
   // Is offline?
   LocalName := AppData + DOWNLOAD_DIR + PlayID.ToString + '.mp3';
   Local := TFile.Exists( LocalName );
 
-  // Play
+  // Calculate Type
   if Local then
-    Player.OpenFile( LocalName )
+    APlay := TPlayType.Local
   else
-    Player.OpenURL( STREAMING_ENDPOINT + Tracks[Index].StreamLocations );
+    if Setting_SongStreaming.Checked then
+      APlay := TPlayType.Streaming
+    else
+      APlay := TPlayType.CloudDownload;
+
+  // Stop cloud download thread
+  if ServerCloudDownload then
+    begin
+      // This will stop the download in the OnWork event
+      ServerCloudDownload := false;
+    end;
+
+  // Play
+  case APlay of
+    TPlayType.Streaming: Player.OpenURL( STREAMING_ENDPOINT + Tracks[Index].StreamLocations );
+    TPlayType.Local: Player.OpenFile( LocalName );
+    TPlayType.CloudDownload: begin
+
+      // Auto-Play
+      ServerCloudPlay := StartPlay;
+
+      // Play
+      PlayCloudSongLocally( NetworkName );
+    end;
+  end;
 
   // Offline
-  if not Player.IsFileOpen then
+  if not Player.IsFileOpen and not (APlay = TPlayType.CloudDownload) then
     begin
       Player.Pause;
       IsOffline := true;
@@ -4864,9 +5128,10 @@ begin
           Settings_Threads.Position := THREAD_MAX;
           Setting_DataSaver.Checked := OPT.ReadBool(CAT_GENERAL, 'Data Saver', false);
           Setting_PlayerOnTop.Checked := OPT.ReadBool(CAT_GENERAL, 'Mini player on top', false);
+          Setting_SongStreaming.Checked := OPT.ReadBool(CAT_GENERAL, 'Song Streaming', false);
           Settings_DisableAnimations.Checked := OPT.ReadBool(CAT_GENERAL, 'Disable Animations', false);
           Setting_StartWindows.Checked := OPT.ReadBool(CAT_GENERAL, 'Start with windows', false);
-          Setting_TrayClose.Checked := OPT.ReadBool(CAT_GENERAL, 'Minimise to tray', false);
+          Setting_TrayClose.Checked := OPT.ReadBool(CAT_GENERAL, 'Minimise to tray', true);
           Setting_QueueSaver.Checked := OPT.ReadBool(CAT_GENERAL, 'Save Queue', false);
 
           TransparentIndex := OPT.ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
@@ -4891,6 +5156,7 @@ begin
         OPT.WriteInteger(CAT_GENERAL, 'Thread Count', THREAD_MAX);
         OPT.WriteBool(CAT_GENERAL, 'Data Saver', Setting_DataSaver.Checked);
         OPT.WriteBool(CAT_GENERAL, 'Mini player on top', Setting_PlayerOnTop.Checked);
+        OPT.WriteBool(CAT_GENERAL, 'Song Streaming', Setting_SongStreaming.Checked);
         OPT.WriteBool(CAT_GENERAL, 'Disable Animations', Settings_DisableAnimations.Checked);
         OPT.WriteBool(CAT_GENERAL, 'Start with windows', Setting_StartWindows.Checked);
         OPT.WriteBool(CAT_GENERAL, 'Minimise to tray', Setting_TrayClose.Checked);
@@ -5681,6 +5947,36 @@ begin
   RedrawPaintBox;
 end;
 
+procedure TUIForm.SetDownloadIcon(Value: boolean; Source: TDataSource);
+var
+  Icon: string;
+  Text: string;
+
+  Menu: TMenuItem;
+begin
+  if Value then
+    begin
+      Icon := ICON_CLEAR;
+      Text := 'Delete Download';
+    end
+  else
+    begin
+      Icon := ICON_DOWNLOAD;
+      Text := 'Download';
+    end;
+
+  case Source of
+    TDataSource.Tracks: Menu := Download1;
+    TDataSource.Albums: Menu := Download2;
+    TDataSource.Artists: Menu := Download3;
+    TDataSource.Playlists: Menu := Download4;
+    else Exit;
+  end;
+
+  Menu.Caption := Text;
+  Menu.Hint := Icon;
+end;
+
 procedure TUIForm.SetScroll(Index: integer);
 begin
   RecalibrateScroll;
@@ -5815,6 +6111,24 @@ begin
   UpdateMiniPlayer;
 end;
 
+procedure TUIForm.Song_CoverMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  if Button = mbRight then
+    begin
+      PopupDrawItem.LoadSourceID(PlayID, TDataSource.Tracks);
+
+      PopupDrawIndex := -1;
+      PopupSource := TDataSource.Tracks;
+
+      SetDownloadIcon( PopupDrawItem.Downloaded, PopupSource );
+
+      // Default
+      Popup_Track.Tag := 1;
+      Popup_Track.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
+    end;
+end;
+
 procedure TUIForm.Sort;
 var
   I: Integer;
@@ -5912,7 +6226,6 @@ end;
 procedure TUIForm.StatusChanged;
 var
   I: Integer;
-  VolPosition: integer;
 begin
   AddToLog('Status changed! Form.StatusChanged');
 
@@ -5925,19 +6238,9 @@ begin
   TickUpdate;
 
   // Volume
-  try
-    VolPosition := ceil(GetMasterVolume * 4);
-  except
-    VolPosition := ceil(Player.Volume * 4);
-  end;
-  case VolPosition of
-    0: Button_Volume.BSegoeIcon := #$E992;
-    1: Button_Volume.BSegoeIcon := #$E993;
-    2: Button_Volume.BSegoeIcon := #$E994;
-    else Button_Volume.BSegoeIcon := #$E995;
-  end;
+  UpdateVolumeIcon;
 
-  if GetMute then
+  if VolumeApplication.Mute then
     Button_Volume.BSegoeIcon := #$E74F;
 
   // Repeat
@@ -6045,7 +6348,12 @@ begin
   if not IsSeeking then
     Player_Position.Position := Player.Position;
 
-  Time_Pass.Caption := CalculateLength( trunc(Player.PositionSeconds) ) + ' / ' + CalculateLength( trunc(Player.DurationSeconds) );
+  if Player.IsFileOpen then
+    Time_Pass.Caption := Format('%S / %S',
+      [CalculateLength( trunc(Player.PositionSeconds) ),
+       CalculateLength( trunc(Player.DurationSeconds) )])
+  else
+    Time_Pass.Caption := '0:00 / 0:00';
 
   // Fix data
   if NeedSeekUpdate and (player.PlayStatus = psPlaying) and (SeekPoint <> -1) and Player.IsFileOpen then
@@ -6344,6 +6652,26 @@ begin
       end;
 end;
 
+procedure TUIForm.UpdateVolumeIcon;
+var
+  VolPosition: integer;
+begin
+  try
+    VolPosition := ceil(VolumeApplication.Volume * 4);
+  except
+    VolPosition := ceil(Player.Volume * 4);
+  end;
+  case VolPosition of
+    0: Button_Volume.BSegoeIcon := #$E992;
+    1: Button_Volume.BSegoeIcon := #$E993;
+    2: Button_Volume.BSegoeIcon := #$E994;
+    else Button_Volume.BSegoeIcon := #$E995;
+  end;
+
+  if VolumeApplication.Mute then
+    Button_Volume.BSegoeIcon := #$E74F;
+end;
+
 procedure TUIForm.ValidateDownloadFiles;
 { This function deleted files that are no longer needed }
 var
@@ -6454,6 +6782,30 @@ begin
     end;
 end;
 
+procedure TUIForm.VolumeAppChange(Sender: TAppAudioManager;
+  const NewVolume: Single; NewMute: boolean);
+begin
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      UpdateVolumeIcon;
+
+      if (VolumePop <> nil) and VolumePop.Visible then
+        VolumePop.LoadVolume;
+    end);
+end;
+
+procedure TUIForm.VolumeSysChange(Sender: TSystemAudioManager;
+  const Volume: Single; Muted: boolean);
+begin
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      if (VolumePop <> nil) and VolumePop.Visible then
+        VolumePop.LoadVolume;
+    end);
+end;
+
 procedure TUIForm.PopupGeneralViewAlbum(Sender: TObject);
 var
   AlbumID: integer;
@@ -6461,7 +6813,7 @@ var
 begin
   // View Artist
   case PopupSource of
-    TDataSource.Tracks: AlbumID := Tracks[DrawItems[PopupDrawIndex].Index].AlbumID;
+    TDataSource.Tracks: AlbumID := Tracks[PopupDrawItem.Index].AlbumID;
     else Exit;
   end;
 
@@ -6487,6 +6839,12 @@ begin
     APPCOMMAND_MEDIA_PLAY_PAUSE: Action_Play.Execute;
     APPCOMMAND_MEDIA_NEXTTRACK: Action_Next.Execute;
   end;
+end;
+
+procedure TUIForm.WMQueryEndSession(var Msg: TWMQueryEndSession);
+begin
+  //inherited;
+  CloseApplication;
 end;
 
 { TDrawableItem }
@@ -6521,7 +6879,7 @@ begin
 
   case Source of
     TDataSource.Tracks: begin
-      if (IndexHoverSort <> PlayIndex) or (Player.PlayStatus <> psPlaying) then
+      if (ItemID <> PlayID) or (Player.PlayStatus <> psPlaying) then
         begin
           // Add to queue ONLY
           if OnlyQueue then

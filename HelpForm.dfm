@@ -27604,163 +27604,6 @@ object HelpUI: THelpUI
         TabOrder = 0
       end
     end
-    object Topic_3: TScrollBox
-      Tag = 3
-      Left = 0
-      Top = 0
-      Width = 875
-      Height = 420
-      VertScrollBar.Smooth = True
-      Align = alClient
-      BevelInner = bvNone
-      BevelOuter = bvNone
-      BorderStyle = bsNone
-      TabOrder = 2
-      Visible = False
-      OnMouseWheel = Topic_2MouseWheel
-      object Label17: TLabel
-        Left = 24
-        Top = 32
-        Width = 519
-        Height = 40
-        Caption = 'Cod'#39's Broadcast for Windows Shortcuts'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -29
-        Font.Name = 'Segoe UI Semibold'
-        Font.Style = []
-        ParentFont = False
-      end
-      object Label18: TLabel
-        Left = 24
-        Top = 78
-        Width = 569
-        Height = 51
-        AutoSize = False
-        Caption = 'Use these to navigate the program and perform tasks'
-        WordWrap = True
-      end
-      object Label19: TLabel
-        Left = 24
-        Top = 146
-        Width = 146
-        Height = 30
-        Caption = 'Keyboard Only'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -21
-        Font.Name = 'Segoe UI Bold'
-        Font.Style = []
-        ParentFont = False
-      end
-      object Label24: TLabel
-        Left = 24
-        Top = 185
-        Width = 132
-        Height = 21
-        Caption = 'Alt+P - Play /Pause'
-      end
-      object Label20: TLabel
-        Left = 295
-        Top = 185
-        Width = 128
-        Height = 21
-        Caption = 'Alt+N - Next Song'
-      end
-      object Label21: TLabel
-        Left = 24
-        Top = 221
-        Width = 152
-        Height = 21
-        Caption = 'Alt+L - Previous Song'
-      end
-      object Label22: TLabel
-        Left = 295
-        Top = 221
-        Width = 176
-        Height = 21
-        Caption = 'Alt+O - Open mini player'
-      end
-      object Label23: TLabel
-        Left = 24
-        Top = 261
-        Width = 151
-        Height = 21
-        Caption = 'Alt+S - Toggle Shuffle'
-      end
-      object Label25: TLabel
-        Left = 295
-        Top = 261
-        Width = 147
-        Height = 21
-        Caption = 'Alt+R - Toggle repeat'
-      end
-      object Label26: TLabel
-        Left = 24
-        Top = 297
-        Width = 167
-        Height = 21
-        Caption = 'Alt+Shift+S - Shuffle All'
-      end
-      object Label27: TLabel
-        Left = 295
-        Top = 297
-        Width = 137
-        Height = 21
-        Caption = 'Alt+V - Toggle View'
-      end
-      object Label28: TLabel
-        Left = 24
-        Top = 330
-        Width = 153
-        Height = 21
-        Caption = 'Alt+F - Open Find Box'
-      end
-      object Label29: TLabel
-        Left = 295
-        Top = 330
-        Width = 184
-        Height = 21
-        Caption = 'Alt+M - Open/Close Menu'
-      end
-      object Label30: TLabel
-        Left = 24
-        Top = 386
-        Width = 98
-        Height = 30
-        Caption = 'Items Box'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -21
-        Font.Name = 'Segoe UI Bold'
-        Font.Style = []
-        ParentFont = False
-      end
-      object Label31: TLabel
-        Left = 24
-        Top = 434
-        Width = 230
-        Height = 21
-        Caption = 'Alt+Click - Open Information Box'
-      end
-      object Label32: TLabel
-        Left = 24
-        Top = 469
-        Width = 176
-        Height = 21
-        Caption = 'Ctrl+Click - Add to queue'
-      end
-      object Panel1: TPanel
-        Left = 599
-        Top = 221
-        Width = 57
-        Height = 377
-        BevelOuter = bvNone
-        Caption = 'Panel1'
-        ShowCaption = False
-        TabOrder = 0
-      end
-    end
     object Topic_4: TScrollBox
       Tag = 4
       Left = 0
@@ -27900,13 +27743,176 @@ object HelpUI: THelpUI
         TabOrder = 0
       end
     end
+    object Topic_3: TScrollBox
+      Tag = 3
+      Left = 0
+      Top = 0
+      Width = 875
+      Height = 420
+      VertScrollBar.Smooth = True
+      Align = alClient
+      BevelInner = bvNone
+      BevelOuter = bvNone
+      BorderStyle = bsNone
+      TabOrder = 2
+      Visible = False
+      OnMouseWheel = Topic_2MouseWheel
+      object Label17: TLabel
+        Left = 24
+        Top = 32
+        Width = 519
+        Height = 40
+        Caption = 'Cod'#39's Broadcast for Windows Shortcuts'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -29
+        Font.Name = 'Segoe UI Semibold'
+        Font.Style = []
+        ParentFont = False
+      end
+      object Label18: TLabel
+        Left = 24
+        Top = 78
+        Width = 569
+        Height = 51
+        AutoSize = False
+        Caption = 'Use these to navigate the program and perform tasks'
+        WordWrap = True
+      end
+      object Label19: TLabel
+        Left = 24
+        Top = 146
+        Width = 146
+        Height = 30
+        Caption = 'Keyboard Only'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -21
+        Font.Name = 'Segoe UI Bold'
+        Font.Style = []
+        ParentFont = False
+      end
+      object Label24: TLabel
+        Left = 24
+        Top = 185
+        Width = 132
+        Height = 21
+        Caption = 'Alt+P - Play /Pause'
+      end
+      object Label20: TLabel
+        Left = 295
+        Top = 185
+        Width = 128
+        Height = 21
+        Caption = 'Alt+N - Next Song'
+      end
+      object Label21: TLabel
+        Left = 24
+        Top = 221
+        Width = 152
+        Height = 21
+        Caption = 'Alt+L - Previous Song'
+      end
+      object Label22: TLabel
+        Left = 295
+        Top = 221
+        Width = 176
+        Height = 21
+        Caption = 'Alt+O - Open mini player'
+      end
+      object Label23: TLabel
+        Left = 24
+        Top = 254
+        Width = 151
+        Height = 21
+        Caption = 'Alt+S - Toggle Shuffle'
+      end
+      object Label25: TLabel
+        Left = 295
+        Top = 254
+        Width = 147
+        Height = 21
+        Caption = 'Alt+R - Toggle repeat'
+      end
+      object Label26: TLabel
+        Left = 24
+        Top = 290
+        Width = 167
+        Height = 21
+        Caption = 'Alt+Shift+S - Shuffle All'
+      end
+      object Label27: TLabel
+        Left = 295
+        Top = 290
+        Width = 137
+        Height = 21
+        Caption = 'Alt+V - Toggle View'
+      end
+      object Label28: TLabel
+        Left = 24
+        Top = 323
+        Width = 153
+        Height = 21
+        Caption = 'Alt+F - Open Find Box'
+      end
+      object Label29: TLabel
+        Left = 295
+        Top = 323
+        Width = 184
+        Height = 21
+        Caption = 'Alt+M - Open/Close Menu'
+      end
+      object Label30: TLabel
+        Left = 24
+        Top = 399
+        Width = 98
+        Height = 30
+        Caption = 'Items Box'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWhite
+        Font.Height = -21
+        Font.Name = 'Segoe UI Bold'
+        Font.Style = []
+        ParentFont = False
+      end
+      object Label31: TLabel
+        Left = 24
+        Top = 447
+        Width = 230
+        Height = 21
+        Caption = 'Alt+Click - Open Information Box'
+      end
+      object Label32: TLabel
+        Left = 24
+        Top = 482
+        Width = 176
+        Height = 21
+        Caption = 'Ctrl+Click - Add to queue'
+      end
+      object Label42: TLabel
+        Left = 24
+        Top = 359
+        Width = 196
+        Height = 21
+        Caption = 'Alt+Q - Open / Close Queue'
+      end
+      object Panel1: TPanel
+        Left = 599
+        Top = 221
+        Width = 57
+        Height = 377
+        BevelOuter = bvNone
+        Caption = 'Panel1'
+        ShowCaption = False
+        TabOrder = 0
+      end
+    end
     object Topic_1: TScrollBox
       Tag = 1
       Left = 0
       Top = 0
       Width = 875
       Height = 420
-      VertScrollBar.Position = 812
       VertScrollBar.Smooth = True
       Align = alClient
       BevelInner = bvNone
@@ -27916,7 +27922,7 @@ object HelpUI: THelpUI
       OnMouseWheel = Topic_2MouseWheel
       object Label9: TLabel
         Left = 24
-        Top = -780
+        Top = 32
         Width = 543
         Height = 40
         Caption = 'How to log in to your iBroadcast Account'
@@ -27929,7 +27935,7 @@ object HelpUI: THelpUI
       end
       object Label10: TLabel
         Left = 24
-        Top = -734
+        Top = 78
         Width = 569
         Height = 51
         AutoSize = False
@@ -27941,7 +27947,7 @@ object HelpUI: THelpUI
       end
       object Label11: TLabel
         Left = 24
-        Top = -638
+        Top = 174
         Width = 378
         Height = 30
         Caption = 'Step 1. On iBroadcast, go to your apps'
@@ -27954,7 +27960,7 @@ object HelpUI: THelpUI
       end
       object CImage4: CImage
         Left = 24
-        Top = -588
+        Top = 224
         Width = 497
         Height = 265
         GifSettings.Enable = False
@@ -50074,7 +50080,7 @@ object HelpUI: THelpUI
       end
       object Label12: TLabel
         Left = 24
-        Top = -288
+        Top = 524
         Width = 403
         Height = 30
         Caption = 'Step 2. Go to "Approved 3rd Party Apps"'
@@ -50087,7 +50093,7 @@ object HelpUI: THelpUI
       end
       object CImage5: CImage
         Left = 24
-        Top = -252
+        Top = 560
         Width = 497
         Height = 265
         GifSettings.Enable = False
@@ -52402,7 +52408,7 @@ object HelpUI: THelpUI
       end
       object Label13: TLabel
         Left = 33
-        Top = 99
+        Top = 911
         Width = 497
         Height = 107
         AutoSize = False
@@ -52420,7 +52426,7 @@ object HelpUI: THelpUI
       end
       object Label14: TLabel
         Left = 33
-        Top = 202
+        Top = 1014
         Width = 165
         Height = 30
         Caption = 'Enjoy iBroadcast!'
@@ -52433,7 +52439,7 @@ object HelpUI: THelpUI
       end
       object Label15: TLabel
         Left = 32
-        Top = 51
+        Top = 863
         Width = 507
         Height = 30
         Caption = 'Step 3. Click "enable", and copy the code It outputs'
@@ -52446,7 +52452,7 @@ object HelpUI: THelpUI
       end
       object Panel3: TPanel
         Left = 592
-        Top = 66
+        Top = 878
         Width = 57
         Height = 377
         BevelOuter = bvNone

@@ -48,6 +48,7 @@ type
     procedure Mini_SeekChange(Sender: CSlider; Position, Max, Min: Integer);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormShow(Sender: TObject);
+    procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   private
@@ -259,6 +260,25 @@ begin
 
   // Apply Size
   Height := HeightNormal;
+end;
+
+procedure TMiniPlayer.FormKeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  // Alt
+  if ssAlt in Shift then
+    begin
+      case Key of
+        76: UIForm.Action_Previous.Execute;
+        78: UIForm.Action_Next.Execute;
+        79: Mini_Close.OnClick(Mini_Close);
+        80: UIForm.Action_Play.Execute;
+        82: Mini_Repeat.OnClick(Mini_Repeat);
+        83: Mini_Shuffle.OnClick(Mini_Shuffle);
+      end;
+    end;
+
+  Key := 0;
 end;
 
 procedure TMiniPlayer.FormShow(Sender: TObject);

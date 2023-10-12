@@ -13,8 +13,10 @@ object MiniPlayer: TMiniPlayer
   Font.Height = -16
   Font.Name = 'Segoe UI'
   Font.Style = []
+  KeyPreview = True
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
+  OnKeyUp = FormKeyUp
   OnMouseDown = MoveMoveDown
   OnShow = FormShow
   TextHeight = 21
@@ -80,9 +82,11 @@ object MiniPlayer: TMiniPlayer
       Top = 114
       Width = 40
       Height = 30
+      Hint = 'Exit Mini Player'
       Margins.Left = 10
       Margins.Right = 10
       OnClick = Mini_CloseClick
+      ShowHint = True
       TabOrder = 0
       BSegoeIcon = #60999
       ButtonIcon = cicSegoeFluent
@@ -145,7 +149,9 @@ object MiniPlayer: TMiniPlayer
       Top = 111
       Width = 50
       Height = 37
+      Hint = 'Previous (Alt+L)'
       OnClick = Button_PrevClick
+      ShowHint = True
       TabOrder = 1
       BSegoeIcon = #59538
       ButtonIcon = cicSegoeFluent
@@ -207,7 +213,9 @@ object MiniPlayer: TMiniPlayer
       Top = 108
       Width = 50
       Height = 43
+      Hint = 'Play/Pause (Alt+P)'
       OnClick = MiniButton_PlayClick
+      ShowHint = True
       TabOrder = 2
       BSegoeIcon = #59240
       ButtonIcon = cicSegoeFluent
@@ -270,7 +278,9 @@ object MiniPlayer: TMiniPlayer
       Top = 111
       Width = 50
       Height = 37
+      Hint = 'Next (Alt+N)'
       OnClick = Button_NextClick
+      ShowHint = True
       TabOrder = 3
       BSegoeIcon = #59539
       ButtonIcon = cicSegoeFluent
@@ -513,9 +523,11 @@ object MiniPlayer: TMiniPlayer
       Top = 121
       Width = 50
       Height = 37
+      Hint = 'Toggle Shuffle (Alt+S)'
       Margins.Left = 10
       Margins.Right = 10
       OnClick = Mini_ShuffleClick
+      ShowHint = True
       TabOrder = 1
       BSegoeIcon = #57680
       ButtonIcon = cicSegoeFluent
@@ -578,9 +590,11 @@ object MiniPlayer: TMiniPlayer
       Top = 121
       Width = 50
       Height = 37
+      Hint = 'Toggle Repeat (Alt+R)'
       Margins.Left = 10
       Margins.Right = 10
       OnClick = Mini_RepeatClick
+      ShowHint = True
       TabOrder = 2
       BSegoeIcon = #59630
       ButtonIcon = cicSegoeFluent

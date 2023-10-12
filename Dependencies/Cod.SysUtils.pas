@@ -58,6 +58,7 @@ interface
     Closing: boolean = true);
 
   { Icons }
+  procedure GetIconStrIcon(IconString: string; var PngImage: TPngImage);
   procedure GetFileIcon(FileName: string; var PngImage: TPngImage; IconIndex: word = 0);
   procedure GetFileIconEx(FileName: string; var PngImage: TPngImage; IconIndex: word = 0; SmallIcon: boolean = false);
   function GetFileIconCount(FileName: string): integer;
@@ -648,6 +649,38 @@ begin
       if I <> ACount then
         Result := Result + ' ';
     end;
+end;
+
+procedure GetIconStrIcon(IconString: string; var PngImage: TPngImage);
+var
+  ic: TIcon;
+  FileName: string;
+  IconIndex: word;
+  Sep: integer;
+begin
+  if TFile.Exists(IconString) then
+    begin
+      IconIndex := 0;
+      FileName := IconString;
+    end
+  else
+    begin
+      Sep := IconString.LastIndexOf(',');
+      FileName := Copy(IconString, 1, Sep);
+      IconIndex := Copy(IconString, Sep+2, Length(IconString)).ToInteger;
+    end;
+
+  // Get TIcon
+  ic := TIcon.Create;
+  try
+    ic.Handle := ExtractAssociatedIcon(HInstance, PChar(FileName), IconIndex);
+    ic.Transparent := true;
+
+    // Convert to PNG
+    ConvertToPNG(ic, PngImage);
+  finally
+    ic.Free;
+  end;
 end;
 
 procedure GetFileIcon(FileName: string; var PngImage: TPngImage; IconIndex: word);

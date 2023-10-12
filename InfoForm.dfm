@@ -207,7 +207,7 @@ object InfoBox: TInfoBox
         end
         object Save_Button2: CButton
           AlignWithMargins = True
-          Left = 331
+          Left = 330
           Top = 265
           Width = 40
           Height = 40
@@ -479,6 +479,12 @@ object InfoBox: TInfoBox
     Top = 294
     object Information1: TMenuItem
       Caption = 'Save Cover'
+      Hint = #59675
+      OnClick = Information1Click
+    end
+    object SaveLargeCover1: TMenuItem
+      Tag = 1
+      Caption = 'Save Large Cover'
       Hint = #59675
       OnClick = Information1Click
     end

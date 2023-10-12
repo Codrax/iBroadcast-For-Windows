@@ -3,16 +3,15 @@ object VolumePop: TVolumePop
   Top = 0
   BorderStyle = bsNone
   Caption = 'Form1'
-  ClientHeight = 125
+  ClientHeight = 242
   ClientWidth = 280
-  Color = 2886678
+  Color = 16711808
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
   Font.Height = -16
   Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poDesigned
-  OnCreate = FormCreate
   OnDeactivate = FormDeactivate
   TextHeight = 21
   object Panel1: TPanel
@@ -20,86 +19,43 @@ object VolumePop: TVolumePop
     Left = 3
     Top = 3
     Width = 274
-    Height = 119
+    Height = 236
     Align = alClient
     BevelOuter = bvNone
     Caption = 'Panel1'
-    ParentColor = True
+    Color = 2886678
+    ParentBackground = False
     ShowCaption = False
     TabOrder = 0
-    object Label1: TLabel
+    object Label6: TLabel
       AlignWithMargins = True
-      Left = 3
-      Top = 3
-      Width = 268
-      Height = 21
+      Left = 8
+      Top = 8
+      Width = 258
+      Height = 26
+      Margins.Left = 8
+      Margins.Top = 8
+      Margins.Right = 8
+      Margins.Bottom = 8
       Align = alTop
-      Caption = 'Volume'
-      Transparent = False
-      ExplicitWidth = 53
-    end
-    object Text_Value: TLabel
-      Left = 234
-      Top = 27
-      Width = 40
-      Height = 52
-      Align = alRight
       Alignment = taCenter
       AutoSize = False
-      Caption = '100'
-      Layout = tlCenter
-      ExplicitLeft = 198
-      ExplicitHeight = 34
-    end
-    object CSlider1: CSlider
-      Left = 40
-      Top = 27
-      Width = 194
-      Height = 52
-      OnChange = CSlider1Change
-      Align = alClient
-      Color = 2886677
-      ParentBackground = False
+      Caption = 'iBroadcast Volume Mixer'
+      Color = 7675961
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -16
+      Font.Name = 'Segoe UI Semibold'
+      Font.Style = []
       ParentColor = False
-      AccentColor = AccentCustom
-      Presets = cslNone
-      Foreground.Enter = 14585392
-      Foreground.Leave = 12940567
-      Foreground.Down = 11295744
-      Foreground.Border = clGray
-      Foreground.BorderThick = 0
-      Foreground.MultiColor = False
-      Background.Enter = 14211288
-      Background.Leave = 14211288
-      Background.Down = clGray
-      Background.Border = clGray
-      Background.BorderThick = 0
-      Background.MultiColor = False
-      SliderOptions.Height = 10
-      SliderOptions.WidthMargin = 10
-      SliderOptions.Roundness = 5
-      SliderOptions.FlatEnd = False
-      Indicator.Height = 15
-      Indicator.Width = 15
-      Indicator.Roundness = 50
-      Indicator.Enabled = True
-      IndicatorColor.Enter = 16744448
-      IndicatorColor.Leave = 16744448
-      IndicatorColor.Down = 16744448
-      IndicatorColor.Border = 4603449
-      IndicatorColor.BorderThick = 5
-      IndicatorColor.MultiColor = True
-      IndicatorColor.DynamicBorderSize = 3
-      IndicatorColor.DynamicBorder = True
-      State = cssLeave
-      Max = 1000
-      Min = 0
-      Position = 50
+      ParentFont = False
+      Transparent = False
+      Layout = tlCenter
     end
     object Speaker_Pick: TComboBox
       AlignWithMargins = True
       Left = 8
-      Top = 82
+      Top = 199
       Width = 258
       Height = 34
       Margins.Left = 8
@@ -114,62 +70,279 @@ object VolumePop: TVolumePop
       ItemHeight = 28
       ParentColor = True
       ParentFont = False
-      TabOrder = 1
+      TabOrder = 0
       OnChange = Speaker_PickChange
       OnDrawItem = Speaker_PickDrawItem
       OnMeasureItem = Speaker_PickMeasureItem
     end
     object Panel2: TPanel
       Left = 0
-      Top = 27
-      Width = 40
-      Height = 52
-      Align = alLeft
+      Top = 117
+      Width = 274
+      Height = 75
+      Align = alTop
       BevelOuter = bvNone
       Caption = 'Panel2'
+      ParentColor = True
       ShowCaption = False
-      TabOrder = 2
-      object Icon_Background: TLabel
-        Left = 0
-        Top = 0
+      TabOrder = 1
+      object Label1: TLabel
+        AlignWithMargins = True
+        Left = 3
+        Top = 3
+        Width = 268
+        Height = 21
+        Align = alTop
+        Caption = 'System Volume'
+        Transparent = False
+        ExplicitWidth = 108
+      end
+      object System_Value: TLabel
+        Left = 234
+        Top = 27
         Width = 40
-        Height = 52
-        Align = alClient
+        Height = 48
+        Align = alRight
         Alignment = taCenter
         AutoSize = False
-        Caption = #59797
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = 5322836
-        Font.Height = -21
-        Font.Name = 'Segoe Fluent Icons'
-        Font.Style = []
-        ParentFont = False
+        Caption = '100'
         Layout = tlCenter
         ExplicitLeft = 198
-        ExplicitTop = 27
         ExplicitHeight = 34
       end
-      object Icon_Volume: TLabel
-        Left = 0
-        Top = 0
-        Width = 40
-        Height = 52
-        Cursor = crHandPoint
+      object Slider_System: CSlider
+        Left = 40
+        Top = 27
+        Width = 194
+        Height = 48
+        OnMouseUp = Slider_SystemMouseUp
+        OnChange = Slider_SystemChange
         Align = alClient
+        Color = 2886678
+        ParentBackground = False
+        ParentColor = False
+        AccentColor = AccentCustom
+        Presets = cslNone
+        Foreground.Enter = 14585392
+        Foreground.Leave = 12940567
+        Foreground.Down = 11295744
+        Foreground.Border = clGray
+        Foreground.BorderThick = 0
+        Foreground.MultiColor = False
+        Background.Enter = 14211288
+        Background.Leave = 14211288
+        Background.Down = clGray
+        Background.Border = clGray
+        Background.BorderThick = 0
+        Background.MultiColor = False
+        SliderOptions.Height = 10
+        SliderOptions.WidthMargin = 10
+        SliderOptions.Roundness = 5
+        SliderOptions.FlatEnd = False
+        Indicator.Height = 15
+        Indicator.Width = 15
+        Indicator.Roundness = 50
+        Indicator.Enabled = True
+        IndicatorColor.Enter = 16744448
+        IndicatorColor.Leave = 16744448
+        IndicatorColor.Down = 16744448
+        IndicatorColor.Border = 4603449
+        IndicatorColor.BorderThick = 5
+        IndicatorColor.MultiColor = True
+        IndicatorColor.DynamicBorderSize = 3
+        IndicatorColor.DynamicBorder = True
+        State = cssLeave
+        Max = 1000
+        Min = 0
+        Position = 50
+      end
+      object Panel3: TPanel
+        Left = 0
+        Top = 27
+        Width = 40
+        Height = 48
+        Align = alLeft
+        BevelOuter = bvNone
+        Caption = 'Panel2'
+        ShowCaption = False
+        TabOrder = 1
+        object System_Background: TLabel
+          Left = 0
+          Top = 0
+          Width = 40
+          Height = 48
+          Align = alClient
+          Alignment = taCenter
+          AutoSize = False
+          Caption = #59797
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = 5322836
+          Font.Height = -21
+          Font.Name = 'Segoe Fluent Icons'
+          Font.Style = []
+          ParentFont = False
+          Layout = tlCenter
+          ExplicitLeft = 198
+          ExplicitTop = 27
+          ExplicitHeight = 34
+        end
+        object System_Volume: TLabel
+          Left = 0
+          Top = 0
+          Width = 40
+          Height = 48
+          Cursor = crHandPoint
+          Align = alClient
+          Alignment = taCenter
+          AutoSize = False
+          Caption = #59797
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWhite
+          Font.Height = -21
+          Font.Name = 'Segoe Fluent Icons'
+          Font.Style = []
+          ParentFont = False
+          Layout = tlCenter
+          OnClick = System_VolumeClick
+          ExplicitLeft = 198
+          ExplicitTop = 27
+          ExplicitHeight = 34
+        end
+      end
+    end
+    object Panel4: TPanel
+      Left = 0
+      Top = 42
+      Width = 274
+      Height = 75
+      Align = alTop
+      BevelOuter = bvNone
+      Caption = 'Panel2'
+      ParentColor = True
+      ShowCaption = False
+      TabOrder = 2
+      object Label2: TLabel
+        AlignWithMargins = True
+        Left = 3
+        Top = 3
+        Width = 268
+        Height = 21
+        Align = alTop
+        Caption = 'Player Volume'
+        Transparent = False
+        ExplicitWidth = 100
+      end
+      object App_Value: TLabel
+        Left = 234
+        Top = 27
+        Width = 40
+        Height = 48
+        Align = alRight
         Alignment = taCenter
         AutoSize = False
-        Caption = #59797
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWhite
-        Font.Height = -21
-        Font.Name = 'Segoe Fluent Icons'
-        Font.Style = []
-        ParentFont = False
+        Caption = '100'
         Layout = tlCenter
-        OnClick = Icon_VolumeClick
         ExplicitLeft = 198
-        ExplicitTop = 27
         ExplicitHeight = 34
+      end
+      object Slider_App: CSlider
+        Left = 40
+        Top = 27
+        Width = 194
+        Height = 48
+        OnMouseUp = Slider_AppMouseUp
+        OnChange = Slider_AppChange
+        Align = alClient
+        Color = 2886678
+        ParentBackground = False
+        ParentColor = False
+        AccentColor = AccentCustom
+        Presets = cslNone
+        Foreground.Enter = 14585392
+        Foreground.Leave = 12940567
+        Foreground.Down = 11295744
+        Foreground.Border = clGray
+        Foreground.BorderThick = 0
+        Foreground.MultiColor = False
+        Background.Enter = 14211288
+        Background.Leave = 14211288
+        Background.Down = clGray
+        Background.Border = clGray
+        Background.BorderThick = 0
+        Background.MultiColor = False
+        SliderOptions.Height = 10
+        SliderOptions.WidthMargin = 10
+        SliderOptions.Roundness = 5
+        SliderOptions.FlatEnd = False
+        Indicator.Height = 15
+        Indicator.Width = 15
+        Indicator.Roundness = 50
+        Indicator.Enabled = True
+        IndicatorColor.Enter = 16744448
+        IndicatorColor.Leave = 16744448
+        IndicatorColor.Down = 16744448
+        IndicatorColor.Border = 4603449
+        IndicatorColor.BorderThick = 5
+        IndicatorColor.MultiColor = True
+        IndicatorColor.DynamicBorderSize = 3
+        IndicatorColor.DynamicBorder = True
+        State = cssLeave
+        Max = 1000
+        Min = 0
+        Position = 50
+      end
+      object Panel5: TPanel
+        Left = 0
+        Top = 27
+        Width = 40
+        Height = 48
+        Align = alLeft
+        BevelOuter = bvNone
+        Caption = 'Panel2'
+        ShowCaption = False
+        TabOrder = 1
+        object App_Background: TLabel
+          Left = 0
+          Top = 0
+          Width = 40
+          Height = 48
+          Align = alClient
+          Alignment = taCenter
+          AutoSize = False
+          Caption = #59797
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = 5322836
+          Font.Height = -21
+          Font.Name = 'Segoe Fluent Icons'
+          Font.Style = []
+          ParentFont = False
+          Layout = tlCenter
+          ExplicitLeft = 198
+          ExplicitTop = 27
+          ExplicitHeight = 34
+        end
+        object App_Volume: TLabel
+          Left = 0
+          Top = 0
+          Width = 40
+          Height = 48
+          Cursor = crHandPoint
+          Align = alClient
+          Alignment = taCenter
+          AutoSize = False
+          Caption = #59797
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWhite
+          Font.Height = -21
+          Font.Name = 'Segoe Fluent Icons'
+          Font.Style = []
+          ParentFont = False
+          Layout = tlCenter
+          OnClick = App_VolumeClick
+          ExplicitLeft = 198
+          ExplicitTop = 27
+          ExplicitHeight = 34
+        end
       end
     end
   end

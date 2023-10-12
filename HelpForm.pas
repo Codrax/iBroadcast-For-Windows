@@ -73,6 +73,7 @@ type
     Label39: TLabel;
     Label40: TLabel;
     Label41: TLabel;
+    Label42: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure Topic_2MouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);
