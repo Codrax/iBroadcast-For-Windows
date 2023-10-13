@@ -1854,10 +1854,16 @@ begin
 
   // TRACKS
   SONGS := TJSONArray(JSONPair.JsonValue.A[1]);
-  SetLength(TracksID, SONGS.Count);
+  SetLength(TracksID, 0);
 
-  for I := 0 to High(TracksID) do
-    TracksID[I] := SONGS.Items[I].AsType<TJSONNumber>.AsInt;
+  var ID: integer;
+  for I := 0 to SONGS.Count-1 do
+    begin
+      ID := SONGS.Items[I].AsType<TJSONNumber>.AsInt;
+      // Validate
+      if GetTrack(ID) <> -1 then
+        TracksID.AddValue( ID );
+    end;
 
   // Data 2
   ArtistID := (JSON.Items[2].AsType<TJSONNumber>).AsInt;
@@ -1939,10 +1945,16 @@ begin
 
   // TRACKS
   SONGS := TJSONArray(JSONPair.JsonValue.A[1]);
-  SetLength(TracksID, SONGS.Count);
+  SetLength(TracksID, 0);
 
-  for I := 0 to High(TracksID) do
-    TracksID[I] := SONGS.Items[I].AsType<TJSONNumber>.AsInt;
+  var ID: integer;
+  for I := 0 to SONGS.Count-1 do
+    begin
+      ID := SONGS.Items[I].AsType<TJSONNumber>.AsInt;
+      // Validate
+      if GetTrack(ID) <> -1 then
+        TracksID.AddValue( ID );
+    end;
 
   // Data 2
   IsInTrash := (JSON.Items[2].AsType<TJSONBool>).AsBoolean;
@@ -2020,10 +2032,16 @@ begin
 
   // TRACKS
   SONGS := TJSONArray(JSONPair.JsonValue.A[1]);
-  SetLength(TracksID, SONGS.Count);
+  SetLength(TracksID, 0);
 
-  for I := 0 to High(TracksID) do
-    TracksID[I] := SONGS.Items[I].AsType<TJSONNumber>.AsInt;
+  var ID: integer;
+  for I := 0 to SONGS.Count-1 do
+    begin
+      ID := SONGS.Items[I].AsType<TJSONNumber>.AsInt;
+      // Validate
+      if GetTrack(ID) <> -1 then
+        TracksID.AddValue( ID );
+    end;
 
   // ?
   // ?

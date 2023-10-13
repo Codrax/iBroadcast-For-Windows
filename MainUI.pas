@@ -32,6 +32,7 @@ type
   TSearchFlag = (ExactMatch, CaseSensitive, SearchInfo);
   TSearchFlags = set of TSearchFlag;
   TPlayType = (Streaming, Local, CloudDownload);
+  TDownloadedKind = (None, Direct, Indirect); // for tracks downloaded from an album
 
   // View Save
   TViewSave = record
@@ -72,6 +73,8 @@ type
     (* Mix data *)
     function Hidden: boolean;
     function Downloaded: boolean;
+
+    function IsDownloaded: TDownloadedKind;
 
     function ToggleDownloaded: boolean;
 
@@ -565,7 +568,7 @@ type
     // Draw Box
     procedure RecalibrateScroll;
     procedure DrawItemCanvas(Canvas: TCanvas; ARect: TRect; Title, Info: string;
-      Picture: TJpegImage; Active, Downloaded: boolean);
+      Picture: TJpegImage; Active: boolean; Downloaded: TDownloadedKind);
     procedure DrawWasClicked(Shift: TShiftState = []; Button: TMouseButton = mbLeft);
     procedure SetDownloadIcon(Value: boolean; Source: TDataSource);
 
@@ -710,7 +713,7 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:7; Maintanance: 4);
+  Version: TVersionRec = (Major:1; Minor:7; Maintanance: 5);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://www.codrutsoft.com/api/';
@@ -1946,7 +1949,7 @@ begin
 end;
 
 procedure TUIForm.DrawItemCanvas(Canvas: TCanvas; ARect: TRect; Title,
-  Info: string; Picture: TJpegImage; Active, Downloaded: boolean);
+  Info: string; Picture: TJpegImage; Active: boolean; Downloaded: TDownloadedKind);
 var
   TempRect: TRect;
   Dist: integer;
@@ -2022,13 +2025,16 @@ begin
           end;
 
         // Downloaded
-        if Downloaded then
+        if Downloaded <> TDownloadedKind.None then
           begin
             Font.Assign(Self.Font);
             Font.Name := Self.GetSegoeIconFont;
 
             Font.Size := 26;
-            Font.Color := clHighlight;
+            if Downloaded = TDownloadedKind.Direct then
+              Font.Color := TColors.Orangered
+            else
+              Font.Color := TColors.Dodgerblue;
 
             S := ICON_FILL;
             Dist := TextWidth(s) * 2;
@@ -2086,6 +2092,33 @@ begin
             Brush.Color := ChangeColorSat(ItemColor, 20);
 
             RoundRect( TempRect, CoverRadius, CoverRadius );
+          end;
+
+        // Downloaded
+        if Downloaded <> TDownloadedKind.None then
+          begin
+            Font.Assign(Self.Font);
+            Font.Name := Self.GetSegoeIconFont;
+
+            Font.Size := 26;
+            if Downloaded = TDownloadedKind.Direct then
+              Font.Color := TColors.Orangered
+            else
+              Font.Color := TColors.Dodgerblue;
+
+            S := ICON_FILL;
+            Dist := TextWidth(s) * 2;
+            TempRect := Rect( ARect.Right - Dist, ARect.Top + 5, ARect.Right, ARect.Top + Dist + 5);
+
+            S := ICON_FILL;
+            TextRect(TempRect, S, [tfCenter, tfTop]);
+
+            Font.Size := 14;
+            Font.Color := FN_COLOR;
+
+            TempRect.Top := TempRect.Top + 8;
+            S := ICON_DOWNLOAD;
+            TextRect(TempRect, S, [tfCenter, tfVerticalCenter]);
           end;
       end;
 end;
@@ -2215,7 +2248,7 @@ begin
 
               // Draw
               DrawItemCanvas(TPaintBox(Sender).Canvas, ARect, Title, Info,
-                Picture, DrawItems[Index].Active, DrawItems[Index].Downloaded);
+                Picture, DrawItems[Index].Active, DrawItems[Index].IsDownloaded);
             end;
                            
           // Move Line
@@ -2267,7 +2300,7 @@ begin
 
               // Draw
               DrawItemCanvas(TPaintBox(Sender).Canvas, ARect, Title, Info,
-                Picture, DrawItems[Index].Active, DrawItems[Index].Downloaded);
+                Picture, DrawItems[Index].Active, DrawItems[Index].IsDownloaded);
             end;
 
           // Move Line
@@ -2985,7 +3018,7 @@ begin
               if (Y + CoverHeight > 0) and (Y < HomeDraw.Height) then
                 DrawItemCanvas(HomeDraw.Canvas, ARect, DrawItems[I].Title,
                   DrawItems[I].InfoShort, DrawItems[I].GetPicture,
-                  DrawItems[I].Active, DrawItems[I].Downloaded);
+                  DrawItems[I].Active, DrawItems[I].IsDownloaded);
 
               // Mext
               Inc(X, CoverWidth + CoverSpacing + ExtraSpacing);
@@ -5913,7 +5946,7 @@ begin
           if (Y + CoverHeight > 0) and (Y < AHeight) then
             DrawItemCanvas(SearchDraw.Canvas, ARect, DrawItems[I].Title,
             DrawItems[I].InfoShort, DrawItems[I].GetPicture,
-            DrawItems[I].Active, DrawItems[I].Downloaded);
+            DrawItems[I].Active, DrawItems[I].IsDownloaded);
 
           // Move Line
           Inc(X, CoverWidth + CoverSpacing + ExtraSpacing);
@@ -6718,6 +6751,7 @@ begin
             Break
           end;
 
+      // Delete
       if not Exists then
         if DownloadQueue.IndexOf(Identifier) = -1 then
           try
@@ -6778,6 +6812,93 @@ begin
           TFile.Delete(Files[I]);
         finally
           // Thread is still using the file. To be deleted on next launch
+        end;
+    end;
+
+  { Check for server-deleted files }
+  // Tracks
+  for I := DownloadedTracks.Count-1 downto 0 do
+    begin
+      try
+        Identifier:= DownloadedTracks[I].ToInteger;
+      except
+        Continue;
+      end;
+
+      if GetTrack(Identifier) = -1 then
+        begin
+          var AIndex: integer;
+          AIndex := DownloadedTracks.IndexOf(DownloadedTracks[I]);
+
+          // Delete from downloads
+          if AIndex <> -1 then
+            begin
+              DownloadedTracks.Delete(AIndex);
+
+              AIndex := AllDownload.IndexOf(Identifier);
+              if AIndex <> -1 then
+                AllDownload.Delete(AIndex);
+            end;
+        end;
+    end;
+
+  // Albums
+  for I := DownloadedAlbums.Count-1 downto 0 do
+    begin
+      try
+        Identifier:= DownloadedAlbums[I].ToInteger;
+      except
+        Continue;
+      end;
+
+      if GetAlbum(Identifier) = -1 then
+        begin
+          var AIndex: integer;
+          AIndex := DownloadedAlbums.IndexOf(DownloadedAlbums[I]);
+
+          // Delete from downloads
+          if AIndex <> -1 then
+            DownloadedAlbums.Delete(AIndex);
+        end;
+    end;
+
+  // Artists
+  for I := DownloadedArtists.Count-1 downto 0 do
+    begin
+      try
+        Identifier:= DownloadedArtists[I].ToInteger;
+      except
+        Continue;
+      end;
+
+      if GetArtist(Identifier) = -1 then
+        begin
+          var AIndex: integer;
+          AIndex := DownloadedArtists.IndexOf(DownloadedArtists[I]);
+
+          // Delete from downloads
+          if AIndex <> -1 then
+            DownloadedArtists.Delete(AIndex);
+        end;
+    end;
+
+  // Playlists
+  for I := DownloadedPlaylists.Count-1 downto 0 do
+    begin
+      try
+        Identifier:= DownloadedPlaylists[I].ToInteger;
+      except
+        Continue;
+      end;
+
+      if GetPlaylist(Identifier) = -1 then
+        begin
+          var AIndex: integer;
+          AIndex := DownloadedPlaylists.IndexOf(DownloadedPlaylists[I]);
+
+          // Delete from downloads
+          if AIndex <> -1 then
+            DownloadedPlaylists.Delete(AIndex);
         end;
     end;
 end;
@@ -7014,6 +7135,21 @@ end;
 function TDrawableItem.Invalid: boolean;
 begin
   Result := (Index = -1) or (ItemID = 0) or (Title = '');
+end;
+
+function TDrawableItem.IsDownloaded: TDownloadedKind;
+begin
+  Result := TDownloadedKind.None;
+  if Downloaded then
+    Result := TDownloadedKind.Direct;
+
+  if (Result = TDownloadedKind.None) and (Source = TDataSource.Tracks) then
+    begin
+      var I: integer;
+      for I := 0 to AllDownload.Count-1 do
+        if AllDownload[I] = ItemID then
+          Exit(TDownloadedKind.Indirect);
+    end;
 end;
 
 procedure TDrawableItem.LoadSource(AIndex: integer; From: TDataSource);
