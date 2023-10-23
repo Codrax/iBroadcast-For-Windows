@@ -5,19 +5,36 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.Visual.Slider, Vcl.StdCtrls, BASS,
-  Cod.MasterVolume, Vcl.ExtCtrls, ActiveX, MMDeviceApi, Math, MMSystem;
+  Cod.MasterVolume, Vcl.ExtCtrls, ActiveX, MMDeviceApi, Math, MMSystem,
+  Cod.Visual.Button;
 
 type
   TVolumePop = class(TForm)
     Panel1: TPanel;
-    Speaker_Pick: TComboBox;
+    Label6: TLabel;
+    CButton18: CButton;
+    Panel8: TPanel;
+    Label15: TLabel;
+    Panel9: TPanel;
+    Label5: TLabel;
+    Speed_Value: TLabel;
+    Slider_Speed: CSlider;
+    Panel10: TPanel;
+    Label10: TLabel;
+    Panel11: TPanel;
+    Label11: TLabel;
+    Bass_Value: TLabel;
+    Slider_Bass: CSlider;
+    Panel12: TPanel;
+    Label14: TLabel;
+    Panel13: TPanel;
     Panel2: TPanel;
-    Slider_System: CSlider;
     Label1: TLabel;
+    System_Value: TLabel;
+    Slider_System: CSlider;
     Panel3: TPanel;
     System_Background: TLabel;
     System_Volume: TLabel;
-    System_Value: TLabel;
     Panel4: TPanel;
     Label2: TLabel;
     App_Value: TLabel;
@@ -25,12 +42,15 @@ type
     Panel5: TPanel;
     App_Background: TLabel;
     App_Volume: TLabel;
-    Label6: TLabel;
+    Panel6: TPanel;
+    Label3: TLabel;
+    Out_Device: TLabel;
+    Panel7: TPanel;
+    Label7: TLabel;
+    Label4: TLabel;
     procedure Slider_SystemChange(Sender: CSlider; Position, Max, Min: Integer);
     procedure FormDeactivate(Sender: TObject);
     procedure Speaker_PickChange(Sender: TObject);
-    procedure Speaker_PickMeasureItem(Control: TWinControl; Index: Integer;
-      var Height: Integer);
     procedure Speaker_PickDrawItem(Control: TWinControl; Index: Integer;
       Rect: TRect; State: TOwnerDrawState);
     procedure System_VolumeClick(Sender: TObject);
@@ -40,8 +60,13 @@ type
     procedure Slider_AppMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure App_VolumeClick(Sender: TObject);
+    procedure Slider_BassChange(Sender: CSlider; Position, Max, Min: Integer);
+    procedure CButton18Click(Sender: TObject);
+    procedure Slider_SpeedChange(Sender: CSlider; Position, Max, Min: Integer);
   private
     { Private declarations }
+    ShowAdvVolume: boolean;
+
     procedure UpdateIconStatus;
 
     procedure UpdateMainForm;
@@ -49,8 +74,9 @@ type
     { Public declarations }
     procedure FullUpdate;
 
+    procedure UpdateTheSize;
+
     procedure LoadVolume;
-    procedure LoadDevices;
     procedure LoadSelectedDevice;
   end;
 
@@ -99,6 +125,31 @@ begin
   PlaySound('SYSTEMEXCLAMATION', 0, SND_ASYNC);
 end;
 
+procedure TVolumePop.Slider_BassChange(Sender: CSlider; Position, Max,
+  Min: Integer);
+begin
+  try
+    Bass_Value.Caption := (Position div 10).ToString;
+
+    UIForm.AudioVolume := Position / 1000;
+  except
+  end;
+
+  // Update icons for coloring
+  UpdateIconStatus;
+end;
+
+procedure TVolumePop.Slider_SpeedChange(Sender: CSlider; Position, Max,
+  Min: Integer);
+begin
+  try
+    Speed_Value.Caption := (Position / 10).ToString;
+
+    UIForm.AudioSpeed := Position / 10;
+  except
+  end;
+end;
+
 procedure TVolumePop.Slider_SystemChange(Sender: CSlider; Position, Max, Min: Integer);
 var
   AMute: boolean;
@@ -130,6 +181,20 @@ begin
   PlaySound('SYSTEMEXCLAMATION', 0, SND_ASYNC or SND_SYSTEM);
 end;
 
+procedure TVolumePop.CButton18Click(Sender: TObject);
+begin
+  ShowAdvVolume := not Panel8.Visible;
+
+  // UI
+  if ShowAdvVolume then
+    CButton(Sender).BSegoeIcon := #$E010
+  else
+    CButton(Sender).BSegoeIcon := #$E011;
+
+  // Update
+  UpdateTheSize;
+end;
+
 procedure TVolumePop.FormDeactivate(Sender: TObject);
 begin
   Hide;
@@ -138,7 +203,6 @@ end;
 procedure TVolumePop.FullUpdate;
 begin
   LoadVolume;
-  LoadDevices;
 
   // Selected
   LoadSelectedDevice;
@@ -160,42 +224,38 @@ begin
   UpdateMainForm;
 end;
 
-procedure TVolumePop.LoadDevices;
+procedure TVolumePop.LoadSelectedDevice;
 var
-  deviceIndex: Integer;
   deviceInfo: BASS_DEVICEINFO;
 begin
-  Speaker_Pick.Clear;
+  if BASS_GetDeviceInfo(GetCurrentAudioDeviceIndex+2, deviceInfo) then
+    Out_Device.Caption := String(deviceInfo.name)
+  else
+    Out_Device.Caption := 'Unknown device';
 
-  // Start with the first device (1 is "Default")
-  deviceIndex := 2;
-
-  // Loop through available devices until BASS_GetDeviceInfo returns nil
-  while BASS_GetDeviceInfo(deviceIndex, deviceInfo) do
-  begin
-    // Print or use deviceInfo structure (e.g., deviceInfo.name, deviceInfo.driver)
-    Speaker_Pick.Items.Add( string(deviceInfo.name) );
-
-    // Move to the next device
-    Inc(deviceIndex);
-  end;
-end;
-
-procedure TVolumePop.LoadSelectedDevice;
-begin
-  Speaker_Pick.ItemIndex := GetCurrentAudioDeviceIndex;
+  Out_Device.Hint := Out_Device.Caption;
 end;
 
 procedure TVolumePop.LoadVolume;
 begin
+  // Volume
   try
     Slider_App.Position := trunc(VolumeApplication.Volume * 1000);
     Slider_System.Position := trunc(VolumeSystem.Volume * 1000);
+    Slider_Bass.Position := trunc(UIForm.AudioVolume * 1000);
   except
-    Slider_System.Position := trunc(Player.Volume * 1000);
+    Slider_System.Position := trunc(Player.SystemVolume * 1000);
   end;
   System_Value.Caption := (Slider_System.Position div 10).ToString;
   App_Value.Caption := (Slider_App.Position div 10).ToString;
+  Bass_Value.Caption := (Slider_Bass.Position div 10).ToString;
+
+  // Speed
+  try
+    Slider_Speed.Position := trunc(UIForm.AudioSpeed * 10);
+  except
+  end;
+  Speed_Value.Caption := (Slider_Speed.Position / 10).ToString;
 
   // Icon
   UpdateIconStatus;
@@ -251,15 +311,6 @@ begin
     end;
 end;
 
-procedure TVolumePop.Speaker_PickMeasureItem(Control: TWinControl;
-  Index: Integer; var Height: Integer);
-begin
-  with TComboBox(Control).Canvas do
-    begin
-      Height := Speaker_Pick.Canvas.TextHeight('A') + 20;
-    end;
-end;
-
 procedure TVolumePop.UpdateIconStatus;
 var
   AMute: boolean;
@@ -291,11 +342,38 @@ begin
     System_Volume.Caption := #$E74F;
 
   System_Background.Visible := not AMute;
+
+  // Danger
+  if Slider_Bass.Position > 1000 then
+    begin
+      Bass_Value.Font.Color := clRed;
+    end
+  else
+    begin
+      Bass_Value.Font.Color := Self.Font.Color;
+    end;
 end;
 
 procedure TVolumePop.UpdateMainForm;
 begin
   UIForm.UpdateVolumeIcon;
+end;
+
+procedure TVolumePop.UpdateTheSize;
+var
+  PrevHeight: integer;
+begin
+  // Calc
+  PrevHeight := Height;
+
+  // UI
+  Panel8.Visible := ShowAdvVolume;
+
+  // Resize
+  Self.Height := 10;
+
+  // Add
+  Top := Top + PrevHeight - Height;
 end;
 
 end.

@@ -2,10 +2,12 @@ object NewVersion: TNewVersion
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu]
+  BorderStyle = bsDialog
   Caption = 'New version avalabile'
   ClientHeight = 261
   ClientWidth = 484
   Color = 2886678
+  CustomTitleBar.Control = TitleBarPanel
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
   Font.Height = -16
@@ -15,8 +17,8 @@ object NewVersion: TNewVersion
   OnCreate = FormCreate
   TextHeight = 21
   object Label1: TLabel
-    Left = 120
-    Top = 56
+    Left = 121
+    Top = 46
     Width = 286
     Height = 32
     Caption = 'A new version is avalabile!'
@@ -28,8 +30,8 @@ object NewVersion: TNewVersion
     ParentFont = False
   end
   object CImage1: CImage
-    Left = 24
-    Top = 43
+    Left = 25
+    Top = 33
     Width = 75
     Height = 75
     GifSettings.Enable = False
@@ -2705,11 +2707,11 @@ object NewVersion: TNewVersion
       A4FF1F534C00B49F43C6ED0000000049454E44AE426082}
   end
   object Label2: TLabel
-    Left = 120
-    Top = 94
+    Left = 121
+    Top = 84
     Width = 313
     Height = 21
-    Caption = 'Would you like to downlaod the update now?'
+    Caption = 'Would you like to download the update now?'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
     Font.Height = -16
@@ -2718,8 +2720,8 @@ object NewVersion: TNewVersion
     ParentFont = False
   end
   object Label3: TLabel
-    Left = 24
-    Top = 142
+    Left = 25
+    Top = 132
     Width = 104
     Height = 21
     Caption = 'Client Version:'
@@ -2731,8 +2733,8 @@ object NewVersion: TNewVersion
     ParentFont = False
   end
   object Label4: TLabel
-    Left = 24
-    Top = 169
+    Left = 25
+    Top = 159
     Width = 110
     Height = 21
     Caption = 'Server Version:'
@@ -2744,8 +2746,8 @@ object NewVersion: TNewVersion
     ParentFont = False
   end
   object Version_Old: TLabel
-    Left = 144
-    Top = 142
+    Left = 145
+    Top = 132
     Width = 33
     Height = 21
     Caption = '1.0.0'
@@ -2757,8 +2759,8 @@ object NewVersion: TNewVersion
     ParentFont = False
   end
   object Version_New: TLabel
-    Left = 144
-    Top = 169
+    Left = 145
+    Top = 159
     Width = 33
     Height = 21
     Caption = '1.0.0'
@@ -2773,12 +2775,12 @@ object NewVersion: TNewVersion
     Left = 0
     Top = 0
     Width = 484
-    Height = 25
+    Height = 0
     CustomButtons = <>
   end
   object CButton1: CButton
-    Left = 296
-    Top = 213
+    Left = 297
+    Top = 203
     Width = 180
     Height = 40
     ModalResult = 1
@@ -2817,7 +2819,7 @@ object NewVersion: TNewVersion
     Preset.PenColorAuto = True
     Preset.ApplyOnce = False
     Preset.IgnoreGlobalSync = False
-    UnderLine.Enable = True
+    UnderLine.Enable = False
     UnderLine.UnderLineRound = True
     UnderLine.UnderLineThicknes = 6
     TextColors.Enter = clWhite
@@ -2839,8 +2841,8 @@ object NewVersion: TNewVersion
     Animations.FASpeed = 10
   end
   object CButton2: CButton
-    Left = 120
-    Top = 213
+    Left = 112
+    Top = 203
     Width = 120
     Height = 40
     ModalResult = 8
@@ -2880,7 +2882,7 @@ object NewVersion: TNewVersion
     Preset.PenColorAuto = True
     Preset.ApplyOnce = False
     Preset.IgnoreGlobalSync = False
-    UnderLine.Enable = True
+    UnderLine.Enable = False
     UnderLine.UnderLineRound = True
     UnderLine.UnderLineThicknes = 6
     TextColors.Enter = clWhite
@@ -2902,11 +2904,13 @@ object NewVersion: TNewVersion
     Animations.FASpeed = 10
   end
   object CButton3: CButton
-    Left = 246
-    Top = 213
+    Left = 247
+    Top = 203
     Width = 44
     Height = 40
+    Hint = 'Open download page in browser'
     OnClick = CButton3Click
+    ShowHint = True
     TabOrder = 3
     BSegoeIcon = #63226
     ButtonIcon = cicSegoeFluent
@@ -2942,7 +2946,7 @@ object NewVersion: TNewVersion
     Preset.PenColorAuto = True
     Preset.ApplyOnce = False
     Preset.IgnoreGlobalSync = False
-    UnderLine.Enable = True
+    UnderLine.Enable = False
     UnderLine.UnderLineRound = True
     UnderLine.UnderLineThicknes = 6
     TextColors.Enter = clWhite

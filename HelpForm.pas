@@ -74,6 +74,12 @@ type
     Label40: TLabel;
     Label41: TLabel;
     Label42: TLabel;
+    Label43: TLabel;
+    Label44: TLabel;
+    CImage6: CImage;
+    Label45: TLabel;
+    Label47: TLabel;
+    CImage7: CImage;
     procedure FormCreate(Sender: TObject);
     procedure Topic_2MouseWheel(Sender: TObject; Shift: TShiftState;
       WheelDelta: Integer; MousePos: TPoint; var Handled: Boolean);

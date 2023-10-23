@@ -18,7 +18,8 @@ uses
   CreatePlaylistForm in 'CreatePlaylistForm.pas' {CreatePlaylist},
   Offline in 'Offline.pas' {OfflineForm},
   PickerDialogForm in 'PickerDialogForm.pas' {PickerDialog},
-  iBroadcastUtils in 'iBroadcastUtils.pas';
+  iBroadcastUtils in 'iBroadcastUtils.pas',
+  RatingPopup in 'RatingPopup.pas' {RatingPopupForm};
 
 {$R *.res}
 
@@ -76,7 +77,6 @@ begin
   Application.CreateForm(TPerfForm, PerfForm);
   Application.CreateForm(TMiniPlayer, MiniPlayer);
   Application.CreateForm(TInfoBox, InfoBox);
-  Application.CreateForm(TNewVersion, NewVersion);
   // Debug
   AddToLog('Checking Debug Mode');
   if AllowDebug then

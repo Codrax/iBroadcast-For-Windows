@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.SysUtils, Vcl.TitleBarCtrls,
   Cod.Visual.Image, Vcl.StdCtrls, Vcl.ExtCtrls, Cod.Visual.Button, Cod.Dialogs,
   BroadcastAPI, MainUI, Vcl.Menus, Vcl.ExtDlgs, iBroadcastUtils,
-  Cod.Visual.StarRate, Math, Offline;
+  Cod.Visual.StarRate, Math, Offline, Cod.ArrayHelpers;
 
 type
   TInfoBox = class(TForm)
@@ -72,8 +72,16 @@ begin
     case InfoBoxPointer.Source of
       TDataSource.Tracks: with Tracks[InfoBoxPointer.Index] do
         if UpdateTrackRating(ID, Song_Rating.Rating, false) then
-          // Update
-          Rating := Song_Rating.Rating
+          begin
+            // Update
+            Rating := Song_Rating.Rating;
+
+            // Playlist manage
+            TrackRatingToLikedPlaylist(ID);
+
+            // Update UI
+            UIForm.UpdateRatingIcon;
+          end
         else
           Song_Rating.Rating := Rating;
 

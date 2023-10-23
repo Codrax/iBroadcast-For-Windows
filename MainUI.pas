@@ -21,7 +21,7 @@ uses
   Cod.MasterVolume, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   IdHTTP, CreatePlaylistForm, Offline, Cod.StringUtils, iBroadcastUtils,
   PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar, Cod.Windows,
-  Cod.VersionUpdate, Cod.ArrayHelpers, Cod.Components;
+  Cod.VersionUpdate, Cod.ArrayHelpers, Cod.Components, RatingPopup;
 
 type
   // Cardinals
@@ -424,6 +424,8 @@ type
     N15: TMenuItem;
     Addtracks2: TMenuItem;
     Setting_SongStreaming: CCheckBox;
+    Button_Rating: CButton;
+    Setting_Rating: CCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -550,8 +552,15 @@ type
     procedure Song_CoverMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Popup_TrackPopup(Sender: TObject);
+    procedure Button_RatingClick(Sender: TObject);
+    procedure Setting_RatingChange(Sender: CCheckBox; State: TCheckBoxState);
+    procedure Artwork_StorageClick(Sender: TObject);
   private
     { Private declarations }
+    // Vars
+    FAudioSpeed,
+    FAudioVolume: single;
+
     // Detect mouse Back/Forward
     procedure WMAppCommand(var Msg: TMessage); message WM_APPCOMMAND;
 
@@ -561,6 +570,7 @@ type
     // Items
     function GetItemCount(OnlyVisible: boolean = false): cardinal;
     procedure LoadItemInfo;
+    procedure UpdateItemInformation;
 
     function GetTracksID: TArray<integer>;
     function GetPageViewType: TDataSource;
@@ -607,6 +617,12 @@ type
     procedure DownloadStatusWork(ASender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
     procedure DownloadStatusWorkBegin(ASender: TObject; AWorkMode: TWorkMode; AWorkCountMax: Int64);
 
+    procedure BackendUpdate(AUpdate: TDataSource);
+
+    // Setters
+    procedure SetAudioSpeed(const Value: single);
+    procedure SetAudioVolume(const Value: single);
+
   public
     { Public declarations }
     procedure NavigatePath(Path: String; AddHistory: boolean = true);
@@ -617,8 +633,11 @@ type
 
     procedure SongUpdate;
     procedure StatusChanged;
+    procedure UpdateRatingIcon;
     procedure UpdateVolumeIcon;
     procedure TickUpdate;
+
+    procedure LoadPlayerSettings;
 
     procedure AddSongToHistory;
 
@@ -699,10 +718,18 @@ type
     procedure OpenFromTray;
 
     procedure CloseApplication;
+    procedure CancelClose;
+
+    // External Update
+    procedure SetCurrentSongRating(AValue: integer);
 
     // Utils
     function IntArrayToStr(AArray: TArray<integer>): string;
     function StrToIntArray(Str: string): TArray<integer>;
+
+    // Properties
+    property AudioSpeed: single read FAudioSpeed write SetAudioSpeed;
+    property AudioVolume: single read FAudioVolume write SetAudioVolume;
   end;
 
   // Logging
@@ -713,10 +740,10 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:7; Maintanance: 5);
+  Version: TVersionRec = (Major:1; Minor:7; Maintenance: 8);
 
   API_APPNAME = 'ibroadcast';
-  API_ENDPOINT = 'https://www.codrutsoft.com/api/';
+  API_ENDPOINT = 'https://api.codrutsoft.com/';
 
   // UI
   ICON_FILL = #$E73B;
@@ -1372,6 +1399,35 @@ begin
     Result := IntToStrIncludePrefixZeros(Hours, 2) + ':' + Result;
 end;
 
+procedure TUIForm.CancelClose;
+begin
+  // Alpha Blend (hide flickering window)
+  AlphaBlend := false;
+  AlphaBlendValue := 255;
+end;
+
+procedure TUIForm.Button_RatingClick(Sender: TObject);
+var
+  P: TPoint;
+begin
+  RatingPopupForm := TRatingPopupForm.Create(Self);
+  with RatingPopupForm do
+    try
+      PrepButtons( ValueRatingMode );
+
+      with CButton(Sender) do
+        P := ClientToScreen(Point(Width div 2, 0));
+
+      Top := P.Y - Height - 10;
+      Left := P.X - Width div 2;
+
+      Show;
+    finally
+      // Free;
+      { Freed by self }
+    end;
+end;
+
 procedure TUIForm.Button_ReloadLibClick(Sender: TObject);
 begin
   // UI
@@ -1380,7 +1436,6 @@ begin
   // Reload
   TTask.Run(procedure
     begin
-
       // Load Library, Account, Queue
       ReLoadLibrary;
 
@@ -1395,6 +1450,46 @@ begin
           PrimaryUIContainer.Show;
         end);
     end);
+end;
+
+procedure TUIForm.BackendUpdate(AUpdate: TDataSource);
+procedure UpdateAndDraw;
+begin
+  // Thread syncronise, in some cases this is called from a NON-UI thread
+  TThread.Synchronize(nil,
+    procedure
+    begin
+      LoadItemInfo;
+      RedrawPaintBox;
+    end);
+end;
+var
+  ARoot: string;
+begin
+  ARoot := BareRoot;
+
+  if ARoot <> '' then
+    case AUpdate of
+      TDataSource.Tracks: begin
+        if (SubViewCompatibile.Find(ARoot) <> -1) or (ARoot = 'tracks') then
+          UpdateAndDraw;
+      end;
+
+      TDataSource.Albums: begin
+        if (ARoot = 'viewalbum') or (ARoot = 'albums') then
+          UpdateAndDraw;
+      end;
+
+      TDataSource.Artists: begin
+        if (ARoot = 'viewartist') or (ARoot = 'artists') then
+          UpdateAndDraw;
+      end;
+
+      TDataSource.Playlists: begin
+        if (ARoot = 'viewplaylist') or (ARoot = 'playlists') then
+          UpdateAndDraw;
+      end;
+    end;
 end;
 
 procedure TUIForm.BeginUpdate(DownloadURL: string);
@@ -1631,6 +1726,31 @@ begin
   ReloadArtwork;
 end;
 
+procedure TUIForm.Artwork_StorageClick(Sender: TObject);
+begin
+  with TThread.CreateAnonymousThread(procedure
+    begin
+      // Visible UI Wait
+      TThread.Synchronize(nil, procedure
+        begin
+          TLabel(Sender).Enabled := false;
+          TLabel(Sender).Caption := 'Storage Used by Artwork: 🕑 Calculating...';
+        end);
+      Sleep(750);
+
+      // Start
+      TThread.Synchronize(nil, procedure
+        begin
+          TLabel(Sender).Enabled := true;
+          CalculateGeneralStorage;
+        end);
+    end) do
+      begin
+        FreeOnTerminate := true;
+        Start;
+      end;
+end;
+
 procedure TUIForm.SType_SongClick(Sender: TObject);
 begin
   with CButton(Sender) do
@@ -1670,6 +1790,8 @@ begin
           VolumePop.FullUpdate;
 
           VolumePop.Show;
+
+          VolumePop.UpdateTheSize;
         end;
     end;
 end;
@@ -1809,6 +1931,15 @@ end;
 procedure TUIForm.SettingsApplyes2(Sender: CSlider; Position, Max, Min: Integer);
 begin
   ApplySettings;
+end;
+
+procedure TUIForm.Setting_RatingChange(Sender: CCheckBox;
+  State: TCheckBoxState);
+begin
+  ValueRatingMode := State = cbChecked;
+
+  // Icon
+  UpdateRatingIcon;
 end;
 
 procedure TUIForm.LoginItemsBeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
@@ -2465,6 +2596,7 @@ begin
     if OpenDialog('Close Application', 'Are you sure? Some threads are still running', ctQuestion, [mbYes, mbNo]) = mrNo then
       begin
         CanClose := false;
+        CancelClose;
         Exit;
       end;
 
@@ -2609,6 +2741,10 @@ begin
   // Storage
   CalculateGeneralStorage;
 
+  // Prepare Var
+  FAudioSpeed := 1;
+  FAudioVolume := 1;
+
   AddToLog('Form.Create.PopupMenus');
   // Popup Menus
   for I := 0 to ComponentCount-1 do
@@ -2630,6 +2766,9 @@ begin
       AddToLog(Format('Form.Create.TokenLoginInfo LoginDataLoaded, ID<%S>, TOKEN<%S>', [APPLICATION_ID, LOGIN_TOKEN]));
   except
   end;
+
+  // Update Events
+  OnUpdateType := BackendUpdate;
 
   // Load Existing session
   if (APPLICATION_ID <> '') and (LOGIN_TOKEN <> '') then
@@ -2715,12 +2854,14 @@ begin
 
   // Sizing
   SmallSize := 0;
-  if Width < 1000 then
+  if Width < 1200 then
     SmallSize := 1;
-  if Width < 800 then
+  if Width < 1000 then
     SmallSize := 2;
-  if Width < 500 then
+  if Width < 800 then
     SmallSize := 3;
+  if Width < 500 then
+    SmallSize := 4;
 
   // Page resizing
   NewValue := HomeDraw.Width div (CoverWidth + CoverSpacing);
@@ -2728,35 +2869,36 @@ begin
     ReselectPage;
 
   // Buttons
-  Button_Repeat.Visible := SmallSize < 1;
-  Button_Shuffle.Visible := SmallSize < 1;
-  MoreButtons.Visible := SmallSize < 2;
+  Button_Repeat.Visible := SmallSize < 2;
+  Button_Shuffle.Visible := SmallSize < 2;
+  MoreButtons.Visible := SmallSize < 3;
+  Button_Rating.Visible := SmallSize < 1;
 
   // Panels
-  UIForm.Panel1.Visible := SmallSize < 2;
+  UIForm.Panel1.Visible := SmallSize < 3;
 
   // Split View
-  SplitView1.Locked := SmallSize > 1;
+  SplitView1.Locked := SmallSize > 2;
   if SplitView1.Locked and SplitView1.Opened then
     SplitView1.Opened := false;
 
   // Login Screen
-  Robo_Background.Visible := (SmallSize < 2) and LoginBox.Visible;
+  Robo_Background.Visible := (SmallSize < 3) and LoginBox.Visible;
   Robo_Panel.Visible := Robo_Background.Visible;
 
   // Menu bar
-  Button_ToggleMenu.Visible := SmallSize < 2;
-  Mini_Cast.Visible := SmallSize >= 2;
+  Button_ToggleMenu.Visible := SmallSize < 3;
+  Mini_Cast.Visible := SmallSize >= 3;
 
   // Fix Positioning
-  if SmallSize = 0 then
+  if SmallSize < 2 then
     begin
       Button_Repeat.Left := Button_Prev.Left - Button_Prev.Width;
       Button_Shuffle.Left := Button_Next.Left + Button_Shuffle.Width;
     end;
 
   // Buttons 2
-  if SmallSize < 3 then
+  if SmallSize < 4 then
     begin
       MoreButtons.Left := Button_Shuffle.Left + Button_Shuffle.Width;
 
@@ -2766,7 +2908,7 @@ begin
     end;
 
   // Extreme Tiny
-  if SmallSize = 3 then
+  if SmallSize = 4 then
     begin
       SortModeToggle.Hide;
     end;
@@ -3118,7 +3260,7 @@ begin
 
       // Logon succeded
       if LoggedIn then
-        begin
+      begin
           AddToLog('Logged In!');
           AddToLog('Form.InitiateLogin.ReLoadLibrary');
           // Load Library, Account, Queue
@@ -3235,15 +3377,15 @@ begin
       // Visible UI Wait
       TThread.Synchronize(nil, procedure
         begin
-          Latest_Version.Enabled := false;
-          Latest_Version.Caption := 'Latest version on server: 🕑 Checking...';
+          TLabel(Sender).Enabled := false;
+          TLabel(Sender).Caption := 'Latest version on server: 🕑 Checking...';
         end);
       Sleep(750);
 
       // Start
       TThread.Synchronize(nil, procedure
         begin
-          Latest_Version.Enabled := true;
+          TLabel(Sender).Enabled := true;
           // Check
           StartCheckForUpdate;
         end);
@@ -3686,6 +3828,12 @@ begin
         ST.Free;
       end;
     end;
+end;
+
+procedure TUIForm.LoadPlayerSettings;
+begin
+  Player.Speed := AudioSpeed;
+  Player.Volume := AudioVolume;
 end;
 
 procedure TUIForm.LoadView(APageRoot: string);
@@ -4431,6 +4579,7 @@ begin
                 Player.OpenFile( LocalName );
 
                 // Play
+                LoadPlayerSettings;
                 if ServerCloudPlay then
                   Player.Play;
 
@@ -4877,7 +5026,10 @@ begin
 
   // Data
   if StartPlay then
-    Player.Play;
+    begin
+      LoadPlayerSettings;
+      Player.Play;
+    end;
 
   // Update
   SongUpdate;
@@ -5166,6 +5318,8 @@ begin
           Setting_StartWindows.Checked := OPT.ReadBool(CAT_GENERAL, 'Start with windows', false);
           Setting_TrayClose.Checked := OPT.ReadBool(CAT_GENERAL, 'Minimise to tray', true);
           Setting_QueueSaver.Checked := OPT.ReadBool(CAT_GENERAL, 'Save Queue', false);
+          Setting_Rating.Checked := OPT.ReadBool(CAT_GENERAL, 'Prefer rating', Setting_Rating.Checked);
+          ValueRatingMode := Setting_Rating.Checked;
 
           TransparentIndex := OPT.ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
       finally
@@ -5194,6 +5348,7 @@ begin
         OPT.WriteBool(CAT_GENERAL, 'Start with windows', Setting_StartWindows.Checked);
         OPT.WriteBool(CAT_GENERAL, 'Minimise to tray', Setting_TrayClose.Checked);
         OPT.WriteBool(CAT_GENERAL, 'Save Queue', Setting_QueueSaver.Checked);
+        OPT.WriteBool(CAT_GENERAL, 'Prefer rating', Setting_Rating.Checked);
 
         OPT.WriteInteger(CAT_MINIPLAYER, 'Opacity', TransparentIndex);
       finally
@@ -5264,7 +5419,7 @@ begin
       SmallChange := PageSize div 8;
 
       MaxScroll := trunc( (CoverHeight + CoverSpacing) * (ItemCount / FitX) );
-      if MaxScroll > CoverHeight then
+      if (MaxScroll > CoverHeight) and (FitY > 0) then
         MaxScroll := MaxScroll - CoverHeight;
     end
   else
@@ -5671,6 +5826,10 @@ begin
   // Items
   LoginItems.ItemCount := Length(Sessions);
   LoginItems.Height := LoginItems.ItemCount * LoginItems.ItemHeight;
+
+  // No longer offline
+  if IsOffline then
+    IsOffline := false;
 end;
 
 procedure TUIForm.ReselectPage;
@@ -5980,6 +6139,81 @@ begin
   RedrawPaintBox;
 end;
 
+procedure TUIForm.SetAudioSpeed(const Value: single);
+begin
+  if FAudioSpeed <> Value then
+    begin
+      FAudioSpeed := Value;
+
+      if Player.IsFileOpen then
+        Player.Speed := Value;
+    end;
+end;
+
+procedure TUIForm.SetAudioVolume(const Value: single);
+begin
+  if FAudioVolume <> Value then
+    begin
+      FAudioVolume := Value;
+
+      if Player.IsFileOpen then
+        Player.Volume := Value;
+    end;
+end;
+
+procedure TUIForm.SetCurrentSongRating(AValue: integer);
+begin
+  // Offline
+  if IsOffline then
+    begin
+      OfflineDialog('Cannot change rating in Offline Mode. Please connect to the internet.');
+      Exit;
+    end;
+
+  with TThread.CreateAnonymousThread(procedure
+    begin
+      // Status
+      ThreadSyncStatus('Changing rating...');
+
+      const ID = PlayID;
+
+      var Success: boolean;
+      Success := false;
+      try
+        // Add new tracks
+        Success := UpdateTrackRating(ID, AValue, false); // Change manaully
+      except
+        // Offline
+        TThread.Synchronize(nil,
+          procedure
+            begin
+              OfflineDialog('We can'#39't change the track rating. Are you connected to the internet?');
+            end);
+      end;
+
+      // Set
+      Tracks[PlayIndex].Rating := AValue;
+
+      // Add to thumbsup playlist
+      TrackRatingToLikedPlaylist(ID);
+
+      // Change UI
+      if Success then
+        TThread.Synchronize(nil, procedure
+          begin
+            // Update
+            UpdateRatingIcon;
+          end);
+
+      // Finish
+      EdidThreadFinalised;
+    end) do
+      begin
+        FreeOnTerminate := true;
+        Start;
+      end;
+end;
+
 procedure TUIForm.SetDownloadIcon(Value: boolean; Source: TDataSource);
 var
   Icon: string;
@@ -6085,7 +6319,7 @@ Procedure ArrayItemSort(AType: TSortType);
   begin
     case AType of
       TSortType.Year: Result := GetDateValue(A) < GetDateValue(B);
-      TSortType.Rating: Result := GetRatingValue(A) > GetDateValue(B);
+      TSortType.Rating: Result := GetRatingValue(A) < GetRatingValue(B);
 
       // Default
       else Result := GetTitleValue(A) > GetTitleValue(B);
@@ -6138,6 +6372,9 @@ begin
   Song_Player.Show;
 
   Taskbar1.ToolTip := '🎵' + Tracks[PlayIndex].Title + ' - ' + Song_Artist.Caption;
+
+  // Update rating
+  UpdateRatingIcon;
 
   // Update
   StatusChanged;
@@ -6665,6 +6902,14 @@ begin
   RedownloadItems;
 end;
 
+procedure TUIForm.UpdateItemInformation;
+var
+  I: integer;
+begin
+  for I := 0 to High(DrawItems) do
+    DrawItems[I].ReloadSource;
+end;
+
 procedure TUIForm.UpdateMiniPlayer;
 begin
   if (MiniPlayer <> nil) and MiniPlayer.Visible then
@@ -6683,6 +6928,28 @@ begin
 
          Mini_Seek.Max := UIForm.Player_Position.Max;
       end;
+end;
+
+procedure TUIForm.UpdateRatingIcon;
+begin
+  if Setting_Rating.Checked then
+  // Rating
+  case Tracks[PlayIndex].Rating of
+    0: Button_Rating.BSegoeIcon := #$E1CE;
+    1: Button_Rating.BSegoeIcon := #$F0E5;
+    2..7: Button_Rating.BSegoeIcon := #$F0E7;
+    8..9: Button_Rating.BSegoeIcon := #$F0E9;
+    10: Button_Rating.BSegoeIcon := #$E0B5;
+  end
+    else
+  // Thumbs
+  case Tracks[PlayIndex].Rating of
+    0: Button_Rating.BSegoeIcon := #$E19D;
+    1: Button_Rating.BSegoeIcon := #$E19E;
+    2..4: Button_Rating.BSegoeIcon := #$E7C6;
+    6..9: Button_Rating.BSegoeIcon := #$E1CF;
+    5,10: Button_Rating.BSegoeIcon := #$E19F; // iBroadcast servers use a rating of 5 for LIKE, sometimes...
+  end;
 end;
 
 procedure TUIForm.UpdateVolumeIcon;
@@ -7302,6 +7569,10 @@ end;
 
 procedure TDrawableItem.OpenInformation;
 begin
+  // Leload
+  ReloadSource;
+
+  // UI
   with InfoBox do
     begin
       Caption := Title;

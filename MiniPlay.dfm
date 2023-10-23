@@ -82,7 +82,7 @@ object MiniPlayer: TMiniPlayer
       Top = 114
       Width = 40
       Height = 30
-      Hint = 'Exit Mini Player'
+      Hint = 'Exit Mini Player (Alt+O)'
       Margins.Left = 10
       Margins.Right = 10
       OnClick = Mini_CloseClick

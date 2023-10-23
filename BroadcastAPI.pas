@@ -24,6 +24,9 @@ interface
     TLoad = (Track, Album, Artist, PlayList);
     TLoadSet = set of TLoad;
 
+    // Procs
+    TDataTypeUpdate = procedure(AUpdate: TDataSource) of object;
+
     // Records
     ResultType = record
       Error: boolean;
@@ -268,6 +271,8 @@ interface
   function UpdateTrackRating(ID: integer; Rating: integer; ReloadLibrary: boolean): boolean;
   function GetSongPlaylists(ID: integer): TArray<integer>;
 
+  function TrackRatingToLikedPlaylist(ID: integer): boolean;
+
   // Albums
   function UpdateAlbumRating(ID: integer; Rating: integer; ReloadLibrary: boolean): boolean;
 
@@ -278,6 +283,8 @@ interface
   function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Tracks: TArray<integer>): boolean; overload;
   function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Mood: string): boolean; overload;
   function AppentToPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
+  function PreappendToPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
+  function ChangePlayList(ID: integer; Tracks: TArray<integer>): boolean;
   function DeleteFromPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
   function TouchupPlaylist(ID: integer): boolean;
   function UpdatePlayList(ID: integer; Name, Description: string; ReloadLibrary: boolean): boolean;
@@ -439,6 +446,12 @@ var
   // Work
   WorkCount: int64;
   TotalWorkCount: int64;
+
+  // Setings
+  ValueRatingMode: boolean = false; // use rating stars
+
+  // Notify Events
+  OnUpdateType: TDataTypeUpdate;
 
   // Artwork Store
   ArtworkStore: boolean = true;
@@ -729,6 +742,34 @@ begin
       Result.AddValue(Playlists[I].ID);
 end;
 
+function TrackRatingToLikedPlaylist(ID: integer): boolean;
+var
+  Index, SongIndex: integer;
+begin
+  Result := false;
+
+  SongIndex := GetTrack(ID);
+  Index := GetPlaylistOfType('thumbsup');
+
+  if (Index <> -1) and (SongIndex <> -1) then
+    begin
+      const Fav = Playlists[Index].TracksID.Find(ID) <> -1;
+      var IsFav: boolean;
+      if ValueRatingMode then
+        IsFav := Tracks[SongIndex].Rating = 10
+      else
+        IsFav := Tracks[SongIndex].Rating in [10, 5];
+
+      if IsFav <> Fav then
+        begin
+          if IsFav then
+            Result := PreappendToPlaylist(Playlists[Index].ID, [ID])
+          else
+            Result := DeleteFromPlaylist(Playlists[Index].ID, [ID]);
+        end;
+    end;
+end;
+
 function UpdateAlbumRating(ID: integer; Rating: integer; ReloadLibrary: boolean): boolean;
 var
   Request: string;
@@ -880,6 +921,68 @@ begin
 
   // Parse response and extract numbers
   SetWorkStatus('Adding songs to playlist');
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.PlayList]);
+end;
+
+function PreappendToPlaylist(ID: integer; Tracks: TArray<integer>): boolean;
+var
+  AllTracks: TArray<integer>;
+  I: Integer;
+begin
+  // Get Tracks
+  AllTracks := Playlists[GetPlaylist(ID)].TracksID;
+
+  // Insert
+  for I := 0 to High(Tracks) do
+    AllTracks.Insert(0, Tracks[I]);
+
+  // Change ex
+  Result := ChangePlayList(ID, AllTracks);
+end;
+
+function ChangePlayList(ID: integer; Tracks: TArray<integer>): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  AllTracks: TArray<integer>;
+  ATracks: string;
+  ATotal: integer;
+
+  JSONValue: TJSONValue;
+  I: Integer;
+begin
+  // Delete Tracks
+  AllTracks := Tracks;
+
+  // Get Tracks
+  ATracks := '';
+  ATotal := High(AllTracks);
+  for I := 0 to ATotal do
+    begin
+      ATracks := ATracks + AllTracks[I].ToString;
+
+      if I < ATotal then
+        ATracks := Concat(ATracks, ',');
+    end;
+
+  // Prepare request string
+  Request := Format(REQUEST_LIST_SET, [USER_ID, TOKEN,
+    ID, ATracks]);
+
+  // Parse response and extract numbers
+  SetWorkStatus('Changing songs of playlist');
   JSONValue := SendClientRequest(Request);
   try
     // Error
@@ -1274,6 +1377,10 @@ begin
 
             Tracks[Index].LoadFrom( JSONPair );
           end;
+
+        // Updated
+        if Assigned(OnUpdateType) then
+          OnUpdateType(TDataSource.Tracks);
       end;
 
     // Albums
@@ -1301,6 +1408,10 @@ begin
 
             Albums[Index].LoadFrom( JSONPair );
           end;
+
+        // Updated
+        if Assigned(OnUpdateType) then
+          OnUpdateType(TDataSource.Albums);
       end;
 
     // Artists
@@ -1328,6 +1439,10 @@ begin
 
             Artists[Index].LoadFrom( JSONPair );
           end;
+
+        // Updated
+        if Assigned(OnUpdateType) then
+          OnUpdateType(TDataSource.Artists);
       end;
 
     // PlayLists
@@ -1355,6 +1470,10 @@ begin
 
             PlayLists[Index].LoadFrom( JSONPair );
           end;
+
+        // Updated
+        if Assigned(OnUpdateType) then
+          OnUpdateType(TDataSource.Playlists);
       end;
   finally
     JSONValue.Free;
