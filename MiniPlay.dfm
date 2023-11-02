@@ -40,9 +40,11 @@ object MiniPlayer: TMiniPlayer
     object Mini_Song: TLabel
       Left = 96
       Top = 16
-      Width = 156
+      Width = 213
       Height = 30
+      AutoSize = False
       Caption = 'Song name here'
+      EllipsisPosition = epEndEllipsis
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
       Font.Height = -21
@@ -64,9 +66,11 @@ object MiniPlayer: TMiniPlayer
     object Mini_Artist: TLabel
       Left = 96
       Top = 47
-      Width = 139
+      Width = 210
       Height = 25
+      AutoSize = False
       Caption = 'Artist name here'
+      EllipsisPosition = epEndEllipsis
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
       Font.Height = -19
@@ -416,7 +420,6 @@ object MiniPlayer: TMiniPlayer
     ShowCaption = False
     TabOrder = 1
     OnMouseDown = MoveMoveDown
-    ExplicitTop = 186
     object Label3: TLabel
       AlignWithMargins = True
       Left = 3
@@ -454,8 +457,10 @@ object MiniPlayer: TMiniPlayer
       Margins.Bottom = 0
       Align = alTop
       Alignment = taCenter
+      AutoSize = False
       Caption = 'Song Name'
       Color = 2886677
+      EllipsisPosition = epEndEllipsis
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
       Font.Height = -19
@@ -724,7 +729,6 @@ object MiniPlayer: TMiniPlayer
     Width = 309
     Height = 1
     CustomButtons = <>
-    ExplicitTop = 185
   end
   object SpectrumView: TPanel
     Left = 0
