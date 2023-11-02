@@ -15,6 +15,7 @@ iBroadcast Apps Page
 - Play music, add to queue
 - Download songs locally to listen without a internet connection
 - Local Queue support, with adding to queue, changing the order, seeking
+- Awesome Music Visualisation
 - View account information
 - Search library for anything, by type and by filters
 - Mini player view
@@ -48,6 +49,7 @@ iBroadcast Apps Page
 ## Screenshots
 
 ![Screenshot 2023-07-21 182800](https://github.com/Codrax/iBroadcast-For-Windows/assets/68193064/5014b71c-9bb5-4064-8c9a-614a0a716576)
+![Recording 2023-11-02 105054](https://github.com/Codrax/iBroadcast-For-Windows/assets/68193064/7f99843c-5c7b-4380-bfc0-41000dceb8ec)
 ![Screenshot 2023-07-21 183347](https://github.com/Codrax/iBroadcast-For-Windows/assets/68193064/36207884-8a64-49e3-8e26-49fa163465ad)
 ![Screenshot 2023-07-21 182840](https://github.com/Codrax/iBroadcast-For-Windows/assets/68193064/dea277a4-6f51-4b3c-9ae9-74514361cd09)
 ![Screenshot 2023-07-21 183212](https://github.com/Codrax/iBroadcast-For-Windows/assets/68193064/0c2cdf4f-bf08-4582-a698-1f88ddf13bc2)
