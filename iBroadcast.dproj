@@ -4,7 +4,7 @@
         <ProjectVersion>19.5</ProjectVersion>
         <FrameworkType>VCL</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Release</Config>
+        <Config Condition="'$(Config)'==''">Debug</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>2</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -179,21 +179,21 @@
         </DCCReference>
         <DCCReference Include="CreatePlaylistForm.pas">
             <Form>CreatePlaylist</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="Offline.pas">
             <Form>OfflineForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="PickerDialogForm.pas">
             <Form>PickerDialog</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="iBroadcastUtils.pas"/>
         <DCCReference Include="RatingPopup.pas">
             <Form>RatingPopupForm</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="CodeSources.pas">
+            <Form>SourceUI</Form>
+        </DCCReference>
+        <DCCReference Include="SpectrumVis3D.pas"/>
         <RcItem Include="Artwork\Box.jpg">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>Artwork1</ResourceId>

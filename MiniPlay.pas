@@ -6,7 +6,8 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Cod.SysUtils, Vcl.TitleBarCtrls, Cod.Visual.Image, Vcl.StdCtrls,
-  Cod.Visual.Button, Vcl.ExtCtrls, Cod.Math, Math, Cod.Visual.Slider;
+  Cod.Visual.Button, Vcl.ExtCtrls, Cod.Math, Math, Cod.Visual.Slider,
+  SpectrumVis3D, UITypes;
 
 type
   TMiniPlayer = class(TForm)
@@ -29,6 +30,8 @@ type
     Mini_Shuffle: CButton;
     Mini_Repeat: CButton;
     Mini_Transparent: CButton;
+    SpectrumView: TPanel;
+    Visualisation_Mini: TPaintBox;
     procedure FormCreate(Sender: TObject);
     procedure MoveMoveDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -53,6 +56,7 @@ type
     procedure CreateParams(var Params: TCreateParams); override;
   private
     { Private declarations }
+    procedure UpdateHeights;
   public
     { Public declarations }
     procedure PreparePosition;
@@ -94,12 +98,12 @@ begin
   // Pos
   Inc(AnPosition, 5);
 
-  Height := AddonDest + AnDirection * trunc(Power(Destination, AnPosition / 100));
+  ClientHeight := AddonDest + AnDirection * trunc(Power(Destination, AnPosition / 100));
 
   // Disble
   if AnPosition >= 100 then
     begin
-      Height := AddonDest + AnDirection * Destination;
+      ClientHeight := AddonDest + AnDirection * Destination;
 
       AnimTo.Enabled := false;
     end;
@@ -142,7 +146,7 @@ end;
 
 procedure TMiniPlayer.Mini_ExpandClick(Sender: TObject);
 begin
-  if EqualApprox(Height, HeightExtended, 50) then
+  if EqualApprox(ClientHeight, HeightExtended, 50) then
     begin
       Destination := HeightExtended - HeightNormal;
       AddonDest := HeightExtended;
@@ -249,17 +253,21 @@ begin
       ButtonInactiveBackgroundColor := BackgroundColor;
     end;
 
+  // Visualisation
+  Spectrum_Mini := TSpectrum.Create(Visualisation_Mini.Width, Visualisation_Mini.Height);
+  Spectrum_Mini.Height := Visualisation_Mini.Height - 20;
+  Spectrum_Mini.Peak := TColors.Hotpink;
+  Spectrum_Mini.BackColor := Color;
+
   // UI
   MainContain.Top := CustomTitlebar.Height;
   AdditionalOptions.Top := MainContain.Top + MainContain.Height;
 
-  HeightNormal := MainContain.Top + MainContain.Height;
-  HeightExtended := AdditionalOptions.Top + AdditionalOptions.Height;
-
-  ClientHeight := HeightNormal;
+  // Heights
+  UpdateHeights;
 
   // Apply Size
-  Height := HeightNormal;
+  ClientHeight := HeightNormal;
 end;
 
 procedure TMiniPlayer.FormKeyUp(Sender: TObject; var Key: Word;
@@ -302,7 +310,26 @@ begin
 
   AlphaBlendValue := TransparentOptions[TransparentIndex];
 
+  // Visualisation
+  SpectrumView.Visible := EnableVisualisations;
+  SpectrumView.Top := MainContain.Top;
+
+  // Heights
+  UpdateHeights;
+
+  // Reset Height
+  ClientHeight := HeightNormal;
+
+  // Show
   Show;
+end;
+
+procedure TMiniPlayer.UpdateHeights;
+begin
+  HeightNormal := MainContain.Top + MainContain.Height;
+  if SpectrumView.Visible then
+    Inc(HeightNormal, SpectrumView.Height);
+  HeightExtended := HeightNormal + AdditionalOptions.Height;
 end;
 
 end.

@@ -5,7 +5,7 @@ object MiniPlayer: TMiniPlayer
   BorderIcons = []
   BorderStyle = bsSingle
   Caption = 'Mini Player'
-  ClientHeight = 361
+  ClientHeight = 470
   ClientWidth = 309
   Color = 2886676
   Font.Charset = DEFAULT_CHARSET
@@ -405,7 +405,7 @@ object MiniPlayer: TMiniPlayer
   end
   object AdditionalOptions: TPanel
     Left = 0
-    Top = 186
+    Top = 286
     Width = 309
     Height = 185
     Margins.Top = 0
@@ -416,6 +416,7 @@ object MiniPlayer: TMiniPlayer
     ShowCaption = False
     TabOrder = 1
     OnMouseDown = MoveMoveDown
+    ExplicitTop = 186
     object Label3: TLabel
       AlignWithMargins = True
       Left = 3
@@ -719,10 +720,42 @@ object MiniPlayer: TMiniPlayer
   end
   object TitleBarPanel: TTitleBarPanel
     Left = 0
-    Top = 185
+    Top = 285
     Width = 309
     Height = 1
     CustomButtons = <>
+    ExplicitTop = 185
+  end
+  object SpectrumView: TPanel
+    Left = 0
+    Top = 185
+    Width = 309
+    Height = 100
+    Margins.Top = 0
+    Align = alTop
+    BevelOuter = bvNone
+    Caption = 'Panel1'
+    Color = 2886677
+    ParentBackground = False
+    ShowCaption = False
+    TabOrder = 3
+    OnMouseDown = MoveMoveDown
+    object Visualisation_Mini: TPaintBox
+      AlignWithMargins = True
+      Left = 20
+      Top = 3
+      Width = 269
+      Height = 94
+      Margins.Left = 20
+      Margins.Right = 20
+      Align = alClient
+      Color = 4919113
+      ParentColor = False
+      ExplicitLeft = 27
+      ExplicitTop = 23
+      ExplicitWidth = 105
+      ExplicitHeight = 105
+    end
   end
   object AnimTo: TTimer
     Enabled = False

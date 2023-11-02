@@ -63,6 +63,7 @@ type
     procedure Slider_BassChange(Sender: CSlider; Position, Max, Min: Integer);
     procedure CButton18Click(Sender: TObject);
     procedure Slider_SpeedChange(Sender: CSlider; Position, Max, Min: Integer);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     ShowAdvVolume: boolean;
@@ -193,6 +194,11 @@ begin
 
   // Update
   UpdateTheSize;
+end;
+
+procedure TVolumePop.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  FreeAndNil( VolumePop );
 end;
 
 procedure TVolumePop.FormDeactivate(Sender: TObject);

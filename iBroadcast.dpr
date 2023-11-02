@@ -6,6 +6,7 @@ uses
   Vcl.Forms,
   Cod.Instances,
   Cod.SysUtils,
+  Cod.Dialogs,
   MainUI in 'MainUI.pas' {UIForm},
   BroadcastAPI in 'BroadcastAPI.pas',
   DebugForm in 'DebugForm.pas' {DebugUI},
@@ -19,7 +20,9 @@ uses
   Offline in 'Offline.pas' {OfflineForm},
   PickerDialogForm in 'PickerDialogForm.pas' {PickerDialog},
   iBroadcastUtils in 'iBroadcastUtils.pas',
-  RatingPopup in 'RatingPopup.pas' {RatingPopupForm};
+  RatingPopup in 'RatingPopup.pas' {RatingPopupForm},
+  CodeSources in 'CodeSources.pas' {SourceUI},
+  SpectrumVis3D in 'SpectrumVis3D.pas';
 
 {$R *.res}
 
@@ -73,8 +76,6 @@ begin
 
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TUIForm, UIForm);
-  Application.CreateForm(TVolumePop, VolumePop);
-  Application.CreateForm(TPerfForm, PerfForm);
   Application.CreateForm(TMiniPlayer, MiniPlayer);
   Application.CreateForm(TInfoBox, InfoBox);
   // Debug
@@ -82,7 +83,8 @@ begin
   if AllowDebug then
     begin
       // Debug form
-      Application.CreateForm(TDebugUI, DebugUI);
+      DebugUI := TDebugUI.Create(Application);
+
       DebugUI.Show;
       DebugUi.DataSync.Enabled := true;
 

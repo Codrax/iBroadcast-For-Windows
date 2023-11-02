@@ -17,6 +17,7 @@ type
     procedure PaintBox1Paint(Sender: TObject);
     procedure AddNewTimer(Sender: TObject);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -62,6 +63,11 @@ begin
 
       SetLength(ValuesList, 30 );
     end;
+end;
+
+procedure TPerfForm.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  FreeAndNil(PerfForm);
 end;
 
 procedure TPerfForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);

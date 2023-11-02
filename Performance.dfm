@@ -12,6 +12,7 @@ object PerfForm: TPerfForm
   Font.Name = 'Tahoma'
   Font.Style = []
   Position = poMainFormCenter
+  OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   TextHeight = 13

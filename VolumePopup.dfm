@@ -15,6 +15,7 @@ object VolumePop: TVolumePop
   Font.Name = 'Segoe UI'
   Font.Style = []
   Position = poDesigned
+  OnClose = FormClose
   OnDeactivate = FormDeactivate
   TextHeight = 21
   object Panel1: TPanel
@@ -127,7 +128,6 @@ object VolumePop: TVolumePop
       Animations.PAAnimateEngine = cbneAtDraw
       Animations.FadeAnimation = True
       Animations.FASpeed = 10
-      ExplicitTop = 293
     end
     object Panel8: TPanel
       AlignWithMargins = True
@@ -148,7 +148,6 @@ object VolumePop: TVolumePop
       ParentColor = True
       ShowCaption = False
       TabOrder = 1
-      ExplicitTop = 333
       object Label15: TLabel
         AlignWithMargins = True
         Left = 3
@@ -181,7 +180,6 @@ object VolumePop: TVolumePop
         ParentColor = True
         ShowCaption = False
         TabOrder = 0
-        ExplicitWidth = 634
         object Label5: TLabel
           AlignWithMargins = True
           Left = 3
@@ -256,7 +254,6 @@ object VolumePop: TVolumePop
           Max = 50
           Min = 1
           Position = 10
-          ExplicitWidth = 554
         end
         object Panel10: TPanel
           Left = 0
@@ -304,7 +301,6 @@ object VolumePop: TVolumePop
         ParentColor = True
         ShowCaption = False
         TabOrder = 1
-        ExplicitWidth = 634
         object Label11: TLabel
           AlignWithMargins = True
           Left = 3
@@ -379,7 +375,6 @@ object VolumePop: TVolumePop
           Max = 2000
           Min = 0
           Position = 1000
-          ExplicitWidth = 554
         end
         object Panel12: TPanel
           Left = 0
@@ -433,8 +428,6 @@ object VolumePop: TVolumePop
       ParentColor = True
       ShowCaption = False
       TabOrder = 2
-      ExplicitLeft = 9
-      ExplicitTop = 20
       object Label4: TLabel
         AlignWithMargins = True
         Left = 8
@@ -474,7 +467,6 @@ object VolumePop: TVolumePop
         ParentColor = True
         ShowCaption = False
         TabOrder = 0
-        ExplicitTop = 153
         object Label1: TLabel
           AlignWithMargins = True
           Left = 3
@@ -550,7 +542,6 @@ object VolumePop: TVolumePop
           Max = 1000
           Min = 0
           Position = 50
-          ExplicitWidth = 554
         end
         object Panel3: TPanel
           Left = 0
@@ -622,7 +613,6 @@ object VolumePop: TVolumePop
         ParentColor = True
         ShowCaption = False
         TabOrder = 1
-        ExplicitTop = 78
         object Label2: TLabel
           AlignWithMargins = True
           Left = 3
@@ -632,7 +622,7 @@ object VolumePop: TVolumePop
           Align = alTop
           Caption = 'Application Volume'
           Transparent = False
-          ExplicitTop = -27
+          ExplicitWidth = 135
         end
         object App_Value: TLabel
           Left = 292
@@ -698,8 +688,6 @@ object VolumePop: TVolumePop
           Max = 1000
           Min = 0
           Position = 50
-          ExplicitLeft = 97
-          ExplicitTop = 48
         end
         object Panel5: TPanel
           Left = 0
@@ -771,7 +759,6 @@ object VolumePop: TVolumePop
         ParentColor = True
         ShowCaption = False
         TabOrder = 2
-        ExplicitTop = 3
         object Label3: TLabel
           AlignWithMargins = True
           Left = 3

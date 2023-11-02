@@ -21,7 +21,8 @@ uses
   Cod.MasterVolume, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   IdHTTP, CreatePlaylistForm, Offline, Cod.StringUtils, iBroadcastUtils,
   PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar, Cod.Windows,
-  Cod.VersionUpdate, Cod.ArrayHelpers, Cod.Components, RatingPopup;
+  Cod.VersionUpdate, Cod.ArrayHelpers, Cod.Components, RatingPopup,
+  CodeSources, SpectrumVis3D;
 
 type
   // Cardinals
@@ -60,6 +61,7 @@ type
     Active: boolean;
     HiddenItem: boolean;
     HiddenSearch: boolean;
+    Trashed: boolean;
 
     Information: TArray<string>;
 
@@ -118,7 +120,6 @@ type
     PagesHolder: TPanel;
     Song_Player: TPanel;
     Panel6: TPanel;
-    Song_Cover: CImage;
     Panel7: TPanel;
     Player_Information: TPanel;
     Song_Name: TLabel;
@@ -426,6 +427,14 @@ type
     Setting_SongStreaming: CCheckBox;
     Button_Rating: CButton;
     Setting_Rating: CCheckBox;
+    CButton29: CButton;
+    IdHTTP1: TIdHTTP;
+    Panel11: TPanel;
+    Song_Cover: CImage;
+    Visualisation_Player: TPaintBox;
+    VisualisationRenderer: TTimer;
+    Setting_Visualisations: CCheckBox;
+    Visual_Icon: TLabel;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -555,6 +564,12 @@ type
     procedure Button_RatingClick(Sender: TObject);
     procedure Setting_RatingChange(Sender: CCheckBox; State: TCheckBoxState);
     procedure Artwork_StorageClick(Sender: TObject);
+    procedure CButton29Click(Sender: TObject);
+    procedure VisualisationRendererTimer(Sender: TObject);
+    procedure Song_CoverClick(Sender: TObject);
+    procedure Setting_VisualisationsChange(Sender: CCheckBox;
+      State: TCheckBoxState);
+    procedure Song_ArtistClick(Sender: TObject);
   private
     { Private declarations }
     // Vars
@@ -618,6 +633,11 @@ type
     procedure DownloadStatusWorkBegin(ASender: TObject; AWorkMode: TWorkMode; AWorkCountMax: Int64);
 
     procedure BackendUpdate(AUpdate: TDataSource);
+
+    // Visualisations
+    procedure VisualisationUICheck;
+    procedure RenderVisualisations;
+    procedure SetEnableVisualisations(ATo: boolean; Force: boolean = false);
 
     // Setters
     procedure SetAudioSpeed(const Value: single);
@@ -740,7 +760,7 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:7; Maintenance: 8);
+  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 0);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://api.codrutsoft.com/';
@@ -804,6 +824,10 @@ var
   VolumeApplication: TAppAudioManager;
   VolumeSystem: TSystemAudioManager;
 
+  // Spectrums
+  Spectrum_Player,
+  Spectrum_Mini: TSpectrum;
+
   // Downloads
   AllDownload: TIntegerList;
   DownloadQueue: TIntegerList;
@@ -848,11 +872,15 @@ var
 
   MaxScroll: integer = 0;
 
+  ShowTrashed: boolean;
+
   // Draw
   Press10Stat: cardinal = 0;
   MouseIsPress: boolean;
   IndexHover,
   IndexHoverSort: integer;
+
+  EnableVisualisations: boolean = true;
 
   DrawItems: TArray<TDrawableItem>;
 
@@ -1635,6 +1663,17 @@ begin
     end;
 end;
 
+procedure TUIForm.CButton29Click(Sender: TObject);
+begin
+  SourceUI := TSourceUI.Create(Application);
+    with SourceUI do
+    try
+      ShowModal;
+    finally
+      Free;
+    end;
+end;
+
 procedure TUIForm.CButton31Click(Sender: TObject);
 begin
   CreatePlaylist := TCreatePlaylist.Create(Self);
@@ -1769,6 +1808,8 @@ end;
 procedure TUIForm.Button_PerformanceClick(Sender: TObject);
 begin
   // CPU Usage Form
+  if PerfForm = nil then
+    PerfForm := TPerfForm.Create(Application);
   PerfForm.AddNew.Enabled := true;
 
   PerfForm.Show;
@@ -1783,6 +1824,10 @@ begin
         ShellRun('sndvol.exe', true)
       else
         begin
+          // Create
+          if VolumePop = nil then
+            VolumePop := TVolumePop.Create(Application);
+
           // Volume
           VolumePop.Top := Button_Volume.ClientToScreen(Point(0, 0)).Y - VolumePop.Height;
           VolumePop.Left := Button_Volume.ClientToScreen(Point(0, 0)).X - VolumePop.Width + Button_Volume.Width;
@@ -1940,6 +1985,12 @@ begin
 
   // Icon
   UpdateRatingIcon;
+end;
+
+procedure TUIForm.Setting_VisualisationsChange(Sender: CCheckBox;
+  State: TCheckBoxState);
+begin
+  SetEnableVisualisations( State = cbChecked );
 end;
 
 procedure TUIForm.LoginItemsBeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
@@ -2694,6 +2745,12 @@ begin
   // Player
   Player := TAudioPlayer.Create;
   StatusChanged;
+
+  // Build spectrums
+  Spectrum_Player := TSpectrum.Create(Visualisation_Player.Width, Visualisation_Player.Height);
+  Spectrum_Player.Height := Visualisation_Player.Height - 20;
+  Spectrum_Player.Peak := TColors.Hotpink;
+  Spectrum_Player.BackColor := Song_Player.Color;
 
   // Queue
   PlayQueue := TIntegerList.Create;
@@ -3832,6 +3889,7 @@ end;
 
 procedure TUIForm.LoadPlayerSettings;
 begin
+  // Load settings
   Player.Speed := AudioSpeed;
   Player.Volume := AudioVolume;
 end;
@@ -5290,71 +5348,66 @@ var
   I: Integer;
 begin
   FileName := AppData + 'settings.ini';
-  if Load then
-    // Load Data
-    begin
-      if not TFile.Exists(FileName) then
-        Exit;
 
-      OPT := TIniFIle.Create(FileName);
+  OPT := TIniFIle.Create(FileName);
+  with OPT do
+    if Load then
+    // Load Data
       try
         // Views
         for I := 0 to High(ViewCompatibile) do
           if OPT.ValueExists('Views', ViewCompatibile[I]) then
             AddView(ViewCompatibile[I], TViewStyle(OPT.ReadInteger('Views', ViewCompatibile[I], 0)) );
 
-          Setting_Graph.Checked := OPT.ReadBool(CAT_GENERAL, 'Enable Graph', true);
-          SplitView1.Opened := OPT.ReadBool(CAT_GENERAL, 'Menu Opened', true);
-          Settings_CheckUpdate.Checked := OPT.ReadBool(CAT_GENERAL, 'Audo Update Check', true);
-          ArtworkID := OPT.ReadInteger(CAT_GENERAL, 'Artwork Id', 0);
-          ArtworkStore := OPT.ReadBool(CAT_GENERAL, 'Artowork Store', true);
+          Setting_Graph.Checked := ReadBool(CAT_GENERAL, 'Enable Graph', Setting_Graph.Checked);
+          SplitView1.Opened := ReadBool(CAT_GENERAL, 'Menu Opened', SplitView1.Opened);
+          Settings_CheckUpdate.Checked := ReadBool(CAT_GENERAL, 'Audo Update Check', Settings_CheckUpdate.Checked);
+          ArtworkID := ReadInteger(CAT_GENERAL, 'Artwork Id', ArtworkID);
+          ArtworkStore := ReadBool(CAT_GENERAL, 'Artowork Store', ArtworkStore);
           Setting_ArtworkStore.Checked := ArtworkStore;
-          THREAD_MAX := OPT.ReadInteger(CAT_GENERAL, 'Thread Count', 15);
+          THREAD_MAX := ReadInteger(CAT_GENERAL, 'Thread Count', THREAD_MAX);
           Settings_Threads.Position := THREAD_MAX;
-          Setting_DataSaver.Checked := OPT.ReadBool(CAT_GENERAL, 'Data Saver', false);
-          Setting_PlayerOnTop.Checked := OPT.ReadBool(CAT_GENERAL, 'Mini player on top', false);
-          Setting_SongStreaming.Checked := OPT.ReadBool(CAT_GENERAL, 'Song Streaming', false);
-          Settings_DisableAnimations.Checked := OPT.ReadBool(CAT_GENERAL, 'Disable Animations', false);
-          Setting_StartWindows.Checked := OPT.ReadBool(CAT_GENERAL, 'Start with windows', false);
-          Setting_TrayClose.Checked := OPT.ReadBool(CAT_GENERAL, 'Minimise to tray', true);
-          Setting_QueueSaver.Checked := OPT.ReadBool(CAT_GENERAL, 'Save Queue', false);
-          Setting_Rating.Checked := OPT.ReadBool(CAT_GENERAL, 'Prefer rating', Setting_Rating.Checked);
+          Setting_DataSaver.Checked := ReadBool(CAT_GENERAL, 'Data Saver', Setting_DataSaver.Checked);
+          Setting_PlayerOnTop.Checked := ReadBool(CAT_GENERAL, 'Mini player on top', Setting_PlayerOnTop.Checked);
+          Setting_SongStreaming.Checked := ReadBool(CAT_GENERAL, 'Song Streaming', Setting_SongStreaming.Checked);
+          Settings_DisableAnimations.Checked := ReadBool(CAT_GENERAL, 'Disable Animations', Settings_DisableAnimations.Checked);
+          Setting_StartWindows.Checked := ReadBool(CAT_GENERAL, 'Start with windows', Setting_StartWindows.Checked);
+          Setting_TrayClose.Checked := ReadBool(CAT_GENERAL, 'Minimise to tray', Setting_TrayClose.Checked);
+          Setting_QueueSaver.Checked := ReadBool(CAT_GENERAL, 'Save Queue', Setting_QueueSaver.Checked);
+          Setting_Rating.Checked := ReadBool(CAT_GENERAL, 'Prefer rating', Setting_Rating.Checked);
           ValueRatingMode := Setting_Rating.Checked;
+          SetEnableVisualisations( ReadBool(CAT_GENERAL, 'Visualisations', EnableVisualisations), true);
 
-          TransparentIndex := OPT.ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
+          TransparentIndex := ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
       finally
         OPT.Free;
-      end;
-    end
-  else
-    // Save Data
-    begin
-      OPT := TIniFIle.Create(FileName);
+      end
+    else
       try
         // Views
         for I := 0 to High(SavedViews) do
           OPT.WriteInteger('Views', SavedViews[I].PageRoot, integer(SavedViews[I].View));
 
-        OPT.WriteBool(CAT_GENERAL, 'Enable Graph', Setting_Graph.Checked);
-        OPT.WriteBool(CAT_GENERAL, 'Menu Opened', SplitView1.Opened);
-        OPT.WriteBool(CAT_GENERAL, 'Audo Update Check', Settings_CheckUpdate.Checked);
-        OPT.WriteInteger(CAT_GENERAL, 'Artwork Id', ArtworkID);
-        OPT.WriteBool(CAT_GENERAL, 'Artowork Store', ArtworkStore);
-        OPT.WriteInteger(CAT_GENERAL, 'Thread Count', THREAD_MAX);
-        OPT.WriteBool(CAT_GENERAL, 'Data Saver', Setting_DataSaver.Checked);
-        OPT.WriteBool(CAT_GENERAL, 'Mini player on top', Setting_PlayerOnTop.Checked);
-        OPT.WriteBool(CAT_GENERAL, 'Song Streaming', Setting_SongStreaming.Checked);
-        OPT.WriteBool(CAT_GENERAL, 'Disable Animations', Settings_DisableAnimations.Checked);
-        OPT.WriteBool(CAT_GENERAL, 'Start with windows', Setting_StartWindows.Checked);
-        OPT.WriteBool(CAT_GENERAL, 'Minimise to tray', Setting_TrayClose.Checked);
-        OPT.WriteBool(CAT_GENERAL, 'Save Queue', Setting_QueueSaver.Checked);
-        OPT.WriteBool(CAT_GENERAL, 'Prefer rating', Setting_Rating.Checked);
+        WriteBool(CAT_GENERAL, 'Enable Graph', Setting_Graph.Checked);
+        WriteBool(CAT_GENERAL, 'Menu Opened', SplitView1.Opened);
+        WriteBool(CAT_GENERAL, 'Audo Update Check', Settings_CheckUpdate.Checked);
+        WriteInteger(CAT_GENERAL, 'Artwork Id', ArtworkID);
+        WriteBool(CAT_GENERAL, 'Artowork Store', ArtworkStore);
+        WriteInteger(CAT_GENERAL, 'Thread Count', THREAD_MAX);
+        WriteBool(CAT_GENERAL, 'Data Saver', Setting_DataSaver.Checked);
+        WriteBool(CAT_GENERAL, 'Mini player on top', Setting_PlayerOnTop.Checked);
+        WriteBool(CAT_GENERAL, 'Song Streaming', Setting_SongStreaming.Checked);
+        WriteBool(CAT_GENERAL, 'Disable Animations', Settings_DisableAnimations.Checked);
+        WriteBool(CAT_GENERAL, 'Start with windows', Setting_StartWindows.Checked);
+        WriteBool(CAT_GENERAL, 'Minimise to tray', Setting_TrayClose.Checked);
+        WriteBool(CAT_GENERAL, 'Save Queue', Setting_QueueSaver.Checked);
+        WriteBool(CAT_GENERAL, 'Prefer rating', Setting_Rating.Checked);
+        WriteBool(CAT_GENERAL, 'Visualisations', EnableVisualisations);
 
-        OPT.WriteInteger(CAT_MINIPLAYER, 'Opacity', TransparentIndex);
+        WriteInteger(CAT_MINIPLAYER, 'Opacity', TransparentIndex);
       finally
         OPT.Free;
       end;
-    end;
 end;
 
 procedure TUIForm.QueuePlay;
@@ -5832,6 +5885,22 @@ begin
     IsOffline := false;
 end;
 
+procedure TUIForm.RenderVisualisations;
+var
+  FFTFata: TFFTData;
+begin
+  if (Player = nil) or (not Player.IsFileOpen) or (Player.PlayStatus <> TPlayStatus.psPlaying) then
+    Exit;
+
+  BASS_ChannelGetData(Player.Stream, @FFTFata, BASS_DATA_FFT1024);
+
+  if Visible then
+    Spectrum_Player.Draw(Visualisation_Player.Canvas.Handle, FFTFata, 0, -10);
+
+  if MiniPlayer.Visible then
+    Spectrum_Mini.Draw(MiniPlayer.Visualisation_Mini.Canvas.Handle, FFTFata, 0, -10);
+end;
+
 procedure TUIForm.ReselectPage;
 var
   ViewC, ViewSC, MultiPage: boolean;
@@ -6244,6 +6313,21 @@ begin
   Menu.Hint := Icon;
 end;
 
+procedure TUIForm.SetEnableVisualisations(ATo, Force: boolean);
+begin
+  if not Force and (EnableVisualisations = ATo) then
+    Exit;
+
+  // UI
+  Setting_Visualisations.Checked := ATo;
+
+  // State
+  EnableVisualisations := ATo;
+
+  // Check
+  VisualisationUICheck;
+end;
+
 procedure TUIForm.SetScroll(Index: integer);
 begin
   RecalibrateScroll;
@@ -6379,6 +6463,33 @@ begin
   // Update
   StatusChanged;
   UpdateMiniPlayer;
+end;
+
+procedure TUIForm.Song_ArtistClick(Sender: TObject);
+var
+  ArtistID: integer;
+  Item: TDrawableItem;
+  APlay: integer;
+begin
+  APlay := GetTrack(PlayID);
+
+  // View Artist
+  if APlay = -1 then
+    Exit;
+
+  // Validate
+  ArtistID := Tracks[APlay].ArtistID;
+  if ArtistID = 0 then
+    Exit;
+
+  // Open
+  Item.LoadSourceID(Tracks[APlay].ArtistID, TDataSource.Artists);
+  Item.Execute;
+end;
+
+procedure TUIForm.Song_CoverClick(Sender: TObject);
+begin
+  SetEnableVisualisations(not EnableVisualisations);
 end;
 
 procedure TUIForm.Song_CoverMouseUp(Sender: TObject; Button: TMouseButton;
@@ -6520,6 +6631,9 @@ begin
     TRepeat.One: Button_Repeat.BSegoeIcon := #$E8ED;
   end;
 
+  // Visualisations
+  VisualisationUICheck;
+
   // Shuffle
   if Shuffled then
     Button_Shuffle.BSegoeIcon := #$E8B1
@@ -6660,6 +6774,32 @@ begin
 
       MiniSetSeek;
     end;
+end;
+
+procedure TUIForm.VisualisationRendererTimer(Sender: TObject);
+begin
+  RenderVisualisations;
+end;
+
+procedure TUIForm.VisualisationUICheck;
+var
+  VisualShow: boolean;
+begin
+  VisualShow := EnableVisualisations and (Player.PlayStatus = TPlayStatus.psPlaying);
+
+  // Lock form
+  LockWindowUpdate(Handle);
+
+  // UI
+  VisualisationRenderer.Enabled := VisualShow;
+
+  Visualisation_Player.Visible := VisualShow;
+  Song_Cover.Visible := not VisualShow;
+
+  Visual_Icon.Visible := EnableVisualisations and not VisualShow;
+
+  // Unlock form
+  LockWindowUpdate(0);
 end;
 
 procedure TUIForm.ToggleRepeat;
@@ -7396,7 +7536,7 @@ end;
 
 function TDrawableItem.Hidden: boolean;
 begin
-  Result := HiddenItem or HiddenSearch;
+  Result := HiddenItem or HiddenSearch or (Trashed and not ShowTrashed);
 end;
 
 function TDrawableItem.Invalid: boolean;
@@ -7443,8 +7583,10 @@ begin
       Title := Tracks[Index].Title;
       Rating := Tracks[Index].Rating;
 
+      Trashed := Tracks[Index].IsInTrash;
+
       // Info
-      SetLength(Information, 10);
+      SetLength(Information, 11);
       Information[0] := 'Track Number: ' + Tracks[Index].TrackNumber.ToString;
       Information[1] := 'Released in: ' + Yearify(Tracks[Index].Year);
       Information[2] := 'Genre: ' + Tracks[Index].Genre;
@@ -7464,6 +7606,7 @@ begin
       Information[7] := 'File Size: ' + SizeInString( Tracks[Index].FileSize );
       Information[8] := 'Rating: ' + Tracks[Index].Rating.ToString + '/10';
       Information[9] := 'Media Type: ' + Tracks[Index].AudioType;
+      Information[10] := 'Trashed: ' + booleantostring(Trashed);
 
       // Default Info
       InfoShort := Data1 + ' • ' + Yearify(Tracks[Index].Year);
@@ -7477,8 +7620,10 @@ begin
       Title := Albums[Index].AlbumName;
       Rating := Albums[Index].Rating;
 
+      Trashed := Albums[Index].IsInTrash;
+
       // Info
-      SetLength(Information, 6);
+      SetLength(Information, 7);
       Information[0] := 'Total Tracks: ' + Length(Albums[Index].TracksID).ToString;
       Information[1] := 'Released in: ' + Yearify(Albums[Index].Year);
       Temp := GetArtist(Albums[Index].ArtistID);
@@ -7496,6 +7641,7 @@ begin
             Inc(Temp, Tracks[APos].LengthSeconds );
         end;
       Information[5] := 'Length: ' + UIForm.CalculateLength(Temp);
+      Information[6] := 'Trashed: ' + booleantostring(Trashed);
 
       // Default Info
       InfoShort := Length(Albums[Index].TracksID).ToString + ' Tracks • ' + Information[2];
@@ -7509,8 +7655,10 @@ begin
       Title := Artists[Index].ArtistName;
       Rating := Artists[Index].Rating;
 
+      Trashed := Artists[Index].IsInTrash;
+
       // Info
-      SetLength(Information, 3);
+      SetLength(Information, 4);
       Information[0] := 'Total Tracks: ' + Length(Artists[Index].TracksID).ToString;
       Temp := 0;
       for A := 0 to High(Albums) do
@@ -7518,6 +7666,7 @@ begin
           Inc(Temp);
       Information[1] := 'Album count: ' + Temp.ToString;
       Information[2] := 'Rating: ' + Artists[Index].Rating.ToString;
+      Information[3] := 'Trashed: ' + booleantostring(Trashed);
 
       // Default Info
       InfoShort :=  Length(Artists[Index].TracksID).ToString + ' Tracks • ' + Information[1];
@@ -7530,6 +7679,8 @@ begin
 
       Title := Playlists[Index].Name;
       Rating := 0; // Playlists do not have ratings
+
+      Trashed := false; // Playlists cannot be in the trash
 
       // Info
       SetLength(Information, 3);

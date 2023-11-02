@@ -962,6 +962,13 @@ object DebugUI: TDebugUI
     Height = 21
     Caption = 'Downl Thread:'
   end
+  object Label13: TLabel
+    Left = 185
+    Top = 277
+    Width = 100
+    Height = 21
+    Caption = 'Downl Thread:'
+  end
   object CButton1: CButton
     Left = 19
     Top = 120
@@ -1363,7 +1370,7 @@ object DebugUI: TDebugUI
   end
   object SearchBox1: TSearchBox
     Left = 184
-    Top = 303
+    Top = 316
     Width = 121
     Height = 29
     Font.Charset = DEFAULT_CHARSET

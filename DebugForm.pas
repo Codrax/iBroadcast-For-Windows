@@ -37,6 +37,7 @@ type
     Memo1: TMemo;
     CButton7: CButton;
     CButton8: CButton;
+    Label13: TLabel;
     procedure CButton1Click(Sender: TObject);
     procedure CButton2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -118,6 +119,9 @@ procedure TDebugUI.FormCreate(Sender: TObject);
 begin
   Top := Screen.Height - Height - GetTaskbarHeight;
   Left := Screen.Width - Width;
+
+  // Constant
+  Label13.Caption := 'Version: ' + Version.ToString;
 end;
 
 procedure TDebugUI.SearchBox1InvokeSearch(Sender: TObject);
