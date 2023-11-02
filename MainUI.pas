@@ -760,7 +760,7 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 0);
+  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 1);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://api.codrutsoft.com/';
@@ -5087,6 +5087,7 @@ begin
     begin
       LoadPlayerSettings;
       Player.Play;
+      Player.PlayStatus;
     end;
 
   // Update
@@ -6785,7 +6786,8 @@ procedure TUIForm.VisualisationUICheck;
 var
   VisualShow: boolean;
 begin
-  VisualShow := EnableVisualisations and (Player.PlayStatus = TPlayStatus.psPlaying);
+  { The play status is Stalled when It's buffering the song (streaming only) }
+  VisualShow := EnableVisualisations and (Player.PlayStatus in [TPlayStatus.psPlaying, TPlayStatus.psStalled]);
 
   // Lock form
   LockWindowUpdate(Handle);
