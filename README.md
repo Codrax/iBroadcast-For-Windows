@@ -45,6 +45,7 @@ iBroadcast Apps Page
 | -logtoken  | Output login token in log  |
 | -exportpost  | Output all recieved POST requests to desktop  |
 | -debug  | Enable application debugging features  |
+| -log32  | Enable visual logger  |
 
 ## Screenshots
 
