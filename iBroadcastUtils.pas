@@ -7,6 +7,7 @@ uses
 
   // Dialogs
   function OpenDialog(Title, Text: string; AType: CMessageType = ctInformation; Buttons: TMsgDlgButtons = [mbOk]): integer;
+  function OpenQuery(Title, Text: string; var AText: string): boolean;
 
   // String
   function MashString(AString: string): string;
@@ -54,6 +55,39 @@ begin
 
   // Execute
   Result := Dialog.Execute;
+
+  Dialog.Free;
+end;
+
+function OpenQuery(Title, Text: string; var AText: string): boolean;
+var
+  Dialog: CInputBox;
+  SVal: string;
+begin
+  Dialog := CInputBox.Create;
+
+  // Text
+  Dialog.Title := Title;
+  Dialog.Text := Text;
+
+  Dialog.Value := AText;
+
+  // Colors & Design
+  Dialog.EnableFooter := false;
+  Dialog.GlobalSyncTogle := false;
+
+  Dialog.FormColor := BG_COLOR;
+  Dialog.TextFont.Color := FN_COLOR;
+
+  Dialog.ButtonDesign.FlatButton := true;
+  Dialog.ButtonDesign.FlatComplete := true;
+
+  // Execute
+  SVal := Dialog.Execute;
+
+  Result := Dialog.DialogResult = cidrOk;
+  if Result then
+    AText := SVal;
 
   Dialog.Free;
 end;

@@ -32,7 +32,7 @@ object CreatePlaylist: TCreatePlaylist
     Align = alBottom
     BevelOuter = bvNone
     ParentColor = True
-    TabOrder = 1
+    TabOrder = 2
     object Download_Item: CButton
       AlignWithMargins = True
       Left = 431
@@ -182,7 +182,7 @@ object CreatePlaylist: TCreatePlaylist
     Caption = 'Panel2'
     ParentColor = True
     ShowCaption = False
-    TabOrder = 2
+    TabOrder = 4
     object Label8: TLabel
       AlignWithMargins = True
       Left = 60
@@ -395,7 +395,7 @@ object CreatePlaylist: TCreatePlaylist
     Align = alTop
     BevelOuter = bvNone
     ParentColor = True
-    TabOrder = 4
+    TabOrder = 1
     object Label2: TLabel
       AlignWithMargins = True
       Left = 5
@@ -3225,13 +3225,13 @@ object CreatePlaylist: TCreatePlaylist
       Colors.Leave = 16250866
       Colors.Enter = 15658729
       Colors.Down = 15066593
-      Colors.Checked = 4745881
+      Colors.Checked = 1265132
       Colors.CheckIndicator = clWhite
       Colors.TransparentCenter = True
       ColorsBorder.Leave = 9013638
       ColorsBorder.Enter = 9013638
       ColorsBorder.Down = 12434873
-      ColorsBorder.Checked = 4745881
+      ColorsBorder.Checked = 1265132
       Checked = False
       State = cbUnchecked
     end

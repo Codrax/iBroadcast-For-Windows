@@ -38,6 +38,7 @@ type
     CButton7: CButton;
     CButton8: CButton;
     Label13: TLabel;
+    Label14: TLabel;
     procedure CButton1Click(Sender: TObject);
     procedure CButton2Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -113,6 +114,7 @@ begin
   Label10.Caption := 'Ch Active: ' + BooleanToString( BASS_ChannelIsActive(Player.Stream) = BASS_ACTIVE_PLAYING );
   Label11.Caption := 'Img-Thread: ' + TotalThreads.ToString;
   Label12.Caption := 'Downl-Thread: ' + DownloadThreadsE.ToString;
+  Label14.Caption := 'Page Path: ' + Location;
 end;
 
 procedure TDebugUI.FormCreate(Sender: TObject);

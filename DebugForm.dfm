@@ -969,6 +969,13 @@ object DebugUI: TDebugUI
     Height = 21
     Caption = 'Downl Thread:'
   end
+  object Label14: TLabel
+    Left = 185
+    Top = 396
+    Width = 74
+    Height = 21
+    Caption = 'Page Path: '
+  end
   object CButton1: CButton
     Left = 19
     Top = 120
@@ -1106,7 +1113,7 @@ object DebugUI: TDebugUI
     Left = 454
     Top = 198
     Width = 222
-    Height = 195
+    Height = 177
     Lines.Strings = (
       'JSON response will be '
       'shown here')
@@ -1239,7 +1246,7 @@ object DebugUI: TDebugUI
     Left = 323
     Top = 34
     Width = 118
-    Height = 359
+    Height = 341
     Lines.Strings = (
       'Queue')
     ParentColor = True

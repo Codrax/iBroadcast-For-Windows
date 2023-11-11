@@ -22,7 +22,7 @@ uses
   IdHTTP, CreatePlaylistForm, Offline, Cod.StringUtils, iBroadcastUtils,
   PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar, Cod.Windows,
   Cod.VersionUpdate, Cod.ArrayHelpers, Cod.Components, RatingPopup,
-  CodeSources, SpectrumVis3D;
+  CodeSources, SpectrumVis3D, Vcl.Buttons, LoggingFOrm;
 
 type
   // Cardinals
@@ -30,7 +30,7 @@ type
   TRepeat = (Off, All, One);
   TSortType = (Default, Alphabetic, Year, Rating, Flipped);
   TSortTypes = set of TSortType;
-  TSearchFlag = (ExactMatch, CaseSensitive, SearchInfo);
+  TSearchFlag = (ExactMatch, CaseSensitive, SearchInfo, SearchTrashed);
   TSearchFlags = set of TSearchFlag;
   TPlayType = (Streaming, Local, CloudDownload);
   TDownloadedKind = (None, Direct, Indirect); // for tracks downloaded from an album
@@ -58,7 +58,6 @@ type
     InfoLong: string;
     Rating: integer;
 
-    Active: boolean;
     HiddenItem: boolean;
     HiddenSearch: boolean;
     Trashed: boolean;
@@ -75,6 +74,7 @@ type
     (* Mix data *)
     function Hidden: boolean;
     function Downloaded: boolean;
+    function Active: boolean;
 
     function IsDownloaded: TDownloadedKind;
 
@@ -92,7 +92,8 @@ type
     function Invalid: boolean;
 
     (* Manage Library *)
-    procedure DeleteFromLibrary;
+    procedure TrashFromLibrary;
+    procedure RestoreFromLibrary;
 
     (* Audo Load *)
     procedure LoadSourceID(ID: integer; From: TDataSource);
@@ -116,7 +117,7 @@ type
     CButton7: CButton;
     TitlebarCompare: TPanel;
     Panel2: TPanel;
-    Panel3: TPanel;
+    TopbarContainer: TPanel;
     PagesHolder: TPanel;
     Song_Player: TPanel;
     Panel6: TPanel;
@@ -234,11 +235,6 @@ type
     Label34: TLabel;
     Label35: TLabel;
     ICON_CONNECT: TLabel;
-    Search_Filters: TPanel;
-    Label31: TLabel;
-    CCheckBox2: CCheckBox;
-    CCheckBox3: CCheckBox;
-    CCheckBox1: CCheckBox;
     CButton19: CButton;
     Settings_CheckUpdate: CCheckBox;
     CButton20: CButton;
@@ -382,7 +378,7 @@ type
     N12: TMenuItem;
     Latest_Version: TLabel;
     Panel14: TPanel;
-    Label23: TLabel;
+    Queue_Label: TLabel;
     Button_ClearQueue: CButton;
     QueueLoadWhenFinished: TTimer;
     ControlBarContainer: TPanel;
@@ -435,6 +431,35 @@ type
     VisualisationRenderer: TTimer;
     Setting_Visualisations: CCheckBox;
     Visual_Icon: TLabel;
+    Button_SaveQueue: CButton;
+    Trash1: TMenuItem;
+    N16: TMenuItem;
+    N17: TMenuItem;
+    Trash2: TMenuItem;
+    N18: TMenuItem;
+    Trash3: TMenuItem;
+    Controlbar_Trash: TPanel;
+    Label6: TLabel;
+    CButton30: CButton;
+    CButton32: CButton;
+    CButton33: CButton;
+    CButton35: CButton;
+    CButton34: CButton;
+    Search_Filters: TFlowPanel;
+    Label31: TLabel;
+    CCheckBox2: CCheckBox;
+    CCheckBox3: CCheckBox;
+    CCheckBox1: CCheckBox;
+    CCheckBox4: CCheckBox;
+    Restore1: TMenuItem;
+    Restore2: TMenuItem;
+    Restore3: TMenuItem;
+    SaveAs1: TMenuItem;
+    Controlbar_ArtistManage: TPanel;
+    Label7: TLabel;
+    CButton36: CButton;
+    CButton37: CButton;
+    SaveMusicDialog: TSaveDialog;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -570,6 +595,17 @@ type
     procedure Setting_VisualisationsChange(Sender: CCheckBox;
       State: TCheckBoxState);
     procedure Song_ArtistClick(Sender: TObject);
+    procedure Queue_LabelClick(Sender: TObject);
+    procedure Button_SaveQueueClick(Sender: TObject);
+    procedure DeleteFilterSel(Sender: TObject);
+    procedure PopupGeneralRestore(Sender: TObject);
+    procedure Popup_AlbumPopup(Sender: TObject);
+    procedure Popup_ArtistPopup(Sender: TObject);
+    procedure CButton34Click(Sender: TObject);
+    procedure SystemMenuOpen(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure ArtistViewSel(Sender: TObject);
+    procedure SaveAs1Click(Sender: TObject);
   private
     { Private declarations }
     // Vars
@@ -585,7 +621,6 @@ type
     // Items
     function GetItemCount(OnlyVisible: boolean = false): cardinal;
     procedure LoadItemInfo;
-    procedure UpdateItemInformation;
 
     function GetTracksID: TArray<integer>;
     function GetPageViewType: TDataSource;
@@ -598,10 +633,12 @@ type
     procedure SetDownloadIcon(Value: boolean; Source: TDataSource);
 
     // Drawing List
-    procedure AddItems(IDArray: TArray<integer>; Source: TDataSource; Clear: boolean = false);
+    procedure AddItems(IDArray: TArray<integer>; Source: TDataSource; 
+      Clear: boolean = false; RemoveTrashed: boolean = false);
 
     // UI
     procedure ReselectPage;
+    procedure TweakPageUI;
     procedure HideAllUI;
 
     (*Only for updating scrollbar components*)
@@ -629,6 +666,11 @@ type
     procedure VolumeAppChange(Sender: TAppAudioManager; const NewVolume: Single; NewMute: boolean);
     procedure VolumeSysChange(Sender: TSystemAudioManager; const Volume: Single; Muted: boolean);
 
+    (* Download Mode *)
+    procedure DownloadStatusWorkDownload(ASender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
+    procedure DownloadStatusWorkBeginDownload(ASender: TObject; AWorkMode: TWorkMode; AWorkCountMax: Int64);
+
+    (* Cloud mode *)
     procedure DownloadStatusWork(ASender: TObject; AWorkMode: TWorkMode; AWorkCount: Int64);
     procedure DownloadStatusWorkBegin(ASender: TObject; AWorkMode: TWorkMode; AWorkCountMax: Int64);
 
@@ -646,6 +688,8 @@ type
   public
     { Public declarations }
     procedure NavigatePath(Path: String; AddHistory: boolean = true);
+    function GetPathValue(Name: string): string;
+    procedure SetPathValue(Name: string; Data: string);
 
     // Player
     procedure PlaySong(Index: cardinal; StartPlay: boolean = true);
@@ -760,7 +804,7 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 1);
+  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 3);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://api.codrutsoft.com/';
@@ -788,10 +832,10 @@ const
   // PAGES
   PlayCaptions: TArray<string> = ['Home', 'Search', 'Albums', 'Songs', 'Playlists',
     'Artists', 'Genres', 'ViewAlbum', 'ViewPlaylist', 'ViewArtist', 'ViewGenres',
-    'History', 'Account', 'Settings', 'About', 'Premium', 'Downloads'];
+    'History', 'Account', 'Settings', 'About', 'Premium', 'Downloads', 'Trash'];
 
   ViewCompatibile: TArray<string> = ['albums', 'songs', 'artists', 'playlists',
-    'genres', 'history', 'downloads'];
+    'genres', 'history', 'downloads', 'trash'];
   SubViewCompatibile: TArray<string> = ['viewalbum', 'viewartist',
     'viewplaylist', 'history'];
 
@@ -842,6 +886,9 @@ var
 
   DownloadsFilter: TDataSource;
 
+  // Trash
+  TrashFilter: TDataSource = TDataSource.Tracks;
+
   // Page System
   PageHistory: TArray<THistorySet>;
 
@@ -852,6 +899,7 @@ var
   Location,
   LocationExtra,
   LocationROOT: string;
+  LocationPath: TStringArray;
 
   // View settings
   ViewStyle: TViewStyle = TViewStyle.Cover;
@@ -871,8 +919,6 @@ var
   QRects: TArray<TRect>;
 
   MaxScroll: integer = 0;
-
-  ShowTrashed: boolean;
 
   // Draw
   Press10Stat: cardinal = 0;
@@ -908,6 +954,8 @@ var
   LastThreadFileLocked: boolean; // Tells if the file is currrently locked
   DownloadWorkCount,
   DownloadLastPercent: integer;
+  CloudDownloadWorkCount,
+  CloudDownloadLastPercent: integer;
 
   // SYSTEM
   THREAD_MAX: cardinal = 10;
@@ -915,6 +963,7 @@ var
 
   // Logging
   EnableLogging: boolean = false;
+  EnableLog32: boolean = false;
   PrivacyEnabled: boolean = true;
 
   // Queue System
@@ -924,6 +973,9 @@ var
 
   QueuePos: integer;
   PlayQueue: TIntegerList;
+  { INFO: Uses Play-Index instead of Play-ID for performance benefits,
+    the downside being if the library changes during runtime /
+    the queue is re-loaded after the library changes }
 
   Shuffled: boolean;
   OriginalQueueValid: boolean;
@@ -1018,7 +1070,7 @@ begin
 end;
 
 procedure TUIForm.AddItems(IDArray: TArray<integer>; Source: TDataSource;
-  Clear: boolean);
+  Clear, RemoveTrashed: boolean);
 var
   Start: integer;
   I: Integer;
@@ -1036,6 +1088,8 @@ begin
   for I := 0 to High(IDArray) do
     begin
       DrawItems[Start + I].LoadSourceID( IDArray[I], Source );
+
+      DrawItems[Start + I].HiddenItem := RemoveTrashed and DrawItems[Start + I].Trashed;
     end;
 end;
 
@@ -1338,7 +1392,6 @@ begin
       ChangeMainForm(MiniPlayer);
     end;
 
-
   // Get data
   UpdateMiniPlayer;
 end;
@@ -1366,6 +1419,37 @@ end;
 procedure TUIForm.Button_RepeatClick(Sender: TObject);
 begin
   ToggleRepeat;
+end;
+
+procedure TUIForm.Button_SaveQueueClick(Sender: TObject);
+var
+  ATracks: TArray<integer>;
+  I, AIndex: Integer;
+  AName: string;
+begin
+  // Empty
+  if PlayQueue.Count = 0 then
+    begin
+      OpenDialog('Queue empty', 'The play queue is empty');
+      Exit;
+    end;
+
+  // Name
+  if not OpenQuery('Create new playlist', 'Enter the name for the new playlist', AName) then
+    Exit;
+
+  // Save queue as playlist
+  ATracks := [];
+  for I := 0 to PlayQueue.Count-1 do
+    begin
+      AIndex := PlayQueue[I];
+
+      if AIndex <> -1 then
+        ATracks.AddValue( Tracks[AIndex].ID );
+    end;
+
+  // Create
+  CreateNewPlayList(AName, '', false, ATracks);
 end;
 
 procedure TUIForm.Button_ShuffleClick(Sender: TObject);
@@ -1488,14 +1572,26 @@ begin
     procedure
     begin
       LoadItemInfo;
+      Sort;
       RedrawPaintBox;
     end);
 end;
+const
+  ANY_UPD: TStringArray = ['trash', 'search'];
 var
   ARoot: string;
 begin
   ARoot := BareRoot;
 
+  // Update for any view
+  if ANY_UPD.Find(ARoot) <> -1 then
+    begin
+      UpdateAndDraw;
+
+      Exit;
+    end;
+                 
+  // Specific Update
   if ARoot <> '' then
     case AUpdate of
       TDataSource.Tracks: begin
@@ -1678,15 +1774,63 @@ procedure TUIForm.CButton31Click(Sender: TObject);
 begin
   CreatePlaylist := TCreatePlaylist.Create(Self);
   try
-    if CreatePlaylist.ShowModal = mrOk then
-      begin
-        LoadItemInfo;
-        RedrawPaintBox;
-        Sort;
-      end;
+    CreatePlaylist.ShowModal;
+
+    // Update by BackendUpdate
   finally
     CreatePlaylist.Free;
   end;
+end;
+
+procedure TUIForm.CButton34Click(Sender: TObject);
+begin
+  if OpenDialog('Are you sure?', 'Are you sure you want to empty the trash? This action is irreversible.', ctQuestion, [mbYes, mbNo]) = mrYes then
+    CompleteEmptyTrash;
+end;
+
+procedure TUIForm.ArtistViewSel(Sender: TObject);
+begin
+  // Sel
+  if CButton(Sender).Tag = 0 then
+    SetPathValue('viewmode', 'tracks')
+  else
+    SetPathValue('viewmode', 'albums');
+
+  LoadItemInfo;
+  Sort;
+  TweakPageUI;
+
+  // Draw
+  RedrawPaintBox;
+end;
+
+procedure TUIForm.DeleteFilterSel(Sender: TObject);
+var
+  I: Integer;
+  Previous: TDataSource;
+begin
+  Previous := TrashFilter;
+  TrashFilter := TDataSource(CButton(Sender).Tag);
+
+  // Same
+  if TrashFilter = Previous then
+    Exit;
+
+  // Buttons
+  for I := 0 to Controlbar_Trash.ControlCount - 1 do
+    if Controlbar_Trash.Controls[I] is CButton then
+      with CButton(Controlbar_Trash.Controls[I]) do
+        FlatButton := Tag = Integer(TrashFilter);
+
+  // Load
+  LoadItemInfo;
+  Sort;
+
+  // Scroll
+  ScrollPosition.Position := 0;
+
+  // Draw
+  RedrawPaintBox;
 end;
 
 procedure TUIForm.DownloadsFilterSel(Sender: TObject);
@@ -1741,11 +1885,11 @@ begin
     end;
 
   // Status
-  Percent := round(AWorkCount / DownloadWorkCount * 100);
+  Percent := round(AWorkCount / CloudDownloadWorkCount * 100);
 
-  if Percent <> DownloadLastPercent then
+  if Percent <> CloudDownloadLastPercent then
     begin
-      DownloadLastPercent := Percent;
+      CloudDownloadLastPercent := Percent;
 
       ThreadSyncStatus(Format('Downloading cloud song %D%%', [Percent]));
     end;
@@ -1754,7 +1898,29 @@ end;
 procedure TUIForm.DownloadStatusWorkBegin(ASender: TObject;
   AWorkMode: TWorkMode; AWorkCountMax: Int64);
 begin
+  CloudDownloadWorkCount := AWorkCountMax;
+end;
+
+procedure TUIForm.DownloadStatusWorkBeginDownload(ASender: TObject;
+  AWorkMode: TWorkMode; AWorkCountMax: Int64);
+begin
   DownloadWorkCount := AWorkCountMax;
+end;
+
+procedure TUIForm.DownloadStatusWorkDownload(ASender: TObject;
+  AWorkMode: TWorkMode; AWorkCount: Int64);
+var
+  Percent: integer;
+begin
+  // Status
+  Percent := round(AWorkCount / DownloadWorkCount * 100);
+
+  if Percent <> DownloadLastPercent then
+    begin
+      DownloadLastPercent := Percent;
+
+      ThreadSyncStatus(Format('Downloading song %D%%', [Percent]));
+    end;
 end;
 
 procedure TUIForm.ArtworkSelectClick(Sender: TObject);
@@ -1801,8 +1967,14 @@ end;
 
 procedure TUIForm.Button_ToggleMenuClick(Sender: TObject);
 begin
+  if Settings_DisableAnimations.Checked then
+    LockWindowUpdate(Handle);
+
   if not SplitView1.Locked then
     SplitView1.Opened := not SplitView1.Opened;
+    
+  if Settings_DisableAnimations.Checked then
+    LockWindowUpdate(0);  
 end;
 
 procedure TUIForm.Button_PerformanceClick(Sender: TObject);
@@ -1842,7 +2014,7 @@ begin
 end;
 
 procedure TUIForm.NavigateButton(Sender: TObject);
-begin                                              
+begin
   // Navigation Buttons
   case CButton(Sender).Tag of
     1: NavigatePath( 'Home' );
@@ -1855,6 +2027,7 @@ begin
     8: NavigatePath( 'History' );
     9: NavigatePath( 'Account' );
     10: NavigatePath( 'Settings' );
+    11: NavigatePath( 'Trash' );
   end;
 end;
 
@@ -2493,6 +2666,15 @@ begin
         end;
     end;
 
+  // Nothing here
+  if (X = 0) and (Y = 0) and (ScrollPosition.Position = 0) then
+    begin
+      Title := 'Crickets... Nothing is here...';
+      ARect := TPaintBox(Sender).ClientRect;
+      
+      TPaintBox(Sender).Canvas.TextRect(ARect, Title, 
+        [tfSingleLine, tfCenter, tfVerticalCenter]);
+    end;
 
   // Copy draw buffer
   with TPaintBox(Sender).Canvas do
@@ -2610,19 +2792,30 @@ end;
 var
   I: Integer;
   Found: boolean;
+  SearchTrashed: boolean;
 begin
+  SearchTrashed := TSearchFlag.SearchTrashed in Flags;
+
   for I := 0 to High(DrawItems) do
     begin
-      if Term = '' then
-        DrawItems[I].HiddenSearch := false
-      else
-        begin
-          Found := CompareFound(Term, DrawItems[I].Title, Flags)
-            or ((TSearchFlag.SearchInfo in Flags) and CompareFound(Term, DrawItems[I].InfoLong, Flags))
-            or (DrawItems[I].ItemID.ToString = Term);
+      DrawItems[I].HiddenSearch := false;
 
-          DrawItems[I].HiddenSearch := not Found;
+      if Term = '' then
+        Continue;
+
+      if not SearchTrashed and DrawItems[I].Trashed then
+        begin
+          DrawItems[I].HiddenSearch := true;
+          Continue;
         end;
+        
+      // Compare
+      Found := CompareFound(Term, DrawItems[I].Title, Flags)
+        or ((TSearchFlag.SearchInfo in Flags) and CompareFound(Term, DrawItems[I].InfoLong, Flags))
+        or (DrawItems[I].ItemID.ToString = Term);
+
+      // Visible
+      DrawItems[I].HiddenSearch := not Found;
     end;
 
   LastFilterQuery := Term;
@@ -2879,6 +3072,15 @@ begin
       end;
     end;
 
+  // Ctrl
+  if ssCtrl in Shift then
+    begin
+      case Key of
+        70: if SearchToggle.Visible then
+          Search_ButtonClick(Search_Button); // F
+      end;
+    end;
+
   Key := 0;
 end;
 
@@ -2939,13 +3141,17 @@ begin
   if SplitView1.Locked and SplitView1.Opened then
     SplitView1.Opened := false;
 
+  // Queue
+  Queue_Label.Visible := SmallSize < 3;
+  Button_SaveQueue.Visible := SmallSize < 3;
+
   // Login Screen
   Robo_Background.Visible := (SmallSize < 3) and LoginBox.Visible;
   Robo_Panel.Visible := Robo_Background.Visible;
 
   // Menu bar
   Button_ToggleMenu.Visible := SmallSize < 3;
-  Mini_Cast.Visible := SmallSize >= 3;
+  Mini_Cast.Visible := not Button_ToggleMenu.Visible;
 
   // Fix Positioning
   if SmallSize < 2 then
@@ -3004,6 +3210,25 @@ begin
 
   if BareRoot = 'viewplaylist' then
     Exit(TDataSource.Playlists);
+end;
+
+function TUIForm.GetPathValue(Name: string): string;
+var
+  I, P: integer;
+  V: ^string;
+begin
+  ///  This function searchs for a parameter in the path. Such as "position=10"
+  ///  The result being "10" and the Value being "position"
+  Result := '';
+  for I := 0 to High(LocationPath) do
+    begin
+      V := @LocationPath[I];
+
+      P := V^.IndexOf('=');
+      if P <> 0 then
+        if Copy(V^, 1, P) = Name then
+          Exit(Copy(V^, P+2, Length(V^) ));
+    end;
 end;
 
 function TUIForm.GetSegoeIconFont: string;
@@ -3240,6 +3465,45 @@ begin
   PopupDrawItem.OpenInformation;
 end;
 
+procedure TUIForm.PopupGeneralRestore(Sender: TObject);
+begin
+  if (EditorThread < THREAD_EDITOR_MAX) then
+  with TThread.CreateAnonymousThread(procedure
+      begin
+        // Increase
+        Inc(EditorThread);
+
+        // Status
+        ThreadSyncStatus('Restoring Item...');
+
+        // Delete
+        try
+          PopupDrawItem.RestoreFromLibrary;
+
+          // Update by BackendUpdate
+        except
+          // Offline
+          TThread.Synchronize(nil,
+            procedure
+              begin
+                OfflineDialog('We can'#39't restore this item. Are you connected to the internet?');
+              end);
+        end;
+
+        // Decrease
+        Dec(EditorThread);
+
+        // Finish
+        EdidThreadFinalised
+      end) do
+        begin
+          Priority := tpHigher;
+
+          FreeOnTerminate := true;
+          Start;
+        end;
+end;
+
 procedure TUIForm.PopupGeneralViewArtist(Sender: TObject);
 var
   ArtistID: integer;
@@ -3388,6 +3652,7 @@ begin
   CButton3.Hide;
   CButton7.Hide;
   CButton2.Hide;
+  CButton35.Hide;
 
   // Load Data
   try
@@ -3427,6 +3692,15 @@ begin
   Result := Result + ']';
 end;
 
+procedure TUIForm.Queue_LabelClick(Sender: TObject);
+begin
+  // Scroll Position
+  QueueScroll.Position := Max(
+    QueuePos * (QListHeight + QListSpacing) - QueueDraw.Height div 2,
+    0
+    );
+end;
+
 procedure TUIForm.Latest_VersionClick(Sender: TObject);
 begin
   with TThread.CreateAnonymousThread(procedure
@@ -3460,6 +3734,14 @@ var
 
   SelectItems, SomeArray: TArray<integer>;
   Contained: boolean;
+procedure AddItem(Index: integer; AType: TDataSource); 
+var
+  I: integer;
+begin
+  I := Length(DrawItems);
+  SetLength(DrawItems, I+1);
+  DrawItems[I].LoadSource(Index, AType);
+end;
 begin
   // No items
   DrawItems := [];
@@ -3467,39 +3749,31 @@ begin
   // Get root
   ARoot := BareRoot;
 
-  // Load Data                  
+  // Load Data
 
   (* Songs *)
   if ARoot = 'songs' then
-    begin
-      SetLength( DrawItems, Length(Tracks) );
-      for I := 0 to High(DrawItems) do
-        DrawItems[I].LoadSource(I, TDataSource.Tracks);
-    end;
+    for I := 0 to High(Tracks) do
+      if not Tracks[I].IsInTrash then
+        AddItem(I, TDataSource.Tracks);
 
   (* Albums *)
   if ARoot = 'albums' then
-    begin
-      SetLength( DrawItems, Length(Albums) );
-      for I := 0 to High(DrawItems) do
-        DrawItems[I].LoadSource(I, TDataSource.Albums);
-    end;
+    for I := 0 to High(Albums) do
+      if not Albums[I].IsInTrash then
+        AddItem(I, TDataSource.Albums);
 
   (* Artists *)
   if ARoot = 'artists' then
-    begin
-      SetLength( DrawItems, Length(Artists) );
-      for I := 0 to High(DrawItems) do
-        DrawItems[I].LoadSource(I, TDataSource.Artists);
-    end;
+    for I := 0 to High(Artists) do
+      if not Artists[I].IsInTrash then
+        AddItem(I, TDataSource.Artists);
+    
 
   (* Playlists *)
   if ARoot = 'playlists' then
-    begin
-      SetLength( DrawItems, Length(Playlists) );
-      for I := 0 to High(DrawItems) do
-        DrawItems[I].LoadSource(I, TDataSource.Playlists);
-    end;
+    for I := 0 to High(Playlists) do
+      AddItem(I, TDataSource.Playlists);
 
   (* Downloads *)
   if ARoot = 'downloads' then
@@ -3514,6 +3788,8 @@ begin
         end
       else
         begin
+          (* Also show trashed tracks! *)
+        
           // Tracks
           SetLength(SelectItems, DownloadedTracks.Count);
           for I := 0 to DownloadedTracks.Count- 1 do
@@ -3545,6 +3821,28 @@ begin
           for I := 0 to High(DrawItems) do
             DrawItems[I].HiddenItem := DrawItems[I].Source <> DownloadsFilter;
         end;
+    end;
+
+  (* Trashed *)
+  if ARoot = 'trash' then
+    begin
+      case TrashFilter of
+        TDataSource.Tracks: begin
+          for I := 0 to High(Tracks) do
+            if Tracks[I].IsInTrash then
+              AddItem(I, TDataSource.Tracks);
+        end;
+        TDataSource.Albums: begin
+          for I := 0 to High(Albums) do
+            if Albums[I].IsInTrash then
+              AddItem(I, TDataSource.Albums);
+        end;
+        TDataSource.Artists: begin
+          for I := 0 to High(Artists) do
+            if Artists[I].IsInTrash then
+              AddItem(I, TDataSource.Artists);
+        end;
+      end;
     end;
 
   (* Search *)
@@ -3583,7 +3881,9 @@ begin
 
       // Hide All
       for I := 0 to High(DrawItems) do
-        DrawItems[I].HiddenSearch := true;
+        begin
+          DrawItems[I].HiddenSearch := true;
+        end;
 
       // Load previous query
       if SearchBox1.Text <> '' then
@@ -3730,7 +4030,14 @@ begin
   (* Sub View Items *)
   if InArray(ARoot, SubViewCompatibile) <> -1 then
     begin
-      AddItems(GetTracksID, TDataSource.Tracks, true);
+      if (ARoot = 'viewartist') and (GetPathValue('viewmode') = 'albums') then
+        begin
+          for I := 0 to High(Albums) do
+            if Albums[I].ArtistID.ToString = LocationExtra then
+              AddItem(I, TDataSource.Albums);
+        end
+      else
+        AddItems(GetTracksID, TDataSource.Tracks, true, true);
     end;
 
   AddToLog('LoadItemInfo.AfterLoadSetup');
@@ -3926,32 +4233,28 @@ end;
 
 procedure TUIForm.NavigatePath(Path: String; AddHistory: boolean);
 var
-  Root, MetaData: string;
-  P: integer;
+  Root: string;
+  Values: TArray<string>;
   Valid: integer;
   I: Integer;
   Data: TDrawableItem;
 begin
   AddToLog(Format('Form.NavigatePath(%S, ' + booleantostring(AddHistory) + ')', [Path]));
-  Root := Path;
-  MetaData := '';
 
   // Already there
   if Location = Path then
     Exit;
 
   // Meta
-  P := Pos(':', Path);
-  if P <> 0 then
-    begin
-      Root := Copy( Path, 1, P -1);
-      MetaData := Copy( Path, P + 1, Length(Path) );
-    end;
+  AddToLog('NavigatePath.LocationValues');
+  Values := Path.Split([':']);
 
-  LocationExtra := MetaData;
+  // Max param count
+  SetLength(Values, 10);
 
   AddToLog('NavigatePath.Validate');
   // Validate
+  Root := Values[0];
   Valid := -1;
   for I := 0 to High(PlayCaptions) do
     if AnsiLowerCase(Root) = AnsiLowerCase(PlayCaptions[I]) then
@@ -3969,8 +4272,10 @@ begin
 
   // Set Location
   Location := Path;
-  LocationROOT := ROOT;
-  BareRoot := AnsiLowerCase(ROOT);
+  LocationROOT := Values[0];
+  BareRoot := AnsiLowerCase(Values[0]);
+  LocationExtra := Values[1];
+  LocationPath := Values;
 
   AddToLog('NavigatePath.LoadSubViewData');
   // Load Sub-View Data
@@ -4095,21 +4400,32 @@ var
   ADate: string;
 begin
   // Use legacy writing for TextFile.Append
-  if EnableLogging then
+  if EnableLogging or EnableLog32 then
     begin
-      ADate := DateTimeToStr(Now);
-      AFile := ReplaceWinPath('shell:desktop\iBroadcast Log.txt');
+      // File logging
+      if EnableLogging then
+        begin
+          ADate := DateTimeToStr(Now);
+          AFile := ReplaceWinPath('shell:desktop\iBroadcast Log.txt');
 
-      AssignFile(F, AFile);
-      if TFile.Exists(AFile) then
-        Append(F)
-      else
-        ReWrite(F);
+          ALog := ADate + ': ' + ALog;
 
-      WriteLn(F, ADate + ': ' + ALog);
+          AssignFile(F, AFile);
+          if TFile.Exists(AFile) then
+            Append(F)
+          else
+            ReWrite(F);
 
-      // Close
-      CloseFile(F);
+          WriteLn(F, ALog);
+
+          // Close
+          CloseFile(F);
+        end;
+
+      // UI logging
+      if EnableLog32 then
+        if (Logging <> nil) and Logging.Visible then
+          Logging.Log.Lines.Add(ALog);
     end;
 end;
 
@@ -4328,7 +4644,7 @@ begin
       if SmallSize > 2 then
         begin
           ColonLeft := QListSpacing;
-          ColonAlloc := (AWidth - ColonLeft - QListHeight)
+          ColonAlloc := (AWidth - ColonLeft) div 2
         end
       else
         begin
@@ -4581,7 +4897,6 @@ begin
 
   // Thread
   CloudDownloadLocalThread := TThread.CreateAnonymousThread(procedure
-
   var
     I: Integer;
   begin
@@ -4666,7 +4981,7 @@ begin
               ServerCloudDownload := false;
             end);
         end;
-    end);
+  end);
 
   with CloudDownloadLocalThread do
       begin
@@ -4868,27 +5183,20 @@ end;
 procedure TUIForm.PopupGeneralDelete(Sender: TObject);
 begin
   if (EditorThread < THREAD_EDITOR_MAX) and
-    (OpenDialog('Are you sure?', 'Do you want to delete this playlist?', ctQuestion, [mbYes, mbNo]) = mrYes) then
+    (OpenDialog('Are you sure?', Format('Are you really sure you want to delete "%S"?', [PopupDrawItem.Title]), ctQuestion, [mbYes, mbNo]) = mrYes) then
     with TThread.CreateAnonymousThread(procedure
       begin
         // Increase
         Inc(EditorThread);
 
         // Status
-        ThreadSyncStatus('Deleting Playlist...');
+        ThreadSyncStatus('Deleting Item...');
 
         // Delete
         try
-          PopupDrawItem.DeleteFromLibrary;
+          PopupDrawItem.TrashFromLibrary;
 
-          // Redraw
-          TThread.Synchronize(nil,
-            procedure
-              begin
-                LoadItemInfo;
-                Sort;
-                RedrawPaintBox;
-              end);
+          // Update by BackendUpdate
         except
           // Offline
           TThread.Synchronize(nil,
@@ -4938,6 +5246,20 @@ begin
     Width := Width + height;
 end;
 
+procedure TUIForm.Popup_AlbumPopup(Sender: TObject);
+begin
+  // Trash
+  Restore2.Visible := PopupDrawItem.Trashed;
+  Trash2.Visible := not Restore2.Visible;
+end;
+
+procedure TUIForm.Popup_ArtistPopup(Sender: TObject);
+begin
+  // Trash
+  Restore3.Visible := PopupDrawItem.Trashed;
+  Trash3.Visible := not Restore3.Visible;
+end;
+
 procedure TUIForm.Popup_PlaylistPopup(Sender: TObject);
 begin
   // Disable delete for system playlists
@@ -4952,6 +5274,10 @@ procedure TUIForm.Popup_TrackPopup(Sender: TObject);
 begin
   // Check not started from play icon
   PlayQueue1.Visible := Popup_Track.Tag = 0;
+
+  // Trash
+  Restore1.Visible := PopupDrawItem.Trashed;
+  Trash1.Visible := not Restore1.Visible;
 end;
 
 procedure TUIForm.Popup_TrayPopup(Sender: TObject);
@@ -5904,8 +6230,11 @@ end;
 
 procedure TUIForm.ReselectPage;
 var
-  ViewC, ViewSC, MultiPage: boolean;
+  ViewC, // Main View compatibile
+  ViewSC, // Sub-View compatibile
+  MultiPage: boolean; // Multiple item types
   I: Integer;
+  MainPanel: TPanel;
 begin
   // View compatability
   ViewC := InArray( AnsiLowerCase(LocationROOT), ViewCompatibile) <> -1;
@@ -5948,6 +6277,7 @@ begin
       // Reset toolbars
       Controlbar_Playlist.Parent := ControlBarContainer;
       Controlbar_Downloads.Parent := ControlBarContainer;
+      Controlbar_Trash.Parent := ControlBarContainer;
 
       // Toolbars
       if bareroot = 'playlists' then
@@ -5955,23 +6285,40 @@ begin
 
       if bareroot = 'downloads' then
         Controlbar_Downloads.Parent := GeneralDraw;
+
+      if bareroot = 'trash' then
+        Controlbar_Trash.Parent := GeneralDraw;
     end
   else
     begin
+      MainPanel := nil;
+
+      // Find
       for I := 0 to PagesHolder.ControlCount - 1 do
         if PagesHolder.Controls[I] is TPanel then
           with TPanel(PagesHolder.Controls[I]) do
-            begin
-              if Pos(AnsiLowerCase(LocationROOT),AnsiLowerCase(Caption)) <> 0 then
-                begin
-                  Show;
-                  Break;
-                end;
-            end;
+            if Pos(AnsiLowerCase(LocationROOT),AnsiLowerCase(Caption)) <> 0 then
+              begin
+                MainPanel := TPanel(PagesHolder.Controls[I]);
+                Break;
+              end;
+
+      if MainPanel <> nil then
+        begin
+          // Show
+          MainPanel.Show;
+
+          // Reset toolbars
+          Controlbar_ArtistManage.Parent := ControlBarContainer;
+
+          // Toolbars
+          if bareroot = 'viewartist' then
+            Controlbar_ArtistManage.Parent := MainPanel;
+        end;
     end;
 
   // Reorder UI
-    SortModeToggle.Visible := EnabledSorts <> [];
+  SortModeToggle.Visible := EnabledSorts <> [];
   if SortModeToggle.Visible then
     SortModeToggle.Left := ViewModeToggle.Left - SortModeToggle.Left;
 
@@ -5989,9 +6336,93 @@ begin
   // Sort Reset
   Sort;
 
+  AddToLog('ReselectPage.UIPageTweak');
+  // UI Tweaks
+  TweakPageUI;
+
   AddToLog('ReselectPage.Quick_Search.Text.Set');
   // Search Reset
   Quick_Search.Text := '';
+end;
+
+procedure TUIForm.SaveAs1Click(Sender: TObject);
+var
+  Index: integer;
+  LocalName,
+  URL: string;
+  HTTP: TIdHTTP;
+  FileStream: TFileStream;
+begin
+  // URL
+  Index := GetTrack(PopupDrawItem.ItemID);
+  if Index = -1 then
+    Exit;
+  URL := STREAMING_ENDPOINT + Tracks[Index].StreamLocations;
+
+  // Dialog
+  SaveMusicDialog.FileName := PopupDrawItem.Title;
+
+  if not SaveMusicDialog.Execute then
+    Exit;
+
+  // Save
+  with TThread.CreateAnonymousThread(procedure
+  var
+    I: Integer;
+  begin
+      // Timeout for last thread
+      for I := 1 to 10 do
+        begin
+          if not LastThreadFileLocked then
+            Break;
+          Sleep(500);
+        end;
+
+      // Status
+      ThreadSyncStatus('Downloading song...');
+
+      // Prepare
+      LocalName := SaveMusicDialog.FileName;
+
+      // Download
+      try
+        // Download - IDHTTP
+        HTTP := TIdHTTP.Create(nil);
+
+        // Events
+        HTTP.OnWorkBegin := Self.DownloadStatusWorkBeginDownload;
+        HTTP.OnWork := Self.DownloadStatusWorkDownload;
+        LastThreadFileLocked := true;
+
+        // File
+        FileStream := TFileStream.Create(LocalName, fmCreate);
+        try
+          HTTP.Get(URL, FileStream);
+        finally
+          HTTP.Free;
+          FileStream.Free;
+
+          // Not locked
+          LastThreadFileLocked := false;
+        end;
+      except
+        // Offline
+        TThread.Synchronize(nil,
+          procedure
+            begin
+              OfflineDialog('The song could not be downloaded');
+            end);
+      end;
+
+      // Finish
+      EdidThreadFinalised;
+  end) do
+    begin
+      Priority := tpLower;
+
+      FreeOnTerminate := true;
+      Start;
+    end;
 end;
 
 procedure TUIForm.ScrollBox1MouseWheel(Sender: TObject; Shift: TShiftState;
@@ -6046,6 +6477,8 @@ begin
     Flags := Flags + [TSearchFlag.CaseSensitive];
   if CCheckBox1.Checked then
     Flags := Flags + [TSearchFlag.SearchInfo];
+  if CCheckBox4.Checked then
+    Flags := Flags + [TSearchFlag.SearchTrashed];
     
   // Search
   FiltrateSearch(SearchBox1.Text, Flags);
@@ -6329,6 +6762,54 @@ begin
   VisualisationUICheck;
 end;
 
+procedure TUIForm.SetPathValue(Name, Data: string);
+label Navigate;
+var
+  I, P: integer;
+  V: ^string;
+  APath: string;
+begin
+  // Replace mode
+  for I := 0 to High(LocationPath) do
+    begin
+      V := @LocationPath[I];
+
+      P := V^.IndexOf('=');
+      if P <> 0 then
+        if Copy(V^, 1, P) = Name then
+          begin
+            LocationPath[I] := Format('%S=%S', [Name, Data]);
+            goto Navigate;
+          end;
+    end;
+
+  // Insert mode
+  for I := 0 to High(LocationPath) do
+    if LocationPath[I] = '' then
+      begin
+        LocationPath[I] := Format('%S=%S', [Name, Data]);
+        goto Navigate;
+      end;
+
+  // Set page
+  Navigate:
+  APath := '';
+  for I := 0 to High(LocationPath) do
+    begin
+      V := @LocationPath[I];
+
+      if V^ = '' then
+        Continue;
+
+      if I > 0 then
+        APath := APath + ':';
+
+      APath := APath + V^;
+    end;
+
+  NavigatePath(APath);
+end;
+
 procedure TUIForm.SetScroll(Index: integer);
 begin
   RecalibrateScroll;
@@ -6527,11 +7008,16 @@ begin
   Sort_Rating.Visible := TSortType.Rating in EnabledSorts;
 
   // Reorder
+  LockWindowUpdate(TopbarContainer.Handle);
   Sort_Default.Left := 0;
   Sort_AlphaBetic.Left := 0;
   Sort_Date.Left := 0;      
   Sort_Rating.Left := 0;
 
+  SortModeToggle.Width := 1;
+
+  LockWindowUpdate(0);
+  
   // Size
   SetLength(SortingList, GetItemCount );
 
@@ -6606,15 +7092,13 @@ begin
 end;
 
 procedure TUIForm.StatusChanged;
-var
-  I: Integer;
 begin
   AddToLog('Status changed! Form.StatusChanged');
 
   // Button Enable
-  Button_Prev.Enabled := Player.IsFileOpen;
+  //Button_Prev.Enabled := Player.IsFileOpen;
   Button_Play.Enabled := Player.IsFileOpen;
-  Button_Next.Enabled := Player.IsFileOpen;
+  //Button_Next.Enabled := Player.IsFileOpen;
 
   // Tick
   TickUpdate;
@@ -6640,10 +7124,6 @@ begin
     Button_Shuffle.BSegoeIcon := #$E8B1
   else
     Button_Shuffle.BSegoeIcon := #$E150;
-
-  // Selected
-  for I := 0 to High(DrawItems) do
-    DrawItems[I].Active := (DrawItems[I].ItemID = PlayID) and (DrawItems[I].Source = TDataSource.Tracks);
 
   // Repaint UI
   RedrawPaintBox;
@@ -6777,6 +7257,18 @@ begin
     end;
 end;
 
+procedure TUIForm.SystemMenuOpen(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+  {if Button = mbRight then
+    begin
+      // System Menu
+      Inc(X, ClientOrigin.X);
+      Inc(Y, ClientOrigin.Y);
+      TrackPopupMenu(GetSystemMenu(Handle, true), 0, X, Y, 0, Handle, nil);
+    end;   }
+end;
+
 procedure TUIForm.VisualisationRendererTimer(Sender: TObject);
 begin
   RenderVisualisations;
@@ -6790,7 +7282,7 @@ begin
   VisualShow := EnableVisualisations and (Player.PlayStatus in [TPlayStatus.psPlaying, TPlayStatus.psStalled]);
 
   // Lock form
-  LockWindowUpdate(Handle);
+  LockWindowUpdate(Song_Player.Handle);
 
   // UI
   VisualisationRenderer.Enabled := VisualShow;
@@ -6942,6 +7434,22 @@ begin
     end;
 end;
 
+procedure TUIForm.TweakPageUI;
+begin
+  (* Individual page general tweaks *)
+
+  // Artist Page
+  if bareroot = 'viewartist' then
+    begin
+      // Reset
+      CButton37.FlatButton := GetPathValue('viewmode') = 'albums';
+      CButton36.FlatButton := not CButton37.FlatButton;
+
+      // Fix shuffle
+      Button_ShuffleTracks.Hide;
+    end;
+end;
+
 procedure TUIForm.UpdateCheckTimer(Sender: TObject);
 begin
   UpdateCheck.Enabled := false;
@@ -7042,14 +7550,6 @@ begin
 
   // Start Download Thread
   RedownloadItems;
-end;
-
-procedure TUIForm.UpdateItemInformation;
-var
-  I: integer;
-begin
-  for I := 0 to High(DrawItems) do
-    DrawItems[I].ReloadSource;
 end;
 
 procedure TUIForm.UpdateMiniPlayer;
@@ -7379,14 +7879,19 @@ end;
 
 { TDrawableItem }
 
-procedure TDrawableItem.DeleteFromLibrary;
+procedure TDrawableItem.TrashFromLibrary;
 begin
   case Source of
-    TDataSource.Tracks: (* none *);
-    TDataSource.Albums: (* none *);
-    TDataSource.Artists: (* none *);
+    TDataSource.Tracks: DeleteTrack(ItemID);
+    TDataSource.Albums: DeleteAlbum(ItemID);
+    TDataSource.Artists: DeleteArtist(ItemID);
     TDataSource.Playlists: DeletePlayList(ItemID);
   end;
+end;
+
+function TDrawableItem.Active: boolean;
+begin
+  Result := (Source = TDataSource.Tracks) and (ItemID = PlayID);
 end;
 
 function TDrawableItem.Downloaded: boolean;
@@ -7435,6 +7940,9 @@ begin
 
           for I := 0 to High(SortingList) do
             begin
+              if DrawItems[SortingList[I]].Trashed then
+                Continue;
+              
               if DrawItems[SortingList[I]].Source <> TDataSource.Tracks then
                 Continue;
 
@@ -7538,7 +8046,7 @@ end;
 
 function TDrawableItem.Hidden: boolean;
 begin
-  Result := HiddenItem or HiddenSearch or (Trashed and not ShowTrashed);
+  Result := HiddenItem or HiddenSearch{or (Trashed and not ShowTrashed)};
 end;
 
 function TDrawableItem.Invalid: boolean;
@@ -7573,8 +8081,8 @@ begin
 
   HiddenItem := false;
   HiddenSearch := false;
-  Active := false;
   Loaded := true;
+  Trashed := false;
 
   Source := From;
 
@@ -7750,6 +8258,16 @@ end;
 procedure TDrawableItem.ReloadSource;
 begin
   LoadSourceID(ItemID, Source);
+end;
+
+procedure TDrawableItem.RestoreFromLibrary;
+begin
+  case Source of
+    TDataSource.Tracks: RestoreTrack(ItemID);
+    TDataSource.Albums: RestoreAlbum(ItemID);
+    TDataSource.Artists: RestoreArtist(ItemID);
+    TDataSource.Playlists: (* nothing *);
+  end;
 end;
 
 procedure TDrawableItem.StartPictureLoad;

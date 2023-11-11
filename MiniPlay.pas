@@ -52,6 +52,7 @@ type
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure FormShow(Sender: TObject);
     procedure FormKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure Visualisation_MiniPaint(Sender: TObject);
   protected
     procedure CreateParams(var Params: TCreateParams); override;
   private
@@ -213,7 +214,7 @@ end;
 procedure TMiniPlayer.CreateParams(var Params: TCreateParams);
 begin
   inherited;
-  Params.ExStyle := Params.ExStyle or WS_EX_APPWINDOW;
+  Params.ExStyle := Params.ExStyle {or WS_EX_APPWINDOW};
 end;
 
 procedure TMiniPlayer.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
@@ -330,6 +331,21 @@ begin
   if SpectrumView.Visible then
     Inc(HeightNormal, SpectrumView.Height);
   HeightExtended := HeightNormal + AdditionalOptions.Height;
+end;
+
+procedure TMiniPlayer.Visualisation_MiniPaint(Sender: TObject);
+var
+  ARect: TRect;
+  S: string;
+begin
+  with Visualisation_Mini.Canvas do
+    begin
+      ARect := Visualisation_Mini.ClientRect;
+      Brush.Style := bsClear;
+      S := 'No visualisations';
+
+      TextRect(ARect, S, [tfSingleLine, tfCenter, tfVerticalCenter]);
+    end;
 end;
 
 end.

@@ -22,7 +22,8 @@ uses
   iBroadcastUtils in 'iBroadcastUtils.pas',
   RatingPopup in 'RatingPopup.pas' {RatingPopupForm},
   CodeSources in 'CodeSources.pas' {SourceUI},
-  SpectrumVis3D in 'SpectrumVis3D.pas';
+  SpectrumVis3D in 'SpectrumVis3D.pas',
+  LoggingForm in 'LoggingForm.pas' {Logging};
 
 {$R *.res}
 
@@ -68,6 +69,9 @@ begin
 
       if Param = '-exportpost' then
         ExportPost := true;
+
+      if Param = '-log32' then
+        EnableLog32 := true;
     end;
 
   AddToLog('======================');
@@ -78,8 +82,17 @@ begin
   Application.CreateForm(TUIForm, UIForm);
   Application.CreateForm(TMiniPlayer, MiniPlayer);
   Application.CreateForm(TInfoBox, InfoBox);
+
+  // Log
+  if EnableLog32 then
+    begin
+      Application.CreateForm(TLogging, Logging);
+      Logging.Show;
+      AddToLog('Created log form');
+    end;
+
   // Debug
-  AddToLog('Checking Debug Mode');
+  AddToLog('Checking debug mode');
   if AllowDebug then
     begin
       // Debug form

@@ -755,6 +755,8 @@ object MiniPlayer: TMiniPlayer
       Align = alClient
       Color = 4919113
       ParentColor = False
+      OnMouseDown = MoveMoveDown
+      OnPaint = Visualisation_MiniPaint
       ExplicitLeft = 27
       ExplicitTop = 23
       ExplicitWidth = 105

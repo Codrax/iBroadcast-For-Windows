@@ -289,6 +289,16 @@ interface
   function TouchupPlaylist(ID: integer): boolean;
   function UpdatePlayList(ID: integer; Name, Description: string; ReloadLibrary: boolean): boolean;
   function DeletePlayList(ID: integer): boolean;
+  function DeleteTracks(Tracks: TArray<integer>): boolean;
+  function DeleteTrack(ID: integer): boolean;
+  function DeleteAlbum(ID: integer): boolean;
+  function DeleteArtist(ID: integer): boolean;
+  function RestoreTracks(Tracks: TArray<integer>): boolean;
+  function RestoreTrack(ID: integer): boolean;
+  function RestoreAlbum(ID: integer): boolean;
+  function RestoreArtist(ID: integer): boolean;
+  function EmptyTrash(Tracks: TArray<integer>): boolean;
+  function CompleteEmptyTrash: boolean;
 
   // History
   function PushHistory(Items: TArray<THistoryItem>): boolean;
@@ -392,6 +402,22 @@ const
     + '"name": "%S",'
     + 'supported_types: false,'
     + '"description": "%S"'
+    + '}';
+
+  // Track
+  REQUEST_TRACK_DELETE = REQUEST_HEADER + ','
+    + '"mode": "trash",'
+    + '"tracks": [%S]'
+    + '}';
+
+  REQUEST_TRACK_RESTORE = REQUEST_HEADER + ','
+    + '"mode": "restore",'
+    + '"tracks": [%S]'
+    + '}';
+
+  REQUEST_TRACK_EMPTYTRASH = REQUEST_HEADER + ','
+    + '"mode": "empty_trash",'
+    + '"tracks": [%S]'
     + '}';
 
   // Rating
@@ -1150,6 +1176,188 @@ begin
   LoadLibraryAdvanced([TLoad.PlayList]);
 end;
 
+function DeleteTracks(Tracks: TArray<integer>): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  ATracks: string;
+  ATotal: integer;
+  I: integer;
+
+  JSONValue: TJSONValue;
+begin
+  // Get Tracks
+  ATracks := '';
+  ATotal := High(Tracks);
+  for I := 0 to ATotal do
+    ATracks := ATracks + Tracks[I].ToString + ',';
+
+  ATracks := Copy(ATracks, 1, Length(ATracks)-1);
+
+  // Prepare request string
+  Request := Format(REQUEST_TRACK_DELETE, [USER_ID, TOKEN, ATracks]); // supports multi-delete
+
+  // Parse response and extract numbers
+  SetWorkStatus('Deleting track');
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.Track, TLoad.Album, TLoad.Artist, TLoad.PlayList]);
+end;
+
+function RestoreTracks(Tracks: TArray<integer>): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  ATracks: string;
+  ATotal: integer;
+  I: integer;
+
+  JSONValue: TJSONValue;
+begin
+  // Get Tracks
+  ATracks := '';
+  ATotal := High(Tracks);
+  for I := 0 to ATotal do
+    ATracks := ATracks + Tracks[I].ToString + ',';
+
+  ATracks := Copy(ATracks, 1, Length(ATracks)-1);
+
+  // Prepare request string
+  Request := Format(REQUEST_TRACK_RESTORE, [USER_ID, TOKEN, ATracks]); // supports multi-delete
+
+  // Parse response and extract numbers
+  SetWorkStatus('Restoring track');
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.Track, TLoad.Album, TLoad.Artist, TLoad.PlayList]);
+end;
+
+function EmptyTrash(Tracks: TArray<integer>): boolean;
+var
+  Request: string;
+  JResult: ResultType;
+
+  ATracks: string;
+  ATotal: integer;
+  I: integer;
+
+  JSONValue: TJSONValue;
+begin
+  // Get Tracks
+  ATracks := '';
+  ATotal := High(Tracks);
+  for I := 0 to ATotal do
+    ATracks := ATracks + Tracks[I].ToString + ',';
+
+  ATracks := Copy(ATracks, 1, Length(ATracks)-1);
+
+  // Prepare request string
+  Request := Format(REQUEST_TRACK_EMPTYTRASH, [USER_ID, TOKEN, ATracks]); // supports multi-delete
+
+  // Parse response and extract numbers
+  SetWorkStatus('Deleting from trash');
+  JSONValue := SendClientRequest(Request);
+  try
+    // Error
+    JResult.AnaliseFrom(JSONVALUE);
+
+    Result := JResult.Success;
+  finally
+    JSONValue.Free;
+  end;
+
+  // Re-load playlists
+  LoadLibraryAdvanced([TLoad.Track, TLoad.Album, TLoad.Artist, TLoad.PlayList]);
+end;
+
+function CompleteEmptyTrash: boolean;
+var
+  ATracks: TArray<integer>;
+  I: integer;
+begin
+  ATracks := [];
+  for I := 0 to High(Tracks) do
+    if Tracks[I].IsInTrash then
+      ATracks.AddValue(Tracks[I].ID);
+
+  // Empty
+  Result := EmptyTrash(ATracks);
+end;
+
+function RestoreTrack(ID: integer): boolean;
+begin
+  Result := RestoreTracks([ID]);
+end;
+
+function RestoreAlbum(ID: integer): boolean;
+var
+  Index: integer;
+begin
+  Result := false;
+  Index := GetAlbum(ID);
+
+  if Index <> -1 then
+    Result := RestoreTracks(Albums[Index].TracksID);
+end;
+
+function RestoreArtist(ID: integer): boolean;
+var
+  Index: integer;
+begin
+  Result := false;
+  Index := GetArtist(ID);
+
+  if Index <> -1 then
+    Result := RestoreTracks(Artists[Index].TracksID);
+end;
+
+function DeleteTrack(ID: integer): boolean;
+begin
+  Result := DeleteTracks([ID]);
+end;
+
+function DeleteAlbum(ID: integer): boolean;
+var
+  Index: integer;
+begin
+  Result := false;
+  Index := GetAlbum(ID);
+
+  if Index <> -1 then
+    Result := DeleteTracks(Albums[Index].TracksID);
+end;
+
+function DeleteArtist(ID: integer): boolean;
+var
+  Index: integer;
+begin
+  Result := false;
+  Index := GetArtist(ID);
+
+  if Index <> -1 then
+    Result := DeleteTracks(Artists[Index].TracksID);
+end;
+
 function PushHistory(Items: TArray<THistoryItem>): boolean;
 var
   Request: string;
@@ -1407,6 +1615,10 @@ begin
             SetLength( Albums, Index + 1 );
 
             Albums[Index].LoadFrom( JSONPair );
+
+            // Invalid entry, delete from index
+            if Albums[Index].TracksID.Count = 0 then
+              SetLength( Albums, Index );
           end;
 
         // Updated
@@ -1438,6 +1650,10 @@ begin
             SetLength( Artists, Index + 1 );
 
             Artists[Index].LoadFrom( JSONPair );
+
+            // Invalid entry, delete from index
+            if Artists[Index].TracksID.Count = 0 then
+              SetLength( Artists, Index );
           end;
 
         // Updated
