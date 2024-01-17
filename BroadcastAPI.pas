@@ -7,7 +7,7 @@ interface
     // Required Units
     Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
     Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL,
-    IdHTTP, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
+    IdHTTP, IdGlobal, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
     Cod.VarHelpers, Cod.Dialogs, Cod.SysUtils, Cod.Files, Cod.ArrayHelpers;
 
   type
@@ -507,10 +507,10 @@ uses
 
 function SendClientRequest(RequestJSON, Endpoint: string): TJSONValue;
 var
-  Response, AFolder, APath: string;
+  AFolder, APath: string;
   HTTP: TIdHTTP;
   SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
-  RequestStream: TStringStream;
+  ResponseStream, RequestStream: TStringStream;
   I: integer;
 begin
   // Endpoint
@@ -521,16 +521,17 @@ begin
   HTTP := TIdHTTP.Create(nil);
   SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
   RequestStream := TStringStream.Create(RequestJSON, TEncoding.UTF8);
+  ResponseStream := TStringStream.Create(RequestJSON, TEncoding.UTF8);
   try
     // Set SSL/TLS options
     SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
     HTTP.IOHandler := SSLIOHandler;
 
     // Set headers
-    HTTP.Request.ContentType := 'application/json';
+    HTTP.Request.ContentType := 'application/json; charset=utf-8';
 
     // Send request and receive response
-    Response := HTTP.Post(Endpoint, RequestStream);
+    HTTP.Post(Endpoint, RequestStream, ResponseStream);
 
     // POST Exporter
     if ExportPost then
@@ -545,15 +546,16 @@ begin
           Inc(I);
         until not TFile.Exists(APath);
 
-        TFile.WriteAllText(APath, Response);
+        TFile.WriteAllText(APath, ResponseStream.DataString);
       end;
 
     // Parse response and extract numbers
-    Result := TJSONObject.ParseJSONValue(Response);
+    Result := TJSONObject.ParseJSONValue(ResponseStream.DataString);
   finally
     // Free
     HTTP.Free;
     RequestStream.Free;
+    ResponseStream.Free;
   end;
 end;
 

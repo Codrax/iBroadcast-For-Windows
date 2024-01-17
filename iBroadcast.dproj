@@ -95,9 +95,9 @@
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <Icon_MainIcon>iBroadcast_Icon.ico</Icon_MainIcon>
         <AppDPIAwarenessMode>none</AppDPIAwarenessMode>
-        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.8.3.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Codrut&apos;s iBroadcast for Windows;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.8.4.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Codrut&apos;s iBroadcast for Windows;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_MinorVer>8</VerInfo_MinorVer>
-        <VerInfo_Release>3</VerInfo_Release>
+        <VerInfo_Release>4</VerInfo_Release>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1)'!=''">
         <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
@@ -122,9 +122,9 @@
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Icon_MainIcon>iBroadcast_Icon.ico</Icon_MainIcon>
         <VerInfo_MinorVer>8</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.8.3.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Codrut&apos;s iBroadcast for Windows;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <Debugger_RunParams>-debug</Debugger_RunParams>
-        <VerInfo_Release>3</VerInfo_Release>
+        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.8.4.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Codrut&apos;s iBroadcast for Windows;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <Debugger_RunParams>-exportpost</Debugger_RunParams>
+        <VerInfo_Release>4</VerInfo_Release>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -145,8 +145,8 @@
         <Icon_MainIcon>iBroadcast_Icon.ico</Icon_MainIcon>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <VerInfo_MinorVer>8</VerInfo_MinorVer>
-        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.8.3.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Codrut&apos;s iBroadcast for Windows;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
-        <VerInfo_Release>3</VerInfo_Release>
+        <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.8.4.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Codrut&apos;s iBroadcast for Windows;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Release>4</VerInfo_Release>
     </PropertyGroup>
     <ItemGroup>
         <DelphiCompile Include="$(MainSource)">
@@ -156,47 +156,46 @@
             <Form>UIForm</Form>
         </DCCReference>
         <DCCReference Include="BroadcastAPI.pas"/>
-        <DCCReference Include="DebugForm.pas">
+        <DCCReference Include="Utils\SpectrumVis3D.pas"/>
+        <DCCReference Include="Utils\iBroadcastUtils.pas"/>
+        <DCCReference Include="Forms\DebugForm.pas">
             <Form>DebugUI</Form>
         </DCCReference>
-        <DCCReference Include="VolumePopup.pas">
+        <DCCReference Include="Forms\VolumePopup.pas">
             <Form>VolumePop</Form>
         </DCCReference>
-        <DCCReference Include="Performance.pas">
+        <DCCReference Include="Forms\Performance.pas">
             <Form>PerfForm</Form>
         </DCCReference>
-        <DCCReference Include="MiniPlay.pas">
+        <DCCReference Include="Forms\MiniPlay.pas">
             <Form>MiniPlayer</Form>
         </DCCReference>
-        <DCCReference Include="InfoForm.pas">
+        <DCCReference Include="Forms\InfoForm.pas">
             <Form>InfoBox</Form>
         </DCCReference>
-        <DCCReference Include="HelpForm.pas">
+        <DCCReference Include="Forms\HelpForm.pas">
             <Form>HelpUI</Form>
         </DCCReference>
-        <DCCReference Include="NewVersionForm.pas">
+        <DCCReference Include="Forms\NewVersionForm.pas">
             <Form>NewVersion</Form>
         </DCCReference>
-        <DCCReference Include="CreatePlaylistForm.pas">
+        <DCCReference Include="Forms\CreatePlaylistForm.pas">
             <Form>CreatePlaylist</Form>
         </DCCReference>
-        <DCCReference Include="Offline.pas">
+        <DCCReference Include="Forms\Offline.pas">
             <Form>OfflineForm</Form>
         </DCCReference>
-        <DCCReference Include="PickerDialogForm.pas">
+        <DCCReference Include="Forms\PickerDialogForm.pas">
             <Form>PickerDialog</Form>
         </DCCReference>
-        <DCCReference Include="iBroadcastUtils.pas"/>
-        <DCCReference Include="RatingPopup.pas">
+        <DCCReference Include="Forms\RatingPopup.pas">
             <Form>RatingPopupForm</Form>
         </DCCReference>
-        <DCCReference Include="CodeSources.pas">
+        <DCCReference Include="Forms\CodeSources.pas">
             <Form>SourceUI</Form>
         </DCCReference>
-        <DCCReference Include="SpectrumVis3D.pas"/>
-        <DCCReference Include="LoggingForm.pas">
+        <DCCReference Include="Forms\LoggingForm.pas">
             <Form>Logging</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <RcItem Include="Artwork\Box.jpg">
             <ResourceType>RCDATA</ResourceType>

@@ -9,21 +9,23 @@ uses
   Cod.Dialogs,
   MainUI in 'MainUI.pas' {UIForm},
   BroadcastAPI in 'BroadcastAPI.pas',
-  DebugForm in 'DebugForm.pas' {DebugUI},
-  VolumePopup in 'VolumePopup.pas' {VolumePop},
-  Performance in 'Performance.pas' {PerfForm},
-  MiniPlay in 'MiniPlay.pas' {MiniPlayer},
-  InfoForm in 'InfoForm.pas' {InfoBox},
-  HelpForm in 'HelpForm.pas' {HelpUI},
-  NewVersionForm in 'NewVersionForm.pas' {NewVersion},
-  CreatePlaylistForm in 'CreatePlaylistForm.pas' {CreatePlaylist},
-  Offline in 'Offline.pas' {OfflineForm},
-  PickerDialogForm in 'PickerDialogForm.pas' {PickerDialog},
-  iBroadcastUtils in 'iBroadcastUtils.pas',
-  RatingPopup in 'RatingPopup.pas' {RatingPopupForm},
-  CodeSources in 'CodeSources.pas' {SourceUI},
-  SpectrumVis3D in 'SpectrumVis3D.pas',
-  LoggingForm in 'LoggingForm.pas' {Logging};
+  
+  SpectrumVis3D in 'Utils\SpectrumVis3D.pas',
+  iBroadcastUtils in 'Utils\iBroadcastUtils.pas',
+  
+  DebugForm in 'Forms\DebugForm.pas' {DebugUI},
+  VolumePopup in 'Forms\VolumePopup.pas' {VolumePop},
+  Performance in 'Forms\Performance.pas' {PerfForm},
+  MiniPlay in 'Forms\MiniPlay.pas' {MiniPlayer},
+  InfoForm in 'Forms\InfoForm.pas' {InfoBox},
+  HelpForm in 'Forms\HelpForm.pas' {HelpUI},
+  NewVersionForm in 'Forms\NewVersionForm.pas' {NewVersion},
+  CreatePlaylistForm in 'Forms\CreatePlaylistForm.pas' {CreatePlaylist},
+  Offline in 'Forms\Offline.pas' {OfflineForm},
+  PickerDialogForm in 'Forms\PickerDialogForm.pas' {PickerDialog},
+  RatingPopup in 'Forms\RatingPopup.pas' {RatingPopupForm},
+  CodeSources in 'Forms\CodeSources.pas' {SourceUI},
+  LoggingForm in 'Forms\LoggingForm.pas' {Logging};
 
 {$R *.res}
 

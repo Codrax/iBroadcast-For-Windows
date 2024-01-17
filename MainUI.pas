@@ -804,7 +804,7 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 3);
+  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 4);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://api.codrutsoft.com/';
@@ -960,6 +960,7 @@ var
   // SYSTEM
   THREAD_MAX: cardinal = 10;
   THREAD_EDITOR_MAX: cardinal = 1;
+  LastUpdateCheck: TDate;
 
   // Logging
   EnableLogging: boolean = false;
@@ -3376,6 +3377,13 @@ var
 begin
   ViewStyle := TViewStyle.Cover;
 
+  // No drawing
+  if PauseDrawing then
+    begin
+      TPaintBox(Sender).Canvas.Draw(0, 0, LastDrawBuffer);
+      Exit;
+    end;
+
   // Common
   AWidth := TPaintBox(Sender).Width;
 
@@ -5669,6 +5677,8 @@ const
   // Catrgories
   CAT_GENERAL = 'GeneralSettings';
   CAT_MINIPLAYER = 'MiniPlayer';
+  CAT_VIEWS = 'Views';
+  CAT_INFO = 'Information';
 var
   OPT: TIniFile;
   FileName: string;
@@ -5684,28 +5694,35 @@ begin
         // Views
         for I := 0 to High(ViewCompatibile) do
           if OPT.ValueExists('Views', ViewCompatibile[I]) then
-            AddView(ViewCompatibile[I], TViewStyle(OPT.ReadInteger('Views', ViewCompatibile[I], 0)) );
+            AddView(ViewCompatibile[I], TViewStyle(OPT.ReadInteger(CAT_VIEWS, ViewCompatibile[I], 0)) );
 
-          Setting_Graph.Checked := ReadBool(CAT_GENERAL, 'Enable Graph', Setting_Graph.Checked);
-          SplitView1.Opened := ReadBool(CAT_GENERAL, 'Menu Opened', SplitView1.Opened);
-          Settings_CheckUpdate.Checked := ReadBool(CAT_GENERAL, 'Audo Update Check', Settings_CheckUpdate.Checked);
-          ArtworkID := ReadInteger(CAT_GENERAL, 'Artwork Id', ArtworkID);
-          ArtworkStore := ReadBool(CAT_GENERAL, 'Artowork Store', ArtworkStore);
-          Setting_ArtworkStore.Checked := ArtworkStore;
-          THREAD_MAX := ReadInteger(CAT_GENERAL, 'Thread Count', THREAD_MAX);
-          Settings_Threads.Position := THREAD_MAX;
-          Setting_DataSaver.Checked := ReadBool(CAT_GENERAL, 'Data Saver', Setting_DataSaver.Checked);
-          Setting_PlayerOnTop.Checked := ReadBool(CAT_GENERAL, 'Mini player on top', Setting_PlayerOnTop.Checked);
-          Setting_SongStreaming.Checked := ReadBool(CAT_GENERAL, 'Song Streaming', Setting_SongStreaming.Checked);
-          Settings_DisableAnimations.Checked := ReadBool(CAT_GENERAL, 'Disable Animations', Settings_DisableAnimations.Checked);
-          Setting_StartWindows.Checked := ReadBool(CAT_GENERAL, 'Start with windows', Setting_StartWindows.Checked);
-          Setting_TrayClose.Checked := ReadBool(CAT_GENERAL, 'Minimise to tray', Setting_TrayClose.Checked);
-          Setting_QueueSaver.Checked := ReadBool(CAT_GENERAL, 'Save Queue', Setting_QueueSaver.Checked);
-          Setting_Rating.Checked := ReadBool(CAT_GENERAL, 'Prefer rating', Setting_Rating.Checked);
-          ValueRatingMode := Setting_Rating.Checked;
-          SetEnableVisualisations( ReadBool(CAT_GENERAL, 'Visualisations', EnableVisualisations), true);
+        // General
+        Setting_Graph.Checked := ReadBool(CAT_GENERAL, 'Enable Graph', Setting_Graph.Checked);
+        SplitView1.Opened := ReadBool(CAT_GENERAL, 'Menu Opened', SplitView1.Opened);
+        Settings_CheckUpdate.Checked := ReadBool(CAT_GENERAL, 'Audo Update Check', Settings_CheckUpdate.Checked);
+        ArtworkID := ReadInteger(CAT_GENERAL, 'Artwork Id', ArtworkID);
+        ArtworkStore := ReadBool(CAT_GENERAL, 'Artowork Store', ArtworkStore);
+        Setting_ArtworkStore.Checked := ArtworkStore;
+        THREAD_MAX := ReadInteger(CAT_GENERAL, 'Thread Count', THREAD_MAX);
+        Settings_Threads.Position := THREAD_MAX;
+        Setting_DataSaver.Checked := ReadBool(CAT_GENERAL, 'Data Saver', Setting_DataSaver.Checked);
+        Setting_PlayerOnTop.Checked := ReadBool(CAT_GENERAL, 'Mini player on top', Setting_PlayerOnTop.Checked);
+        Setting_SongStreaming.Checked := ReadBool(CAT_GENERAL, 'Song Streaming', Setting_SongStreaming.Checked);
+        Settings_DisableAnimations.Checked := ReadBool(CAT_GENERAL, 'Disable Animations', Settings_DisableAnimations.Checked);
+        Setting_StartWindows.Checked := ReadBool(CAT_GENERAL, 'Start with windows', Setting_StartWindows.Checked);
+        Setting_TrayClose.Checked := ReadBool(CAT_GENERAL, 'Minimise to tray', Setting_TrayClose.Checked);
+        Setting_QueueSaver.Checked := ReadBool(CAT_GENERAL, 'Save Queue', Setting_QueueSaver.Checked);
+        Setting_Rating.Checked := ReadBool(CAT_GENERAL, 'Prefer rating', Setting_Rating.Checked);
+        ValueRatingMode := Setting_Rating.Checked;
+        SetEnableVisualisations( ReadBool(CAT_GENERAL, 'Visualisations', EnableVisualisations), true);
 
-          TransparentIndex := ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
+        // Mini player
+        TransparentIndex := ReadInteger(CAT_MINIPLAYER, 'Opacity', 0);
+
+        // Info
+        LastUpdateCheck := ReadDate(CAT_INFO, 'Last update check', LastUpdateCheck);
+        if LastUpdateCheck > Now then
+            LastUpdateCheck := Now;
       finally
         OPT.Free;
       end
@@ -5713,8 +5730,9 @@ begin
       try
         // Views
         for I := 0 to High(SavedViews) do
-          OPT.WriteInteger('Views', SavedViews[I].PageRoot, integer(SavedViews[I].View));
+          OPT.WriteInteger(CAT_VIEWS, SavedViews[I].PageRoot, integer(SavedViews[I].View));
 
+        // General
         WriteBool(CAT_GENERAL, 'Enable Graph', Setting_Graph.Checked);
         WriteBool(CAT_GENERAL, 'Menu Opened', SplitView1.Opened);
         WriteBool(CAT_GENERAL, 'Audo Update Check', Settings_CheckUpdate.Checked);
@@ -5731,7 +5749,11 @@ begin
         WriteBool(CAT_GENERAL, 'Prefer rating', Setting_Rating.Checked);
         WriteBool(CAT_GENERAL, 'Visualisations', EnableVisualisations);
 
+        // Mini player
         WriteInteger(CAT_MINIPLAYER, 'Opacity', TransparentIndex);
+
+        // Info
+        WriteDate(CAT_INFO, 'Last update check', LastUpdateCheck);
       finally
         OPT.Free;
       end;
@@ -6504,14 +6526,23 @@ var
 begin
   ViewStyle := TViewStyle.Cover;
 
+  // No drawing
+  if PauseDrawing then
+    begin
+      TPaintBox(Sender).Canvas.Draw(0, 0, LastDrawBuffer);
+      Exit;
+    end;
+
+  // Common
+  AHeight := SearchDraw.Height;
+  AWidth := SearchDraw.Width;
+
+  // Draw
   with SearchDraw.Canvas do
     begin
       // Prepare
       Y := -ScrollPosition.Position;
       X := 0;
-
-      AHeight := SearchDraw.Height;
-      AWidth := SearchDraw.Width;
 
       FitX := (AWidth div (CoverWidth + CoverSpacing));
       if FitX = 0 then
@@ -7087,6 +7118,9 @@ begin
   // Status
   Latest_Version.Caption := 'Latest version on server: Checking...';
 
+  // Status
+  LastUpdateCheck := Now;
+
   // Update
   GetVersionUpdateData;
 end;
@@ -7455,7 +7489,7 @@ begin
   UpdateCheck.Enabled := false;
 
   // Check
-  if Settings_CheckUpdate.Checked then
+  if Settings_CheckUpdate.Checked and (DaysBetween(LastUpdateCheck, Now) > 0)then
     StartCheckForUpdate;
 end;
 
