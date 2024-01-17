@@ -3465,6 +3465,15 @@ begin
       ScrollPosition.PageSize := 0;
       ScrollPosition.Max := MaxScroll - HomeDraw.Height;
     end;
+
+  // Copy draw buffer
+  with TPaintBox(Sender).Canvas do
+    begin
+      LastDrawBuffer.Width := ClipRect.Width;
+      LastDrawBuffer.Height := ClipRect.Height;
+
+      LastDrawBuffer.Canvas.CopyRect(ClipRect, TPaintBox(Sender).Canvas, ClipRect);
+    end;
 end;
 
 procedure TUIForm.PopupGeneralInfo(Sender: TObject);
@@ -6654,6 +6663,15 @@ begin
       // Scroll
       ScrollPosition.PageSize := 0;
       ScrollPosition.Max := Y + ScrollPosition.Position;
+    end;
+
+  // Copy draw buffer
+  with TPaintBox(Sender).Canvas do
+    begin
+      LastDrawBuffer.Width := ClipRect.Width;
+      LastDrawBuffer.Height := ClipRect.Height;
+
+      LastDrawBuffer.Canvas.CopyRect(ClipRect, TPaintBox(Sender).Canvas, ClipRect);
     end;
 end;
 
