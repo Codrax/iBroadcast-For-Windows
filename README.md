@@ -4,6 +4,8 @@
 ### Description
 This is a native Windows client for the [iBroadcast](https://ibroadcast.com) music uploading platform. The application is made with Delphi 11 Comunity Edition. This app connects to your account via a access token.
 
+### Also try [iBroadcast for Linux](https://github.com/Codrax/iBroadcast-For-Linux)!
+
 ## To obtain the login token:
 Go to media.ibroadcast.com -> Account -> Apps, and create a token for Cod's iBroadcast Player.
 
@@ -45,6 +47,7 @@ iBroadcast Apps Page
 | -logtoken  | Output login token in log  |
 | -exportpost  | Output all recieved POST requests to desktop  |
 | -debug  | Enable application debugging features  |
+| -log32  | Enable visual logger  |
 
 ## Screenshots
 
