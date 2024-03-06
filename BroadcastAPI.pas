@@ -6,7 +6,7 @@ interface
   uses
     // Required Units
     Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
-    Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL,
+    Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL, IdURI,
     IdHTTP, IdGlobal, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
     Cod.VarHelpers, Cod.Dialogs, Cod.SysUtils, Cod.Files, Cod.ArrayHelpers;
 
@@ -2046,8 +2046,7 @@ function TTrackItem.GetStreamingURL: string;
 begin
   Result := STREAMING_ENDPOINT+StreamLocations
     +Format('?Signature=%S&file_id=%U&user_id=%U&platform=%S&version=%S',
-    [TOKEN, ID, USER_ID, CLIENT_NAME, MainUI.Version.ToString])
-    ;
+    [TOKEN, ID, USER_ID, CLIENT_NAME, MainUI.Version.ToString]);
   (*
     Signature - user token - string
     file_id - song ID - integer
@@ -2055,6 +2054,9 @@ begin
     platform - app name - string
     version - this app version - string
   *)
+
+  // Encode result
+  Result := TIdUrI.URLEncode(Result);
 end;
 
 procedure TTrackItem.LoadFrom(JSONPair: TJSONPair);

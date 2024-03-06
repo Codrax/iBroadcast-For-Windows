@@ -804,7 +804,7 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 5);
+  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 6);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://api.codrutsoft.com/';
@@ -6437,11 +6437,12 @@ begin
           LastThreadFileLocked := false;
         end;
       except
+        on E: Exception do
         // Offline
         TThread.Synchronize(nil,
           procedure
             begin
-              OfflineDialog('The song could not be downloaded');
+              OfflineDialog('The song could not be downloaded. Error:'#13+E.Message);
             end);
       end;
 
