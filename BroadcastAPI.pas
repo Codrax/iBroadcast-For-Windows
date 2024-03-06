@@ -114,6 +114,9 @@ interface
       CachedImageLarge: TJpegImage;
       Status: TWorkItems;
 
+      (* Utils *)
+      function GetStreamingURL: string;
+
       (* Artwork *)
       function ArtworkLoaded(Large: boolean = false): boolean;
       function GetArtwork(Large: boolean = false): TJPEGImage;
@@ -2037,6 +2040,21 @@ begin
     end;
 
   Status := Status - [TWorkItem.DownloadingImage];
+end;
+
+function TTrackItem.GetStreamingURL: string;
+begin
+  Result := STREAMING_ENDPOINT+StreamLocations
+    +Format('?Signature=%S&file_id=%U&user_id=%U&platform=%S&version=%S',
+    [TOKEN, ID, USER_ID, CLIENT_NAME, MainUI.Version.ToString])
+    ;
+  (*
+    Signature - user token - string
+    file_id - song ID - integer
+    user_id = user ID - integer
+    platform - app name - string
+    version - this app version - string
+  *)
 end;
 
 procedure TTrackItem.LoadFrom(JSONPair: TJSONPair);

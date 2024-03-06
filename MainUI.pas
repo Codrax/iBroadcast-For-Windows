@@ -804,7 +804,7 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 4);
+  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 5);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://api.codrutsoft.com/';
@@ -5375,7 +5375,7 @@ begin
     AddSongToHistory;
 
   // Network location
-  NetworkName := STREAMING_ENDPOINT + Tracks[Index].StreamLocations;
+  NetworkName := Tracks[Index].GetStreamingURL;
 
   // Is offline?
   LocalName := AppData + DOWNLOAD_DIR + PlayID.ToString + '.mp3';
@@ -5399,7 +5399,7 @@ begin
 
   // Play
   case APlay of
-    TPlayType.Streaming: Player.OpenURL( STREAMING_ENDPOINT + Tracks[Index].StreamLocations );
+    TPlayType.Streaming: Player.OpenURL( Tracks[Index].GetStreamingURL );
     TPlayType.Local: Player.OpenFile( LocalName );
     TPlayType.CloudDownload: begin
 
@@ -6021,7 +6021,7 @@ begin
             Continue;
           try
             Local := Folder + Identifier.ToString;
-            Server := STREAMING_ENDPOINT + Tracks[TrackIndex].StreamLocations;
+            Server := Tracks[TrackIndex].GetStreamingURL;
           except
             Continue;
           end;
@@ -6388,7 +6388,7 @@ begin
   Index := GetTrack(PopupDrawItem.ItemID);
   if Index = -1 then
     Exit;
-  URL := STREAMING_ENDPOINT + Tracks[Index].StreamLocations;
+  URL := Tracks[Index].GetStreamingURL;
 
   // Dialog
   SaveMusicDialog.FileName := PopupDrawItem.Title;
@@ -7123,12 +7123,6 @@ end;
 procedure TUIForm.StartCheckForUpdate;
 begin
   AddToLog('Form.StartCheckForUpdate');
-  // Offline
-  if IsOffline then
-    begin
-      Latest_Version.Caption := 'Latest version on server: You are offline';
-      Exit;
-    end;
 
   if UpdateCheck.Enabled then
     UpdateCheck.Enabled := false;
