@@ -52,7 +52,7 @@ type
     procedure SetMood(const Value: integer);
   public
     { Public declarations }
-    Tracks: TArray<integer>;
+    Tracks: TArray<string>;
 
     property Mood: integer read FMood write SetMood;
     property MoodBased: boolean read FMoodBased write SetMoodBased;

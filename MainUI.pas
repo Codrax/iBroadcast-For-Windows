@@ -51,7 +51,7 @@ type
   TDrawableItem = record
     Index: integer;
 
-    ItemID: integer;
+    ItemID: string;
 
     Title: string;
     InfoShort: string;
@@ -96,7 +96,7 @@ type
     procedure RestoreFromLibrary;
 
     (* Audo Load *)
-    procedure LoadSourceID(ID: integer; From: TDataSource);
+    procedure LoadSourceID(ID: string; From: TDataSource);
     procedure LoadSource(AIndex: integer; From: TDataSource);
     procedure ReloadSource;
 
@@ -622,7 +622,7 @@ type
     function GetItemCount(OnlyVisible: boolean = false): cardinal;
     procedure LoadItemInfo;
 
-    function GetTracksID: TArray<integer>;
+    function GetTracksID: TArray<string>;
     function GetPageViewType: TDataSource;
 
     // Draw Box
@@ -633,7 +633,7 @@ type
     procedure SetDownloadIcon(Value: boolean; Source: TDataSource);
 
     // Drawing List
-    procedure AddItems(IDArray: TArray<integer>; Source: TDataSource; 
+    procedure AddItems(IDArray: TArray<string>; Source: TDataSource;
       Clear: boolean = false; RemoveTrashed: boolean = false);
 
     // UI
@@ -747,7 +747,7 @@ type
     procedure RedownloadItems;
     procedure CalculateGeneralStorage;
 
-    procedure DeleteDownloaded(MusicID: integer);
+    procedure DeleteDownloaded(MusicID: string);
 
     // Font
     function GetSegoeIconFont: string;
@@ -757,9 +757,11 @@ type
     procedure InitiateLogin;
     procedure PrepareLoginUI;
 
+    procedure LoaderStopAnimation;
+
     procedure InitiateOfflineMode;
     procedure LoadOfflineModeData;
-    function ObtainIDFromFileName(FileName: string): integer;
+    function ObtainIDFromFileName(FileName: string): string;
     function HasOfflineBackup: boolean;
 
     // Data
@@ -789,7 +791,9 @@ type
 
     // Utils
     function IntArrayToStr(AArray: TArray<integer>): string;
+    function StrArrayToStr(AArray: TArray<string>): string;
     function StrToIntArray(Str: string): TArray<integer>;
+    function StrToStrArray(Str: string): TArray<string>;
 
     // Properties
     property AudioSpeed: single read FAudioSpeed write SetAudioSpeed;
@@ -804,7 +808,7 @@ type
 
 const
   // SYSTEM
-  Version: TVersionRec = (Major:1; Minor:8; Maintenance: 6);
+  VERSION: TVersionRec = (Major:1; Minor:9; Maintenance: 0);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://api.codrutsoft.com/';
@@ -873,8 +877,8 @@ var
   Spectrum_Mini: TSpectrum;
 
   // Downloads
-  AllDownload: TIntegerList;
-  DownloadQueue: TIntegerList;
+  AllDownload: TStringList;
+  DownloadQueue: TStringList;
 
   DownloadThread: TThread;
   DownloadThreadsE: integer;
@@ -893,7 +897,7 @@ var
   PageHistory: TArray<THistorySet>;
 
   BareRoot: string;
-  LastValueID: integer;
+  LastValueID: string;
   LastExecutedSource: TDataSource;
 
   Location,
@@ -969,7 +973,7 @@ var
 
   // Queue System
   PlayIndex: integer = -1;
-  PlayID: integer = -1;
+  PlayID: string = '';
   PlayTimeStamp: TDateTime;
 
   QueuePos: integer;
@@ -1052,7 +1056,7 @@ end;
 
 procedure TUIForm.Addalbum1Click(Sender: TObject);
 var
-  Songs, PickerItems: TArray<integer>;
+  Songs, PickerItems: TArray<string>;
   Index, I: Integer;
   J: Integer;
 begin
@@ -1070,7 +1074,7 @@ begin
     end;
 end;
 
-procedure TUIForm.AddItems(IDArray: TArray<integer>; Source: TDataSource;
+procedure TUIForm.AddItems(IDArray: TArray<string>; Source: TDataSource;
   Clear, RemoveTrashed: boolean);
 var
   Start: integer;
@@ -1142,10 +1146,10 @@ procedure TUIForm.Addtoplaylist1Click(Sender: TObject);
 var
   Existing,
   Selected,
-  Hidden: TArray<integer>;
+  Hidden: TArray<string>;
   I: Integer;
   AIndex: integer;
-  ID: integer;
+  ID: string;
 procedure AddToHidden(Items: TArray<string>);
 var
   I, Index: integer;
@@ -1220,7 +1224,7 @@ end;
 
 procedure TUIForm.Addtracks1Click(Sender: TObject);
 var
-  Songs: TArray<integer>;
+  Songs: TArray<string>;
   Index, I: Integer;
 begin
   PickItems(Songs, TPickType.Song, true);
@@ -1235,10 +1239,10 @@ end;
 procedure TUIForm.Addtracks2Click(Sender: TObject);
 var
   Existing,
-  Selected: TArray<integer>;
+  Selected: TArray<string>;
   I: Integer;
   AIndex: integer;
-  ID: integer;
+  ID: string;
 begin
   ID := PopupDrawItem.ItemID;
 
@@ -1424,7 +1428,7 @@ end;
 
 procedure TUIForm.Button_SaveQueueClick(Sender: TObject);
 var
-  ATracks: TArray<integer>;
+  ATracks: TArray<string>;
   I, AIndex: Integer;
   AName: string;
 begin
@@ -1745,7 +1749,7 @@ procedure TUIForm.CButton27Click(Sender: TObject);
 var
   Item: TDrawAbleItem;
 begin
-  Item.LoadSourceID(LocationExtra.ToInteger, GetPageViewType);
+  Item.LoadSourceID(LocationExtra, GetPageViewType);
   Item.OpenInformation;
 end;
 
@@ -2144,7 +2148,7 @@ end;
 procedure TUIForm.CopyIDGeneral(Sender: TObject);
 begin
   // Copy to clipboard
-  Clipboard.AsText := PopupDrawItem.ItemID.ToString;
+  Clipboard.AsText := PopupDrawItem.ItemID;
 end;
 
 procedure TUIForm.SettingsApplyes2(Sender: CSlider; Position, Max, Min: Integer);
@@ -2189,14 +2193,14 @@ begin
   Label35.Caption := Connect + ', ' + Join + ', Last Login:' + DateTimeToStr(Sessions[AIndex].LastLogin);
 end;
 
-procedure TUIForm.DeleteDownloaded(MusicID: integer);
+procedure TUIForm.DeleteDownloaded(MusicID: string);
 var
   AFile: string;
   FileName: string;
   I: Integer;
 begin
-  AddToLog('Form.DeleteDownloaded(' + MusicID.ToString + ')');
-  AFile := AppData + DOWNLOAD_DIR + MusicID.ToString;
+  AddToLog('Form.DeleteDownloaded(' + MusicID + ')');
+  AFile := AppData + DOWNLOAD_DIR + MusicID;
 
   for I := 1 to 3 do
     begin
@@ -2295,7 +2299,7 @@ var
   Item: TDrawAbleItem;
   Output: boolean;
 begin
-  Item.LoadSourceID(LocationExtra.ToInteger, GetPageViewType);
+  Item.LoadSourceID(LocationExtra, GetPageViewType);
 
   Output := Item.ToggleDownloaded;
 
@@ -2813,7 +2817,7 @@ begin
       // Compare
       Found := CompareFound(Term, DrawItems[I].Title, Flags)
         or ((TSearchFlag.SearchInfo in Flags) and CompareFound(Term, DrawItems[I].InfoLong, Flags))
-        or (DrawItems[I].ItemID.ToString = Term);
+        or (DrawItems[I].ItemID = Term);
 
       // Visible
       DrawItems[I].HiddenSearch := not Found;
@@ -2828,7 +2832,7 @@ var
   I: Integer;
 begin
   // Hide to tray
-  if Setting_TrayClose.Checked and not HiddenToTray then
+  if Setting_TrayClose.Checked and not HiddenToTray and not LoginUIContainer.Visible then
     begin
       Self.MinimiseToTray;
 
@@ -2909,7 +2913,7 @@ begin
     end;
 
   // AppData
-  AppData := GetPathInAppData('Cods iBroadcast');
+  AppData := GetPathInAppData('Cods iBroadcast', 'CodrutSoftware', TAppDataType.Local, true);
 
   // Audio Manager
   AddToLog('Form.Create.Create.Audio.Interfaces');
@@ -2927,8 +2931,8 @@ begin
 
   AddToLog('Preparing Downloads');
   // Prepare Downloading
-  AllDownload := TIntegerList.Create;
-  DownloadQueue := TIntegerList.Create;
+  AllDownload := TStringList.Create;
+  DownloadQueue := TStringList.Create;
 
   DownloadedTracks := TStringList.Create;
   DownloadedAlbums := TStringList.Create;
@@ -3245,13 +3249,13 @@ begin
   Result := SortingList[Index];
 end;
 
-function TUIForm.GetTracksID: TArray<integer>;
+function TUIForm.GetTracksID: TArray<string>;
 var
   Index: integer;
 begin
   if BareRoot = 'viewalbum' then
     begin
-      Index := GetAlbum(LocationExtra.ToInteger);
+      Index := GetAlbum(LocationExtra);
       if Index <> -1 then
         Result := Albums[Index].TracksID
       else
@@ -3260,7 +3264,7 @@ begin
 
   if BareRoot = 'viewartist' then
     begin
-      Index := GetArtist(LocationExtra.ToInteger);
+      Index := GetArtist(LocationExtra);
       if Index <> -1 then
         Result := Artists[Index].TracksID
       else
@@ -3269,7 +3273,7 @@ begin
 
   if BareRoot = 'viewplaylist' then
     begin
-      Index := GetPlaylist(LocationExtra.ToInteger);
+      Index := GetPlaylist(LocationExtra);
       if Index <> -1 then
         Result := Playlists[Index].TracksID
       else
@@ -3523,7 +3527,7 @@ end;
 
 procedure TUIForm.PopupGeneralViewArtist(Sender: TObject);
 var
-  ArtistID: integer;
+  ArtistID: string;
   Item: TDrawableItem;
 begin
   // View Artist
@@ -3534,7 +3538,7 @@ begin
   end;
 
   // Validate
-  if ArtistID = 0 then
+  if ArtistID = '' then
     Exit;
 
   // Open
@@ -3602,7 +3606,16 @@ begin
           AddToLog('Logged In!');
           AddToLog('Form.InitiateLogin.ReLoadLibrary');
           // Load Library, Account, Queue
-          ReLoadLibrary;
+          try
+            ReLoadLibrary;
+          except
+            on E: Exception do begin
+              LoaderStopAnimation;
+              WORK_STATUS := 'An error occured. Check the logs for more information.';
+              AddToLog('InitiateLogin.WORK_STATUS EXCEPTION:'+E.Message);
+              Exit;
+            end;
+          end;
 
           // Show UI
           TThread.Synchronize(nil, procedure
@@ -3744,12 +3757,18 @@ begin
       end;
 end;
 
+procedure TUIForm.LoaderStopAnimation;
+begin
+  LoadingGif.Hide;
+end;
+
 procedure TUIForm.LoadItemInfo;
 var
-  I, A, P, Identifier: integer;
+  I, A, P: integer;
+  ID: string;
   ARoot: string;
 
-  SelectItems, SomeArray: TArray<integer>;
+  SelectItems, SomeArray: TArray<string>;
   Contained: boolean;
 procedure AddItem(Index: integer; AType: TDataSource); 
 var
@@ -3810,28 +3829,28 @@ begin
           // Tracks
           SetLength(SelectItems, DownloadedTracks.Count);
           for I := 0 to DownloadedTracks.Count- 1 do
-            SelectItems[I] := DownloadedTracks[I].ToInteger;
+            SelectItems[I] := DownloadedTracks[I];
 
           AddItems(SelectItems, TDataSource.Tracks);
 
           // Albums
           SetLength(SelectItems, DownloadedAlbums.Count);
           for I := 0 to DownloadedAlbums.Count- 1 do
-            SelectItems[I] := DownloadedAlbums[I].ToInteger;
+            SelectItems[I] := DownloadedAlbums[I];
 
           AddItems(SelectItems, TDataSource.Albums);
 
           // Artists
           SetLength(SelectItems, DownloadedArtists.Count);
           for I := 0 to DownloadedArtists.Count- 1 do
-            SelectItems[I] := DownloadedArtists[I].ToInteger;
+            SelectItems[I] := DownloadedArtists[I];
 
           AddItems(SelectItems, TDataSource.Artists);
 
           // Playlists
           SetLength(SelectItems, DownloadedPlaylists.Count);
           for I := 0 to DownloadedPlaylists.Count- 1 do
-            SelectItems[I] := DownloadedPlaylists[I].ToInteger;
+            SelectItems[I] := DownloadedPlaylists[I];
 
           AddItems(SelectItems, TDataSource.Playlists);
 
@@ -3929,16 +3948,16 @@ begin
         begin
           Contained := false;
 
-          Identifier := -1;
+          ID := '';
           P := GetTrack(SomeArray[I]);
           if P > -1 then
-            Identifier := Tracks[P].AlbumID;
-          if Identifier = -1 then
+            ID := Tracks[P].AlbumID;
+          if ID = '' then
             Continue;
 
           // Validate if it exists
           for A := 0 to High(SelectItems) do
-            if SelectItems[A] = Identifier then
+            if SelectItems[A] = ID then
               Contained := true;
 
           // Add item
@@ -3946,7 +3965,7 @@ begin
             begin
               P := Length(SelectItems);
               SetLength(SelectItems, P + 1);
-              SelectItems[P] := Identifier;
+              SelectItems[P] := ID;
             end;
 
           // Exit
@@ -4050,7 +4069,7 @@ begin
       if (ARoot = 'viewartist') and (GetPathValue('viewmode') = 'albums') then
         begin
           for I := 0 to High(Albums) do
-            if Albums[I].ArtistID.ToString = LocationExtra then
+            if Albums[I].ArtistID = LocationExtra then
               AddItem(I, TDataSource.Albums);
         end
       else
@@ -4075,7 +4094,8 @@ var
   Files: TArray<string>;
   ST: TStringList;
 
-  I, ValueID: Integer;
+  I: integer;
+  ValueID: string;
 begin
   // Load Folder
   Folder := AppData + DOWNLOAD_DIR;
@@ -4113,8 +4133,8 @@ begin
                 Rating := ST[5].ToInteger;
                 Plays := ST[6].ToInteger;
                 AudioType := ST[7];
-                ArtistID := ST[8].ToInteger;
-                AlbumID := ST[9].ToInteger;
+                ArtistID := ST[8];
+                AlbumID := ST[9];
               end;
           finally
             ST.Free;
@@ -4146,11 +4166,11 @@ begin
 
         with Albums[I] do
           begin
-            ID := ChangeFileExt(ExtractFileName(Files[I]), '').ToInteger;
+            ID := ChangeFileExt(ExtractFileName(Files[I]), '');
           
             AlbumName := ST[0];
-            TracksID := StrToIntArray(ST[1]);
-            ArtistID := ST[2].ToInteger;
+            TracksID := StrToStrArray(ST[1]);
+            ArtistID := ST[2];
             Rating := ST[3].ToInteger;
             Year := ST[4].ToInteger;
           end;
@@ -4173,10 +4193,10 @@ begin
 
         with Artists[I] do
           begin
-            ID := ChangeFileExt(ExtractFileName(Files[I]), '').ToInteger;
+            ID := ChangeFileExt(ExtractFileName(Files[I]), '');
           
             ArtistName := ST[0];
-            TracksID := StrToIntArray(ST[1]);
+            TracksID := StrToStrArray(ST[1]);
             Rating := ST[2].ToInteger;
           end;
       finally
@@ -4198,10 +4218,10 @@ begin
 
         with Playlists[I] do
           begin
-            ID := ChangeFileExt(ExtractFileName(Files[I]), '').ToInteger;
+            ID := ChangeFileExt(ExtractFileName(Files[I]), '');
           
             Name := ST[0];
-            TracksID := StrToIntArray(ST[1]);
+            TracksID := StrToStrArray(ST[1]);
             PlaylistType := ST[2];
             Description := ST[3];
           end;
@@ -4302,35 +4322,35 @@ begin
       if BareRoot = 'viewalbum' then
         begin
           SubView_Type.Caption := 'Album View';
-          I := BroadcastAPI.GetAlbum(LocationExtra.ToInteger);
+          I := BroadcastAPI.GetAlbum(LocationExtra);
 
           if I <> -1 then
             Data.LoadSource(I, TDataSource.Albums);
 
-          Download_SubView.Tag := (DownloadedAlbums.IndexOf( Data.ItemID.ToString ) <> -1).ToInteger;
+          Download_SubView.Tag := (DownloadedAlbums.IndexOf( Data.ItemID ) <> -1).ToInteger;
         end;
 
       // Artist
       if BareRoot = 'viewartist' then
         begin
           SubView_Type.Caption := 'Artist View';
-          I := BroadcastAPI.GetArtist(LocationExtra.ToInteger);
+          I := BroadcastAPI.GetArtist(LocationExtra);
 
           if I <> -1 then
             Data.LoadSource(I, TDataSource.Artists);
 
-          Download_SubView.Tag := (DownloadedArtists.IndexOf( Data.ItemID.ToString ) <> -1).ToInteger;
+          Download_SubView.Tag := (DownloadedArtists.IndexOf( Data.ItemID ) <> -1).ToInteger;
         end;
 
       if BareRoot = 'viewplaylist' then
         begin
           SubView_Type.Caption := 'Playlist View';
-          I := BroadcastAPI.GetPlaylist(LocationExtra.ToInteger);
+          I := BroadcastAPI.GetPlaylist(LocationExtra);
 
           if I <> -1 then
             Data.LoadSource(I, TDataSource.Playlists);
 
-          Download_SubView.Tag := (DownloadedPlaylists.IndexOf( Data.ItemID.ToString ) <> -1).ToInteger;
+          Download_SubView.Tag := (DownloadedPlaylists.IndexOf( Data.ItemID ) <> -1).ToInteger;
         end;
 
       // Load
@@ -4376,12 +4396,12 @@ begin
   ReselectPage;
 end;
 
-function TUIForm.ObtainIDFromFileName(FileName: string): integer;
+function TUIForm.ObtainIDFromFileName(FileName: string): string;
 begin
   FileName := ExtractFileName(FileName);
   FileName := ChangeFileExt(FileName, '');  
 
-  Result := FileName.ToInteger;
+  Result := FileName;
 end;
 
 procedure TUIForm.OpenFromTray;
@@ -4556,7 +4576,7 @@ begin
     begin
       if QueueHover <> -1 then
         begin
-          const ID: integer = Tracks[PlayQueue[QueueHover]].ID;
+          const ID = Tracks[PlayQueue[QueueHover]].ID;
 
           PopupDrawItem.LoadSourceID(ID, TDataSource.Tracks);
 
@@ -4883,7 +4903,7 @@ end;
 
 procedure TUIForm.Playartists1Click(Sender: TObject);
 var
-  Songs, PickerItems: TArray<integer>;
+  Songs, PickerItems: TArray<string>;
   Index, I: Integer;
   J: Integer;
 begin
@@ -5043,7 +5063,7 @@ end;
 
 procedure TUIForm.Playplaylist1Click(Sender: TObject);
 var
-  Songs, PickerItems: TArray<integer>;
+  Songs, PickerItems: TArray<string>;
   Index, I: Integer;
   J: Integer;
 begin
@@ -5154,10 +5174,10 @@ end;
 
 procedure TUIForm.PopupGeneralAddTracks(Sender: TObject);
 var
-  ATracks: TArray<integer>;
+  ATracks: TArray<string>;
   AIndex: integer;
   NextPlay: boolean;
-  I, TrackID: Integer;
+  I, index: integer;
 begin
   // Empty
   NextPlay := (PlayQueue.Count = 0) and (Player.PlayStatus <> psPlaying);
@@ -5178,9 +5198,9 @@ begin
   // Add
   for I := 0 to High(ATracks) do
     begin
-      TrackID := GetTrack(ATracks[I]);
-      if TrackID <> -1 then
-        AddQueue( TrackID );
+      Index := GetTrack(ATracks[I]);
+      if Index <> -1 then
+        AddQueue( Index );
     end;
 
   // Play
@@ -5378,7 +5398,7 @@ begin
   NetworkName := Tracks[Index].GetStreamingURL;
 
   // Is offline?
-  LocalName := AppData + DOWNLOAD_DIR + PlayID.ToString + '.mp3';
+  LocalName := AppData + DOWNLOAD_DIR + PlayID + '.mp3';
   Local := TFile.Exists( LocalName );
 
   // Calculate Type
@@ -5472,7 +5492,7 @@ var
 begin
   Start := State = cbChecked;
 
-  FileName := IncludeTrailingPathDelimiter(GetUserShellLocation(TUserShellLocation.shlStartup)) + 'Cods iBroadcast.lnk';
+  FileName := IncludeTrailingPathDelimiter(GetUserShellLocation(TUserShellLocation.Startup)) + 'Cods iBroadcast.lnk';
   if Start then
     CreateShortcut(Application.ExeName, FileName, 'Cods iBroadcast Player', '-tray')
   else
@@ -5559,15 +5579,8 @@ begin
         if ST.Count > 1 then
           for I := 1 to ST.Count - 1 do
             begin
-              // Convert
-              try
-                ATrack := ST[I].ToInteger;
-              except
-                Break;
-              end;
-
               // Validate
-              ATrack := GetTrack(ATrack);
+              ATrack := GetTrack(ST[I]);
               if ATrack = -1 then
                 Continue;
 
@@ -5607,7 +5620,7 @@ begin
 
         // Track Containers
         for I := 0 to PlayQueue.Count - 1 do
-          ST.Add(Tracks[PlayQueue[I]].ID.ToString);
+          ST.Add(Tracks[PlayQueue[I]].ID);
 
         // Write
         ST.SaveToFile(FileName);
@@ -5868,7 +5881,8 @@ var
   Folder: string;
 
   FileName: string;
-  ID, I: Integer;
+  ID: string;
+  I: Integer;
 begin
   AddToLog('Form.RedownloadItems');
   // Offline Mode
@@ -5888,7 +5902,7 @@ begin
     begin
       ID := AllDownload[I];
 
-      FileName := Folder + ID.ToString + '.mp3';
+      FileName := Folder + ID + '.mp3';
 
       if not TFile.Exists( FileName ) then
         DownloadQueue.Add(ID);
@@ -5900,7 +5914,8 @@ begin
     var
       I: integer;
       Server, Local, Repo: string;
-      Identifier, TrackIndex, Index, Total, ThreadID: integer;
+      ID: string;
+      TrackIndex, Index, Total, ThreadID: integer;
       ST: TStringList;
     begin
       ThreadID := DownloadThreadsE + 1;
@@ -5918,7 +5933,7 @@ begin
           Local := Repo + DownloadedAlbums[I] + '.txt';
 
           // Write
-          Index := GetAlbum(DownloadedAlbums[I].ToInteger);
+          Index := GetAlbum(DownloadedAlbums[I]);
           if Index = -1 then
             Continue;
           ST := TStringList.Create;
@@ -5926,8 +5941,8 @@ begin
             with Albums[Index] do
               begin
                 ST.Add( AlbumName );
-                ST.Add( IntArrayToStr(TracksID) );
-                ST.Add( ArtistID.ToString );
+                ST.Add( StrArrayToStr(TracksID) );
+                ST.Add( ArtistID );
                 ST.Add( Rating.ToString );
                 ST.Add( Year.ToString );
               end;
@@ -5950,7 +5965,7 @@ begin
           Local := Repo + DownloadedArtists[I] + '.txt';
             
           // Write
-          Index := GetArtist(DownloadedArtists[I].ToInteger);
+          Index := GetArtist(DownloadedArtists[I]);
           if Index = -1 then
             Continue;
           ST := TStringList.Create;
@@ -5958,7 +5973,7 @@ begin
             with Artists[Index] do
               begin
                 ST.Add( ArtistName );
-                ST.Add( IntArrayToStr(TracksID) );
+                ST.Add( StrArrayToStr(TracksID) );
                 ST.Add( Rating.ToString );
               end;
 
@@ -5980,7 +5995,7 @@ begin
           Local := Repo + DownloadedPlaylists[I] + '.txt';
 
           // Write
-          Index := GetPlaylist(DownloadedPlaylists[I].ToInteger);
+          Index := GetPlaylist(DownloadedPlaylists[I]);
           if Index = -1 then
             Continue;
           ST := TStringList.Create;
@@ -5988,7 +6003,7 @@ begin
             with Playlists[Index] do
               begin
                 ST.Add( Name );
-                ST.Add( IntArrayToStr(TracksID) );
+                ST.Add( StrArrayToStr(TracksID) );
                 ST.Add( PlaylistType );
                 ST.Add( Description );
               end;
@@ -6014,13 +6029,13 @@ begin
               + (Total+1).ToString + ')');
 
           // Get Data
-          Identifier := DownloadQueue[I];
-          TrackIndex := GetTrack(Identifier);
+          ID := DownloadQueue[I];
+          TrackIndex := GetTrack(ID);
 
           if TrackIndex = -1 then
             Continue;
           try
-            Local := Folder + Identifier.ToString;
+            Local := Folder + ID;
             Server := Tracks[TrackIndex].GetStreamingURL;
           except
             Continue;
@@ -6039,8 +6054,8 @@ begin
             ST.Add(Tracks[TrackIndex].Rating.ToString);
             ST.Add(Tracks[TrackIndex].Plays.ToString);
             ST.Add(Tracks[TrackIndex].AudioType);
-            ST.Add(Tracks[TrackIndex].ArtistID.ToString);
-            ST.Add(Tracks[TrackIndex].AlbumID.ToString);
+            ST.Add(Tracks[TrackIndex].ArtistID);
+            ST.Add(Tracks[TrackIndex].AlbumID);
 
             ST.SaveToFile(Local + '.txt')
           finally
@@ -6999,7 +7014,7 @@ end;
 
 procedure TUIForm.Song_ArtistClick(Sender: TObject);
 var
-  ArtistID: integer;
+  ArtistID: string;
   Item: TDrawableItem;
   APlay: integer;
 begin
@@ -7011,7 +7026,7 @@ begin
 
   // Validate
   ArtistID := Tracks[APlay].ArtistID;
-  if ArtistID = 0 then
+  if ArtistID = '' then
     Exit;
 
   // Open
@@ -7195,6 +7210,22 @@ begin
     Status_Work.Caption := WORK_STATUS;
 end;
 
+function TUIForm.StrArrayToStr(AArray: TArray<string>): string;
+var
+  I: Integer;
+begin
+  Result := '[';
+  for I := 0 to High(AArray) do
+    begin
+      Result := Result + AArray[I];
+
+      if I < High(AArray) then
+        Result := Result + ',';
+    end;
+
+  Result := Result + ']';
+end;
+
 function TUIForm.StrToIntArray(Str: string): TArray<integer>;
 var
   ACount: integer;
@@ -7222,6 +7253,36 @@ begin
       P2 := StrPos(',', Str, I + 1);
 
       Result[I-1] := StrCopy(Str, P1, P2, true).ToInteger;
+    end;
+end;
+
+function TUIForm.StrToStrArray(Str: string): TArray<string>;
+var
+  ACount: integer;
+  P1, P2: integer;
+  I: Integer;
+begin
+  SetLength(Result, 0);
+  Str := Copy(Str, 2, Length(Str) - 2);
+
+  // Empty
+  if Str = '' then
+    Exit;
+
+  // Add ","
+  Str := ',' + Str + ',';
+
+  // Not Empty
+  ACount := StrCount(',', Str);
+  SetLength(Result, ACount - 1);
+
+  // Load
+  for I := 1 to ACount - 1 do
+    begin
+      P1 := StrPos(',', Str, I);
+      P2 := StrPos(',', Str, I + 1);
+
+      Result[I-1] := StrCopy(Str, P1, P2, true);
     end;
 end;
 
@@ -7507,7 +7568,7 @@ begin
 end;
 
 procedure TUIForm.UpdateDownloads;
-procedure AddItems(Items: TArray<integer>);
+procedure AddItems(Items: TArray<string>);
   var
     I, J: Integer;
     Find: integer;
@@ -7546,12 +7607,12 @@ begin
       1: begin
         // Load
         for I := 0 to DownloadedTracks.Count - 1 do
-          AllDownload.Add( DownloadedTracks[I].ToInteger );
+          AllDownload.Add( DownloadedTracks[I] );
       end;
       2: begin
         for I := 0 to DownloadedAlbums.Count - 1 do
           begin
-            Index := GetAlbum(DownloadedAlbums[I].ToInteger);
+            Index := GetAlbum(DownloadedAlbums[I]);
 
             if Index = -1 then
               Continue;
@@ -7562,7 +7623,7 @@ begin
       3:  begin
         for I := 0 to DownloadedArtists.Count - 1 do
           begin
-            Index := GetArtist(DownloadedArtists[I].ToInteger);
+            Index := GetArtist(DownloadedArtists[I]);
 
             if Index = -1 then
               Continue;
@@ -7573,7 +7634,7 @@ begin
       4: begin
         for I := 0 to DownloadedPlaylists.Count - 1 do
           begin
-            Index := GetPlaylist(DownloadedPlaylists[I].ToInteger);
+            Index := GetPlaylist(DownloadedPlaylists[I]);
 
             if Index = -1 then
               Continue;
@@ -7668,7 +7729,8 @@ var
   Folder, AFolder: string;
 
   Name: string;
-  Identifier, A, I: Integer;
+  A, I: Integer;
+  ID: string;
 
   Exists: boolean;
 begin
@@ -7693,7 +7755,7 @@ begin
       // Get ID
       Name := ChangeFileExt( ExtractFileName( Files[I] ), '' );
       try
-        Identifier := Name.ToInteger;
+        ID := Name;
       except
         Continue;
       end;
@@ -7701,7 +7763,7 @@ begin
       // Compare
       Exists := false;
       for A := 0 to AllDownload.Count - 1 do
-        if Identifier = AllDownload[A] then
+        if ID = AllDownload[A] then
           begin
             Exists := true;
             Break
@@ -7709,9 +7771,9 @@ begin
 
       // Delete
       if not Exists then
-        if DownloadQueue.IndexOf(Identifier) = -1 then
+        if DownloadQueue.IndexOf(ID) = -1 then
           try
-            DeleteDownloaded( Identifier );
+            DeleteDownloaded( ID );
           except
             // Thread is still using the file. To be deleted on next launch
           end;
@@ -7776,12 +7838,12 @@ begin
   for I := DownloadedTracks.Count-1 downto 0 do
     begin
       try
-        Identifier:= DownloadedTracks[I].ToInteger;
+        ID:= DownloadedTracks[I];
       except
         Continue;
       end;
 
-      if GetTrack(Identifier) = -1 then
+      if GetTrack(ID) = -1 then
         begin
           var AIndex: integer;
           AIndex := DownloadedTracks.IndexOf(DownloadedTracks[I]);
@@ -7791,7 +7853,7 @@ begin
             begin
               DownloadedTracks.Delete(AIndex);
 
-              AIndex := AllDownload.IndexOf(Identifier);
+              AIndex := AllDownload.IndexOf(ID);
               if AIndex <> -1 then
                 AllDownload.Delete(AIndex);
             end;
@@ -7802,12 +7864,12 @@ begin
   for I := DownloadedAlbums.Count-1 downto 0 do
     begin
       try
-        Identifier:= DownloadedAlbums[I].ToInteger;
+        ID:= DownloadedAlbums[I];
       except
         Continue;
       end;
 
-      if GetAlbum(Identifier) = -1 then
+      if GetAlbum(ID) = -1 then
         begin
           var AIndex: integer;
           AIndex := DownloadedAlbums.IndexOf(DownloadedAlbums[I]);
@@ -7822,12 +7884,12 @@ begin
   for I := DownloadedArtists.Count-1 downto 0 do
     begin
       try
-        Identifier:= DownloadedArtists[I].ToInteger;
+        ID:= DownloadedArtists[I];
       except
         Continue;
       end;
 
-      if GetArtist(Identifier) = -1 then
+      if GetArtist(ID) = -1 then
         begin
           var AIndex: integer;
           AIndex := DownloadedArtists.IndexOf(DownloadedArtists[I]);
@@ -7842,12 +7904,12 @@ begin
   for I := DownloadedPlaylists.Count-1 downto 0 do
     begin
       try
-        Identifier:= DownloadedPlaylists[I].ToInteger;
+        ID:= DownloadedPlaylists[I];
       except
         Continue;
       end;
 
-      if GetPlaylist(Identifier) = -1 then
+      if GetPlaylist(ID) = -1 then
         begin
           var AIndex: integer;
           AIndex := DownloadedPlaylists.IndexOf(DownloadedPlaylists[I]);
@@ -7885,7 +7947,7 @@ end;
 
 procedure TUIForm.PopupGeneralViewAlbum(Sender: TObject);
 var
-  AlbumID: integer;
+  AlbumID: string;
   Item: TDrawableItem;
 begin
   // View Artist
@@ -7895,7 +7957,7 @@ begin
   end;
 
   // Validate
-  if AlbumID = 0 then
+  if AlbumID = '' then
     Exit;
 
   // Open
@@ -7944,10 +8006,10 @@ end;
 function TDrawableItem.Downloaded: boolean;
 begin
   case Source of
-    TDataSource.Tracks: Result := DownloadedTracks.IndexOf(ItemID.ToString) <> -1;
-    TDataSource.Albums: Result := DownloadedAlbums.IndexOf(ItemID.ToString) <> -1;
-    TDataSource.Artists: Result := DownloadedArtists.IndexOf(ItemID.ToString) <> -1;
-    TDataSource.Playlists: Result := DownloadedPlaylists.IndexOf(ItemID.ToString) <> -1;
+    TDataSource.Tracks: Result := DownloadedTracks.IndexOf(ItemID) <> -1;
+    TDataSource.Albums: Result := DownloadedAlbums.IndexOf(ItemID) <> -1;
+    TDataSource.Artists: Result := DownloadedArtists.IndexOf(ItemID) <> -1;
+    TDataSource.Playlists: Result := DownloadedPlaylists.IndexOf(ItemID) <> -1;
     else
       Result := false
   end;
@@ -8012,17 +8074,17 @@ begin
 
     TDataSource.Albums: begin
       (* Navigate *)
-      UIForm.NavigatePath('ViewAlbum:' + Albums[Index].ID.ToString);
+      UIForm.NavigatePath('ViewAlbum:' + Albums[Index].ID);
     end;
 
     TDataSource.Artists: begin
       (* Navigate *)
-      UIForm.NavigatePath('ViewArtist:' + Artists[Index].ID.ToString);
+      UIForm.NavigatePath('ViewArtist:' + Artists[Index].ID);
     end;
 
     TDataSource.Playlists: begin
       (* Navigate *)
-      UIForm.NavigatePath('ViewPlaylist:' + Playlists[Index].ID.ToString);
+      UIForm.NavigatePath('ViewPlaylist:' + Playlists[Index].ID);
     end;
   end;
 
@@ -8098,7 +8160,7 @@ end;
 
 function TDrawableItem.Invalid: boolean;
 begin
-  Result := (Index = -1) or (ItemID = 0) or (Title = '');
+  Result := (Index = -1) or (ItemID = '') or (Title = '');
 end;
 
 function TDrawableItem.IsDownloaded: TDownloadedKind;
@@ -8260,7 +8322,7 @@ begin
   end;
 end;
 
-procedure TDrawableItem.LoadSourceID(ID: integer; From: TDataSource);
+procedure TDrawableItem.LoadSourceID(ID: string; From: TDataSource);
 var
   Index: integer;
 begin
@@ -8320,8 +8382,8 @@ end;
 procedure TDrawableItem.StartPictureLoad;
 var
   ThreadSource: TDataSource;
-  ItemIndex,
-  ItemIdentifier: integer;
+  ItemIndex: integer;
+  ItemIdentifier: string;
   FileName: string;
   IsDownload: boolean;
   AImagePointer: TJPegImage;
@@ -8349,7 +8411,7 @@ begin
             // Check Local mp3 download! Different from Artowork Store!!!
             if IsDownload and not Tracks[ItemIndex].ArtworkLoaded then
               begin
-                FileName := AppData + DOWNLOAD_DIR + ItemIdentifier.ToString + ART_EXT;
+                FileName := AppData + DOWNLOAD_DIR + ItemIdentifier + ART_EXT;
                 if TFile.Exists(FileName) then
                   begin
                     Tracks[ItemIndex].CachedImage := TJpegImage.Create;
@@ -8379,7 +8441,7 @@ begin
               InfoBox.Song_Cover.Picture.Assign( AImagePointer )
                 else
               (* Info View Page *)
-              if UIForm.Page_SubView.Visible and (ItemIdentifier.ToString = LocationExtra) then
+              if UIForm.Page_SubView.Visible and (ItemIdentifier = LocationExtra) then
                 begin
                   UIForm.SubView_Cover.Picture.Assign(AImagePointer);
                   UIForm.RedrawPaintBox;
@@ -8418,7 +8480,7 @@ begin
     end;
 
   // Download
-  LastValue := ItemID.ToString;
+  LastValue := ItemID;
 
   // Index
   case Source of

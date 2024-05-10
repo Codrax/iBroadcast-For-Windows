@@ -77,7 +77,7 @@ begin
     end;
 
   AddToLog('======================');
-  AddToLog('Started iBroadcast version ' + Version);
+  AddToLog('Started iBroadcast version ' + VERSION.ToString);
   AddToLog('Started creating forms');
 
   Application.MainFormOnTaskbar := True;

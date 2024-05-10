@@ -188,7 +188,7 @@ object CreatePlaylist: TCreatePlaylist
       Left = 60
       Top = 3
       Width = 245
-      Height = 54
+      Height = 33
       Align = alLeft
       Caption = 'Create new playlist'
       Font.Charset = DEFAULT_CHARSET
@@ -198,14 +198,13 @@ object CreatePlaylist: TCreatePlaylist
       Font.Style = []
       ParentFont = False
       Layout = tlCenter
-      ExplicitHeight = 33
     end
     object Label16: TLabel
       AlignWithMargins = True
       Left = 10
       Top = 5
       Width = 37
-      Height = 50
+      Height = 37
       Margins.Left = 10
       Margins.Top = 5
       Margins.Right = 10
@@ -219,7 +218,6 @@ object CreatePlaylist: TCreatePlaylist
       Font.Style = []
       ParentFont = False
       Layout = tlCenter
-      ExplicitHeight = 37
     end
   end
   object Panel3: TPanel

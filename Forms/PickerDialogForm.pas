@@ -15,8 +15,8 @@ type
   TPickType = (Song, Album, Artist, Playlist);
 
   TDrawItem = record
-    Index,
-    ID: integer;
+    Index: integer;
+    ID: string;
 
     Name: string;
     ImagePointer: TJpegImage; // pointer to image
@@ -60,7 +60,7 @@ type
     { Private declarations }
     FKind: TPickType;
     FMultiSelect: boolean;
-    FAlwaysHidden: TArray<integer>;
+    FAlwaysHidden: TArray<string>;
 
     ScrollPosition: integer;
     PageFit: integer;
@@ -82,26 +82,26 @@ type
     // List
     procedure RedrawList;
 
-    function Selected: TArray<integer>;
-    procedure SetSelected(IDs: TArray<integer>);
-    procedure SetHidden(IDs: TArray<integer>);
+    function Selected: TArray<string>;
+    procedure SetSelected(IDs: TArray<string>);
+    procedure SetHidden(IDs: TArray<string>);
 
     // Properties
     property Kind: TPickType read FKind write SetKind;
     property MultiSelect: boolean read FMultiSelect write FMultiSelect;
   end;
 
-  function PickItems(var AItems: TArray<integer>; ItemsKind: TPickType;
-    AMultiSelect: boolean = true; AlreadySelected: TArray<integer> = [];
-    Hidden: TArray<integer> = []): boolean;
+  function PickItems(var AItems: TArray<string>; ItemsKind: TPickType;
+    AMultiSelect: boolean = true; AlreadySelected: TArray<string> = [];
+    Hidden: TArray<string> = []): boolean;
 
 var
   PickerDialog: TPickerDialog;
 
 implementation
 
-function PickItems(var AItems: TArray<integer>; ItemsKind: TPickType;
-  AMultiSelect: boolean; AlreadySelected, Hidden: TArray<integer>): boolean;
+function PickItems(var AItems: TArray<string>; ItemsKind: TPickType;
+  AMultiSelect: boolean; AlreadySelected, Hidden: TArray<string>): boolean;
 begin
   // Create
   PickerDialog := TPickerDialog.Create(Application);
@@ -308,7 +308,7 @@ begin
   RedrawList;
 end;
 
-function TPickerDialog.Selected: TArray<integer>;
+function TPickerDialog.Selected: TArray<string>;
 var
   I: Integer;
 begin
@@ -318,7 +318,7 @@ begin
       Result.AddValue(Items[I].ID);
 end;
 
-procedure TPickerDialog.SetHidden(IDs: TArray<integer>);
+procedure TPickerDialog.SetHidden(IDs: TArray<string>);
 begin
   FAlwaysHidden := IDs;
 
@@ -332,7 +332,7 @@ begin
   UpdateList;
 end;
 
-procedure TPickerDialog.SetSelected(IDs: TArray<integer>);
+procedure TPickerDialog.SetSelected(IDs: TArray<string>);
 var
   I: Integer;
 begin
