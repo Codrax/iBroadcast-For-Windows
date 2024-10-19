@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.Visual.Slider, Vcl.StdCtrls, BASS,
-  Cod.MasterVolume, Vcl.ExtCtrls, ActiveX, MMDeviceApi, Math, MMSystem,
+  Cod.WindowsRT.MasterVolume, Vcl.ExtCtrls, ActiveX, MMDeviceApi, Math, MMSystem,
   Cod.Visual.Button;
 
 type

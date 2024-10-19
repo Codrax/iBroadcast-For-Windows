@@ -16,109 +16,109 @@
 unit Cod.Graphics;
 
 interface
-  uses
-    Winapi.Windows, Winapi.Messages, Classes, Vcl.Graphics, System.Types, System.Math,
-    Vcl.Forms, System.SysUtils, Imaging.pngimage, Imaging.GIFImg, Imaging.jpeg,
-    Cod.ColorUtils, Cod.VarHelpers, Cod.Types, Cod.StringUtils, Cod.GDI,
-    Cod.ArrayHelpers;
+uses
+  Winapi.Windows, Winapi.Messages, Classes, Vcl.Graphics, System.Types, System.Math,
+  Vcl.Forms, System.SysUtils, Vcl.Imaging.pngimage, Vcl.Imaging.GIFImg,
+  Vcl.Imaging.jpeg, Cod.ColorUtils, Cod.VarHelpers, Cod.Types,
+  Cod.StringUtils, Cod.GDI, Cod.ArrayHelpers;
 
-  type
-    // Blur Function Dependencies
-    TKernelSize = 1..50;
-    TKernel = record
-      Size: TKernelSize;
-      Weights: array[-50..50] of Single;
-    end;
-    TRGBTriple = packed record
-      b: Byte; {easier to type than rgbtBlue}
-      g: Byte;
-      r: Byte;
-    end;
-    PRow = ^TRow;
-    TRow = array[Word] of TRGBTriple;
-    PPRows = ^TPRows;
-    TPRows = array[Word] of PRow;
+type
+  // Blur Function Dependencies
+  TKernelSize = 1..50;
+  TKernel = record
+    Size: TKernelSize;
+    Weights: array[-50..50] of Single;
+  end;
+  TRGBTriple = packed record
+    b: Byte; {easier to type than rgbtBlue}
+    g: Byte;
+    r: Byte;
+  end;
+  PRow = ^TRow;
+  TRow = array[Word] of TRGBTriple;
+  PPRows = ^TPRows;
+  TPRows = array[Word] of PRow;
 
-    // Items
-    TPent = array[0..4] of TPoint;
-    TDrawMode = (Fill, Fit, Stretch, Center, CenterFill, Center3Fill,
-      CenterFit, Normal, Tile); { Windows DWM use a Center3 Fill }
+  // Items
+  TPent = array[0..4] of TPoint;
+  TDrawMode = (Fill, Fit, Stretch, Center, CenterFill, Center3Fill,
+    CenterFit, Normal, Tile); { Windows DWM use a Center3 Fill }
 
-    TTextFlag = (WordWrap, Top, VerticalCenter, Bottom, Left, Center, Right,
-      NoClip, Auto);
-    TTextFlags= set of TTextFlag;
+  TTextFlag = (WordWrap, Top, VerticalCenter, Bottom, Left, Center, Right,
+    NoClip, ShowAccelChar, Ellipsis, Auto);
+  TTextFlags= set of TTextFlag;
 
-  { Text }
-  function GetMaxFontSize(Canvas: TCanvas; Text: string; MaxWidth,
-    MaxHeight: Integer): integer;
-  function GetMaxFontHeight(Canvas: TCanvas; Text: string; ARect: TRect): integer; overload;
-  function GetMaxFontHeight(Canvas: TCanvas; Text: string; MaxWidth,
-    MaxHeight: Integer): integer; overload;
-  (* Font.Height gives a better precision on font size than Font.Size *)
-  function TrimmifyText(Canvas: TCanvas; Text: string; MaxWidth: Integer;
-    AddDots: boolean = true): string;
-  function CalcTextWidth(Text: string; Font: TFont): integer; overload;
-  function CalcTextWidth(Text: string; FontName: string;
-    FontSize: integer): integer; overload;
-  procedure DrawTextRect(Canvas: TCanvas; ARect: TRect; Text: string;
-    Flags: TTextFlags; AMargin: integer = 0);
-  function GetTextRect(Canvas: TCanvas; ARect: TRect; Text: string;
-    Flags: TTextFlags; AMargin: integer = 0): TRect;
-  function GetWordWrapLines(Canvas: TCanvas; Text: string;
-    ARect: TRect): TArray<string>;
-  function WordWrapGetLineHeight(Canvas: TCanvas; Text: string): integer;
+{ Text }
+function GetMaxFontSize(Canvas: TCanvas; Text: string; MaxWidth,
+  MaxHeight: Integer): integer;
+function GetMaxFontHeight(Canvas: TCanvas; Text: string; ARect: TRect): integer; overload;
+function GetMaxFontHeight(Canvas: TCanvas; Text: string; MaxWidth,
+  MaxHeight: Integer): integer; overload;
+(* Font.Height gives a better precision on font size than Font.Size *)
+function TrimmifyText(Canvas: TCanvas; Text: string; MaxWidth: Integer;
+  AddDots: boolean = true): string;
+function CalcTextWidth(Text: string; Font: TFont): integer; overload;
+function CalcTextWidth(Text: string; FontName: string;
+  FontSize: integer): integer; overload;
+procedure DrawTextRect(Canvas: TCanvas; ARect: TRect; Text: string;
+  Flags: TTextFlags; AMargin: integer = 0);
+function GetTextRect(Canvas: TCanvas; ARect: TRect; Text: string;
+  Flags: TTextFlags; AMargin: integer = 0): TRect;
+function GetWordWrapLines(Canvas: TCanvas; Text: string;
+  ARect: TRect): TArray<string>;
+function WordWrapGetLineHeight(Canvas: TCanvas; Text: string): integer;
 
-  (* Draws inverted colored text *)
-  procedure DrawInvertedText(const ACanvas: TCanvas; const Text: string; const X, Y: integer);
+(* Draws inverted colored text *)
+procedure DrawInvertedText(const ACanvas: TCanvas; const Text: string; const X, Y: integer);
 
-  { Lines }
-  procedure DrawLine(Canvas: TCanvas; Line: TLine);
-  procedure DrawLineOnPoint(Canvas: TCanvas; APoint: TPoint; AAngle: real;
-    ALength: integer);
+{ Lines }
+procedure DrawLine(Canvas: TCanvas; ALine: TLine);
+procedure DrawLineOnPoint(Canvas: TCanvas; APoint: TPoint; AAngle: real;
+  ALength: integer);
 
-  { Round Rect }
-  procedure DrawRoundRect(Canvas: TCanvas; RndRect: TRoundRect);
-  procedure CopyRoundRect(FromCanvas: TCanvas; FromRect: TRoundRect;
-                          DestCanvas: TCanvas; DestRect: TRect; shrinkborder: integer = 0);
+{ Round Rect }
+procedure DrawRoundRect(Canvas: TCanvas; RndRect: TRoundRect);
+procedure CopyRoundRect(FromCanvas: TCanvas; FromRect: TRoundRect;
+                        DestCanvas: TCanvas; DestRect: TRect; shrinkborder: integer = 0);
 
-  { Bitmaps }
-  procedure GradHorizontal(Canvas:TCanvas; Rect:TRect; FromColor, ToColor:TColor);
-  procedure GradVertical(Canvas:TCanvas; Rect:TRect; FromColor, ToColor:TColor);
-  function CanvasToBitmap(Canvas: TCanvas): TBitMap;
-  function RemoveColor(imgsrc: TBitMap; color: TColor): TBitMap;
-  procedure DrawImageInRect(Canvas: TCanvas; Rect: TRect; Image: TGraphic;
-    DrawMode: TDrawMode = TDrawMode.Fill; ImageMargin: integer = 0;
-    ClipImage: boolean = false);
-  function GetDrawModeRects(Rect: TRect; Image: TGraphic; DrawMode:
-    TDrawMode = TDrawMode.Fill; ImageMargin: integer = 0): TArray<TRect>; overload;
-  function GetDrawModeRect(Rect: TRect; Image: TGraphic; DrawMode:
-    TDrawMode = TDrawMode.Fill; ImageMargin: integer = 0): TRect; overload;
+{ Bitmaps }
+procedure GradHorizontal(Canvas:TCanvas; Rect:TRect; FromColor, ToColor:TColor);
+procedure GradVertical(Canvas:TCanvas; Rect:TRect; FromColor, ToColor:TColor);
+function CanvasToBitmap(Canvas: TCanvas): TBitMap;
+function RemoveColor(imgsrc: TBitMap; color: TColor): TBitMap;
+procedure DrawImageInRect(Canvas: TCanvas; Rect: TRect; Image: TGraphic;
+  DrawMode: TDrawMode = TDrawMode.Fill; ImageMargin: integer = 0;
+  ClipImage: boolean = false; Opacity: byte = 255);
+function GetDrawModeRects(Rect: TRect; Image: TGraphic; DrawMode:
+  TDrawMode = TDrawMode.Fill; ImageMargin: integer = 0): TArray<TRect>; overload;
+function GetDrawModeRect(Rect: TRect; Image: TGraphic; DrawMode:
+  TDrawMode = TDrawMode.Fill; ImageMargin: integer = 0): TRect; overload;
 
-  { Inversion Draw }
-  procedure StretchInvertedMask(Source: TBitMap; Destination: TCanvas; DestRect: TRect); overload;
-  procedure StretchInvertedMask(Source: TCanvas; Destination: TCanvas; DestRect: TRect); overload;
+{ Inversion Draw }
+procedure StretchInvertedMask(Source: TBitMap; Destination: TCanvas; DestRect: TRect); overload;
+procedure StretchInvertedMask(Source: TCanvas; Destination: TCanvas; DestRect: TRect); overload;
 
-  { Canvas Utils }
-  procedure CopyRectWithOpacity(Dest: TCanvas; DestRect: TRect; Source: TCanvas; SourceRect: TRect; Opacity: Byte);
+{ Canvas Utils }
+procedure CopyRectWithOpacity(Dest: TCanvas; DestRect: TRect; Source: TCanvas; SourceRect: TRect; Opacity: Byte);
 
-  { Screen }
-  procedure QuickScreenShot(var BitMap: TBitMap; Monitor: integer = -2);
-  procedure QuickScreenShotEx(var Bild: TBitMap);
-  procedure ScreenShotApplication(var BitMap: TBitMap; ApplicationCapton: string = 'Program Manager');
+{ Screen }
+procedure QuickScreenShot(var BitMap: TBitMap; Monitor: integer = -2);
+procedure QuickScreenShotEx(var Bild: TBitMap);
+procedure ScreenShotApplication(var BitMap: TBitMap; ApplicationCapton: string = 'Program Manager');
 
-  { Graphics }
-  procedure LoadGraphicFromFile(var Graphic: TGraphic; filename: string);
-  function ResizeGraphic(AGraphic: TGraphic; AWidth, AHeight: integer): TBitMap;
+{ Graphics }
+procedure LoadGraphicFromFile(var Graphic: TGraphic; filename: string);
+function ResizeGraphic(AGraphic: TGraphic; AWidth, AHeight: integer): TBitMap;
 
-  procedure GaussianBlur(Bitmap: TBitmap; Radius: Real);
-  procedure FastBlur(Bitmap: TBitmap; Radius: Real; BlurScale: Integer; HighQuality: Boolean = True);
-  // Blur Functions, credited to ES components pack, also credited to GBlur2
+procedure GaussianBlur(Bitmap: TBitmap; Radius: Real);
+procedure FastBlur(Bitmap: TBitmap; Radius: Real; BlurScale: Integer; HighQuality: Boolean = True);
+// Blur Functions, credited to ES components pack, also credited to GBlur2
 
-  { Object Draw }
-  function MakePent(X, Y, L : integer) : TPent;
-  procedure MakeStar(Canvas : TCanvas; cX, cY, size : integer; Colour : TColor;
-    bordersize: integer = 2; bordercolor: TColor =clBlack);
-  procedure DrawPentacle(Canvas : TCanvas; Pent : TPent);
+{ Object Draw }
+function MakePent(X, Y, L : integer) : TPent;
+procedure MakeStar(Canvas : TCanvas; cX, cY, size : integer; Colour : TColor;
+  bordersize: integer = 2; bordercolor: TColor =clBlack);
+procedure DrawPentacle(Canvas : TCanvas; Pent : TPent);
 
 
 implementation
@@ -260,6 +260,10 @@ begin
         TextFormat := TextFormat + [tfRight];
       if TTextFlag.NoClip in Flags then
         TextFormat := TextFormat + [tfNoClip];
+      if TTextFlag.Ellipsis in Flags then
+        TextFormat := TextFormat + [tfEndEllipsis];
+      if not (TTextFlag.ShowAccelChar in Flags) then
+        TextFormat := TextFormat + [tfNoPrefix];
 
       Lines := GetWordWrapLines(Canvas, Text, ARect);
 
@@ -345,6 +349,10 @@ begin
         TextFormat := TextFormat + [tfRight];
       if TTextFlag.NoClip in Flags then
         TextFormat := TextFormat + [tfNoClip];
+      if TTextFlag.Ellipsis in Flags then
+        TextFormat := TextFormat + [tfEndEllipsis];
+      if not (TTextFlag.ShowAccelChar in Flags) then
+        TextFormat := TextFormat + [tfNoPrefix];
 
       // Lines
       Lines := GetWordWrapLines(Canvas, Text, ARect);
@@ -354,14 +362,14 @@ begin
       if TTextFlag.VerticalCenter in Flags then
         begin
           for I := 0 to High(Lines) do
-            Top := Top + Canvas.TextHeight(Lines[I]);
+            Top := Top + WordWrapGetLineHeight(Canvas, Lines[I]);
 
           Top := round( ARect.Height / 2 - Top / 2 );
         end;
       if TTextFlag.Bottom in Flags then
         begin
           for I := 0 to High(Lines) do
-            Top := Top + Canvas.TextHeight(Lines[I]);
+            Top := Top + WordWrapGetLineHeight(Canvas, Lines[I]);
 
           Top := ARect.Height - Top;
         end;
@@ -403,6 +411,10 @@ begin
   LineWidth := 0;
 end;
 begin
+  // Replace WIN CL format
+  Text := Text.Replace(#$A#$D, #13);
+  Text := Text.Replace(#$A, #13);
+
   // Get Words
   Words := GetAllSeparatorItems(Text, [' ']);
   for I := 0 to High(Words)-1 do
@@ -420,7 +432,7 @@ begin
             Index := 1;
 
           Temp := Words[I].Remove(0, Index);
-          Words.Insert(I+1, Temp);
+          TArrayUtils<string>.Insert(I+1, Temp, Words);
 
           Words[I] := Words[I].Remove(Index, Words[I].Length-Index);
         end;
@@ -486,11 +498,11 @@ begin
     end;
 end;
 
-procedure DrawLine(Canvas: TCanvas; Line: TLine);
+procedure DrawLine(Canvas: TCanvas; ALine: TLine);
 begin
   with Canvas do begin
-    MoveTo(Line.Point1.X, Line.Point1.Y);
-    LineTo(Line.Point2.X, Line.Point2.Y);
+    MoveTo(ALine.Point1.X, ALine.Point1.Y);
+    LineTo(ALine.Point2.X, ALine.Point2.Y);
   end;
 end;
 
@@ -1001,7 +1013,8 @@ begin
   Result := GetDrawModeRects(Rect, Image, DrawMode, ImageMargin)[0];
 end;
 
-procedure DrawImageInRect(Canvas: TCanvas; Rect: TRect; Image: TGraphic; DrawMode: TDrawMode; ImageMargin: integer; ClipImage: boolean);
+procedure DrawImageInRect(Canvas: TCanvas; Rect: TRect; Image: TGraphic;
+  DrawMode: TDrawMode; ImageMargin: integer; ClipImage: boolean; Opacity: byte);
 var
   Rects: TArray<TRect>;
   I: integer;
@@ -1018,26 +1031,49 @@ begin
     // Standard Draw
     begin
       for I := 0 to High( Rects ) do
-        Canvas.StretchDraw( Rects[I], Image, 255 );
+        Canvas.StretchDraw( Rects[I], Image, Opacity );
     end
   else
     // Clip Image Drw
     begin
       for I := 0 to High(Rects) do
         begin
-          Bitmap := TBitMap.Create;
+          Bitmap := TBitMap.Create(Rect.Width, Rect.Height);
+          Bitmap.PixelFormat := pf32bit;
+          Bitmap.Transparent := true;
+
+          const PIXEL_BYTE_SIZE = 4;
+
+          // Fill image with
+          for var Y := 0 to Bitmap.Height - 1 do
+            FillMemory(Bitmap.ScanLine[Y], PIXEL_BYTE_SIZE * Bitmap.Width, 0);
+
+          Bitmap.Canvas.Lock;
           try
             FRect := Rects[I];
             FRect.Offset( -Rect.Left, -Rect.Top );
 
-            Bitmap.Width := Rect.Width;
-            Bitmap.Height := Rect.Height;
+            Bitmap.Canvas.StretchDraw(FRect, Image, 255); // Full opacity for temp
 
-            Bitmap.Canvas.StretchDraw(FRect, Image, 255);
+            // Image has no alpha channel, set A bytes to 255
+            if not Image.Transparent then begin
+              const RectZone = TRect.Intersect(Bitmap.Canvas.ClipRect, FRect);
 
-            Canvas.StretchDraw(Rect, BitMap, 255)
-            //Canvas.Draw(Rect.Top, Rect.Left, BitMap);
+              for var Y := RectZone.Top to RectZone.Bottom-1 do begin
+                // Line
+                const Pos: PByte = Bitmap.ScanLine[Y];
+
+                // Start left
+                for var X := RectZone.Left to RectZone.Right-1 do
+                  Pos[X * PIXEL_BYTE_SIZE + 3] := 255;
+              end;
+            end;
+
+            // Draw
+            //Canvas.StretchDraw(Rect, BitMap, Opacity)
+            Canvas.Draw(Rect.Left, Rect.Top, BitMap, Opacity);
           finally
+            Bitmap.Canvas.Unlock;
             BitMap.Free;
           end;
         end;

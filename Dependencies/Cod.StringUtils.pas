@@ -11,15 +11,20 @@
 {                   -- WORK IN PROGRESS --                  }
 {***********************************************************}
 
+{$SCOPEDENUMS ON}
+
 unit Cod.StringUtils;
 
 interface
   uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Math;
+  System.SysUtils, System.Classes, Math;
 
   type
-    TStringFindFlag = (sffIgnoreCase, sffFoundOnce, sffFoundMultiple);
+    TStringFindFlag = (IgnoreCase, FoundOnce, FoundMultiple);
     TStringFindFlags = set of TStringFindFlag;
+
+    TStrGenFlag = (UppercaseLetters, LowercaseLetters, Numbers, Symbols);
+    TStrGenFlags = set of TStrGenFlag;
 
   // Upper String, Lower string
   function SuperStr(nr: string): string;
@@ -28,9 +33,12 @@ interface
   // String Func
   function GetAllSeparatorItems(str: string; separators: TArray<string>): TArray<string>; overload;
   function GetAllSeparatorItems(str: string; separator: string = ','): TArray<string>; overload;
-  function GenerateString(strlength: integer; letters: boolean = true;
+  function GenerateStringSequence(Length: integer; Characters: string): string;
+  function GenerateString(Length: integer; Flags: TStrGenFlags): string;
+  function GenerateStringEx(strlength: integer; letters: boolean = true;
                           capitalization: boolean = true; numbers: boolean = true;
                           symbols: boolean = true): string;
+  function StringBuild(Length: integer; Character: char): string;
 
 
   // String Alterations
@@ -49,25 +57,62 @@ interface
 
   // Search Utilities
   function ClearStringSimbols(MainString: string): string;
+  /// <summary> Return the first string which is not Empty. </summary>
+  function StringNullLess(Strings: TArray<string>): string; overload;
+  /// <summary> Return the first string which is not Empty. </summary>
+  function StringNullLess(First, Second: string): string; overload;
 
   // String List
   procedure InsertStListInStList(insertindex: integer; SubStrList: TStringList; var ParentStringList: TStringList);
   function StringToStringList(str: string; Separator: string = #13): TStringList;
   function StringToArray(str: string; Separator: string = #13): TArray<string>;
   function StringListToString(stringlist: TStringList; Separator: string = #13): string;
-  function StringListArray(stringlist: TStringList): TArray<string>;
+  function StringListToArray(stringlist: TStrings): TArray<string>;
   procedure ArrayToStringList(AArray: TArray<string>; StringList: TStringList);
-  function ArrayToString(AArray: TArray<string>; Separator: string = ', '): string;
+  function ArrayToString(AArray: TArray<string>; Separator: string = #13): string;
 
 const
   allchars = ['0'..'9', 'a'..'z', 'A'..'Z', '~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '=', '+', '[', ']', '{', '}', ';', ':', '"', '\', '|', '<', '>', ',', '.', '/', '?', #39, '`', ' '];
+  nrchars = ['0'..'9'];
+  letterchars = ['a'..'z', 'A'..'Z'];
   symbolchars : TArray<String> = ['~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '=', '+', '[', ']', '{', '}', ';', ':', '"', '\', '|', '<', '>', ',', '.', '/', '?', #39, '`'];
   superspr : TArray<String> = ['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹','⁺','⁻','⁼','⁽','⁾', '⁄','ᵃ', 'ᵇ', 'ᶜ', 'ᵈ', 'ᵉ', 'ᶠ', 'ᵍ', 'ʰ', 'ⁱ', 'ʲ', 'ᵏ', 'ˡ', 'ᵐ', 'ⁿ', 'ᵒ', 'ᵖ', 'q', 'ʳ', 'ˢ', 'ᵗ', 'ᵘ', 'ᵛ', 'ʷ', 'ˣ', 'ʸ', 'ᶻ', 'ᴬ', 'ᴮ', 'C', 'ᴰ', 'ᴱ', 'F', 'ᴳ', 'ᴴ', 'ᴵ', 'ᴶ', 'ᴷ', 'ᴸ', 'ᴹ', 'ᴺ', 'ᴼ', 'ᴾ', 'Q', 'ᴿ', 'S', 'ᵀ', 'ᵁ', 'ⱽ', 'ᵂ', 'X', 'Y', 'Z'];
   subspr : TArray<String> = ['₀','₁','₂','₃','₄','₅','₆','₇','₈','₉','+','-','=','(',')', '⁄', 'ₐ', 'b', 'c', 'd', 'ₑ', 'f', 'g', 'ₕ', 'ᵢ', 'j', 'ₖ', 'ₗ', 'ₘ', 'ₙ', 'ₒ', 'ₚ', 'q', 'ᵣ', 'ₛ', 'ₜ', 'ᵤ', 'ᵥ', 'w', 'ₓ', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
 implementation
 
-function GenerateString(strlength: integer; letters, capitalization,
+function GenerateStringSequence(Length: integer; Characters: string): string;
+var
+  CharactersLength: integer;
+begin
+  CharactersLength := Characters.Length;
+
+  // Generate
+  SetLength(Result, Length);
+  for var I := 1 to Length do begin
+    Randomize;
+    Result[I] := Characters[Random(CharactersLength)+1];
+  end;
+end;
+
+function GenerateString(Length: integer; Flags: TStrGenFlags): string;
+var
+  Chars: string;
+begin
+  Chars := '';
+  if TStrGenFlag.UppercaseLetters in Flags then
+    Chars := Chars + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if TStrGenFlag.LowercaseLetters in Flags then
+    Chars := Chars + 'abcdefghijklmnopqrstuvwxyz';
+  if TStrGenFlag.Numbers in Flags then
+    Chars := Chars + '0123456789';
+  if TStrGenFlag.Symbols in Flags then
+    Chars := Chars + '+-_!@#$%^&*/';
+
+  Result := GenerateStringSequence(Length, Chars);
+end;
+
+function GenerateStringEx(strlength: integer; letters, capitalization,
   numbers, symbols: boolean): string;
 var
   I, A: Integer;
@@ -81,7 +126,6 @@ begin
 
     if (NOT letters) and (NOT numbers) and (NOT symbols) then
       Exit;
-
 
     repeat
       A := Random(3);
@@ -260,6 +304,15 @@ begin
     end;
 end;
 
+function StringBuild(Length: integer; Character: char): string;
+var
+  I: integer;
+begin
+  Result := '';
+  for I := 1 to Length do
+    Result := Result + Character;
+end;
+
 function GetAllSeparatorItems(str: string; separators: TArray<string>): TArray<string>;
 var
   P, N, I, SeparLength: integer;
@@ -356,7 +409,7 @@ var
   P: integer;
 begin
   // Flags
-  if sffIgnoreCase in Flags then
+  if TStringFindFlag.IgnoreCase in Flags then
     begin
       MainString := AnsiLowerCase( MainString );
       SubString := AnsiLowerCase( SubString );
@@ -378,7 +431,7 @@ var
   I, L, offs: Integer;
 begin
   // Flags
-  if sffIgnoreCase in Flags then
+  if TStringFindFlag.IgnoreCase in Flags then
     begin
       MainString := AnsiLowerCase( MainString );
       SubString := AnsiLowerCase( SubString );
@@ -411,7 +464,7 @@ function InString(SubString, MainString: string; Flags: TStringFindFlags = []): 
 var
   Found, CPos: integer;
 begin
-  if sffIgnoreCase in Flags then
+  if TStringFindFlag.IgnoreCase in Flags then
     begin
       substring := AnsiLowerCase(substring);
       substring := AnsiLowerCase(substring);
@@ -426,14 +479,14 @@ begin
     if CPos <> 0 then
       Inc(Found)
 
-  until (CPos = 0) or not ((sffFoundOnce in Flags) or (sffFoundMultiple in Flags));
+  until (CPos = 0) or not ((TStringFindFlag.FoundOnce in Flags) or (TStringFindFlag.FoundMultiple in Flags));
 
   // Flags Search
-  if not ((sffFoundOnce in Flags) or (sffFoundMultiple in Flags)) then
+  if not ((TStringFindFlag.FoundOnce in Flags) or (TStringFindFlag.FoundMultiple in Flags)) then
     Result := Found <> 0
   else
     begin
-      if sffFoundOnce in Flags then
+      if TStringFindFlag.FoundOnce in Flags then
         Result := Found = 1
       else
         Result := Found > 1;
@@ -447,6 +500,19 @@ begin
   Result := MainString;
   for I := 0 to High(SymbolChars) do
     Result := Result.Replace(SymbolChars[I], '')
+end;
+
+function StringNullLess(Strings: TArray<string>): string;
+begin
+  for var I := 0 to High(Strings) do
+    if not Strings[I].IsEmpty then
+      Exit(Strings[I]);
+  Exit('');
+end;
+
+function StringNullLess(First, Second: string): string; overload;
+begin
+  Result := StringNullLess([First, Second]);
 end;
 
 function StrCopy(MainString: string; frompos, topos: integer; justcontent: boolean): string;
@@ -546,7 +612,7 @@ begin
     end;
 end;
 
-function StringListArray(stringlist: TStringList): TArray<string>;
+function StringListToArray(stringlist: TStrings): TArray<string>;
 var
   I: Integer;
 begin

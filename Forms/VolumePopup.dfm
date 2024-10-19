@@ -763,12 +763,11 @@ object VolumePop: TVolumePop
           AlignWithMargins = True
           Left = 3
           Top = 3
-          Width = 326
+          Width = 92
           Height = 21
           Align = alTop
           Caption = 'Ouput device'
           Transparent = False
-          ExplicitWidth = 92
         end
         object Out_Device: TLabel
           AlignWithMargins = True

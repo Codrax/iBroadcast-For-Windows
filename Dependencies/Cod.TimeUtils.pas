@@ -17,8 +17,8 @@ unit Cod.TimeUtils;
 
 interface
   uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, IdSNTP,
-  Registry, DateUtils;
+  {$IFDEF MSWINDOWS}Winapi.Windows, Winapi.Messages, Registry, {$ENDIF}System.SysUtils, System.Classes, IdSNTP,
+  DateUtils, Cod.Types;
 
   const
     DEFAULT_SERVER = 'time.windows.com';
@@ -28,20 +28,27 @@ interface
   type
     TDateValueType = (Year, Month, Week, Day, Hour, Minute, Second, Millisecond);
 
-  // Time-Date Utilities
+  (* Time-Date Utilities *)
   procedure DateTimePassed(Time1, Time2: TDateTime; var Years, Months, Days, Hours, Minutes, Seconds, Milliseconds: cardinal);
 
-  // String
+  (* String *)
+  function TimePassedToString(Seconds: cardinal): string;
   function DateTimePassedString(Time1, Time2: TDateTime; IncludeMilliseconds: boolean = false; Acronym: boolean = false): string;
+  // Converts a value type to a formatted string. Such as 4 = "4 Minutes"
   function DateValueToString(Value: integer; AType: TDateValueType; Acronym: boolean = false): string;
 
-  // Networking
+  (* DateUtils supplement *)
+  function RecodeWeek(const AValue: TDateTime; const AWeek: Word): TDateTime;
+
+  (* Networking *)
   function SyncInternetTime(timeserver: string = DEFAULT_SERVER): boolean;
   function GetInternetTime(timeserver: string = DEFAULT_SERVER): TDateTime;
 
   function PingTimeServer(timeserver: string = DEFAULT_SERVER): boolean;
 
+  {$IFDEF MSWINDOWS}
   function GetWindowsTimeServer(Secondary: boolean = false): string;
+  {$ENDIF}
 
 var
   STR_YEAR: string = 'Year';
@@ -112,6 +119,22 @@ begin
   Milliseconds := MillisecondsBetween(Time1, Time2);
 end;
 
+function TimePassedToString(Seconds: cardinal): string;
+var
+  Minutes, Hours: cardinal;
+begin
+  Minutes := Seconds div 60;
+  Seconds := Seconds - Minutes * 60;
+
+  Hours := Minutes div 60;
+  Minutes := Minutes - Hours * 60;
+
+  Result := IntToStrIncludePrefixZeros(Minutes, 2) + ':' + IntToStrIncludePrefixZeros(Seconds, 2);
+
+  if Hours > 0 then
+    Result := IntToStrIncludePrefixZeros(Hours, 2) + ':' + Result;
+end;
+
 function DateTimePassedString(Time1, Time2: TDateTime; IncludeMilliseconds: boolean; Acronym: boolean): string;
 var
   Years, Months, Days, Hours, Minutes, Seconds, Milliseconds: cardinal;
@@ -157,8 +180,7 @@ var
   PostFix: string;
   IsOne: boolean;
 begin
-  if not Acronym then
-    IsOne := Value = 1;
+  IsOne := Value = 1;
 
   case AType of
     TDateValueType.Year: if Acronym then
@@ -232,6 +254,13 @@ begin
   Result := Format('%D%S', [Value, Postfix]);
 end;
 
+function RecodeWeek(const AValue: TDateTime; const AWeek: Word): TDateTime;
+begin
+  Result := IncWeek(AValue,
+    AWeek-WeekOf(AValue)
+    );
+end;
+
 function SyncInternetTime(timeserver: string = DEFAULT_SERVER): boolean;
 var
   SNTPClient: TIdSNTP;
@@ -278,6 +307,7 @@ begin
   end;
 end;
 
+{$IFDEF MSWINDOWS}
 function GetWindowsTimeServer(Secondary: boolean): string;
 var
   R: TRegistry;
@@ -300,5 +330,6 @@ begin
     R.Free;
   end;
 end;
+{$ENDIF}
 
 end.

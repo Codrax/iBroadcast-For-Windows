@@ -69,6 +69,7 @@ var
   npadhandle: HWnd;
 begin
   npadhandle := GetOtherHandle;
+
   if npadhandle <> 0 then
     begin
       SetForegroundWindow(npadhandle);

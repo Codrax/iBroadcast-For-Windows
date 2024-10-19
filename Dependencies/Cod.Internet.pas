@@ -15,14 +15,26 @@ unit Cod.Internet;
 
 interface
   uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, IdHTTP,
-  VCL.Graphics, Winapi.ActiveX, URLMon, IOUtils, Imaging.GIFImg, Imaging.jpeg,
-  Imaging.pngimage, IdSSLOpenSSL;
+  System.SysUtils, System.Classes, IdHTTP, IdSSLOpenSSL,
+  {$IFDEF MSWINDOWS}
+  Vcl.Graphics, Vcl.Imaging.jpeg, Vcl.Imaging.GIFImg, Vcl.Imaging.pngimage,
+  URLMon,
+  {$ENDIF}
+  IOUtils, Cod.Files, Cod.StringUtils;
 
-  function GetInternetImage(imageurl: string; downloadfallback: boolean = true): TGraphic;
-
+  // General
   function DownloadFile(Source, Destination: string): Boolean;
-  function DownloadFileEx(Source, Dest: string): Boolean;
+  function GetInternetStream(URL: string; downloadfallback: boolean = true): TStream;
+  {$IFDEF MSWINDOWS}
+  function GetInternetImage(ImageURL: string; downloadfallback: boolean = true): TGraphic; overload;
+  procedure GetInternetImage(ImageURL: string; var Image: TGraphic; downloadfallback: boolean = true); overload;
+  {$ENDIF}
+
+  // Util
+  function DownloadFileHTTP(Source, Destination: string): Boolean;
+  {$IFDEF MSWINDOWS}
+  function DownloadFileMon(Source, Destination: string): Boolean;
+  {$ENDIF}
 
   // String Data
   function MaskEmailAdress(Adress: string): string;
@@ -30,57 +42,105 @@ interface
 implementation
 
 function DownloadFile(Source, Destination: string): Boolean;
+begin
+  Result := false;
+
+  // Attempt 1 - IDHTTP
+  if DownloadFileHTTP( Source, Destination ) then
+    Exit(true);
+
+  {$IFDEF MSWINDOWS}
+  // Attempt 2 - UrlMon
+  if DownloadFileMon( Source, Destination) then
+    Exit(true);
+  {$ENDIF}
+end;
+
+function DownloadFileHTTP(Source, Destination: string): Boolean;
 var
-  IdHTTP1: TIdHTTP;
+  HTTP: TIdHTTP;
+  SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
   FileStream: TFileStream;
 begin
   try
     // Attempt 1 - IDHTTP
-    IdHTTP1 := TIdHTTP.Create(nil);
+    HTTP := TIdHTTP.Create(nil);
+    SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
+    SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
+    HTTP.IOHandler := SSLIOHandler;
+
     FileStream := TFileStream.Create(Destination, fmCreate);
     try
-      IdHTTP1.Get(Source, FileStream);
+      HTTP.Get(Source, FileStream);
 
       Result := TFile.Exists(Destination);
     finally
-      IdHTTP1.Free;
+      HTTP.Free;
       FileStream.Free;
     end;
   except
-    // Attempt 2 - UrlMon
-    try
-      Result := UrlDownloadToFile( nil, PChar(source), PChar( Destination ) , 0, nil ) = 0;
-    except
-      // Failure
-      Result := False;
-    end;
+    Result := false;
   end;
 end;
 
-function DownloadFileEx(Source, Dest: string): Boolean;
+{$IFDEF MSWINDOWS}
+function DownloadFileMon(Source, Destination: string): Boolean;
 begin
-    try
-      Result := UrlDownloadToFile( nil, PChar(source), PChar( Dest ) , 0, nil ) = 0;
-    except
-      Result := False;
-    end;
+  try
+    Result := UrlDownloadToFile( nil, PChar(source), PChar( Destination ) , 0, nil ) = 0;
+  except
+    Result := False;
+  end;
 end;
+{$ENDIF}
 
-function GetInternetImage(imageurl: string; downloadfallback: boolean = true): TGraphic;
+function GetInternetStream(URL: string; downloadfallback: boolean = true): TStream;
 var
-  MS : TMemoryStream;
   HTTP: TIdHTTP;
   SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
-  fname, ext: string;
 begin
   // Create stream
-  MS := TMemoryStream.Create;
+  Result := TMemoryStream.Create;
+
+  // Create HTTP
   HTTP := TIdHTTP.Create;
   SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
   SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
   HTTP.IOHandler := SSLIOHandler;
+  try
+    try
+      // Get Image
+      HTTP.Get(URL, Result);
+      Result.Position := 0;
+    except
+      // Fallback
+      if downloadfallback then begin
+        const FilePath = 'C:\Windows\Temp\tempinternetstream' + GenerateString(10, [TStrGenFlag.LowercaseLetters, TStrGenFlag.Numbers]);
+        if not DownloadFile(URL, FilePath) then
+          Exit;
 
-  ext := Copy(imageurl, imageurl.LastIndexOf('.') + 2, imageurl.Length);
+        // Load
+        const FS = TFileStream.Create(FilePath, fmOpenRead);
+        try
+          Result.CopyFrom(FS, FS.Size);
+          TFile.Delete(FilePath);
+        finally
+          FS.Free;
+        end;
+      end;
+    end;
+  finally
+    // Free
+    HTTP.Free;
+  end;
+end;
+
+{$IFDEF MSWINDOWS}
+function GetInternetImage(ImageURL: string; downloadfallback: boolean = true): TGraphic;
+var
+  ext: string;
+begin
+  ext := Copy(ImageURL, ImageURL.LastIndexOf('.') + 2, ImageURL.Length);
 
   if ext = 'bmp' then
     Result := TBitMap.Create
@@ -94,23 +154,40 @@ begin
   if ext = 'gif' then
     Result := TGifImage.Create
   else
-    {Graphic := TGraphic.Create;}Result := TBitMap.Create;
+    {Graphic := TGraphic.Create;}Result := TPngImage.Create;  // Default network image
+
+  GetInternetImage(ImageURL, Result, downloadfallback);
+end;
+
+procedure GetInternetImage(ImageURL: string; var Image: TGraphic; downloadfallback: boolean = true);
+var
+  MS : TMemoryStream;
+  HTTP: TIdHTTP;
+  SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
+  fname: string;
+begin
+  // Create stream
+  MS := TMemoryStream.Create;
+  HTTP := TIdHTTP.Create;
+  SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
+  SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
+  HTTP.IOHandler := SSLIOHandler;
 
   try
     try
       // Get Image
-      HTTP.get(imageurl, MS);
-      Ms.Seek(0,soFromBeginning);
-      Result.LoadFromStream(MS);
+      HTTP.Get(ImageURL, MS);
+      Ms.Seek(0, soFromBeginning);
+      Image.LoadFromStream(MS);
     except
 
       // Fallback
       if downloadfallback then
         begin
-          fname := 'C:\Windows\Temp\tempinternetimg' + Copy(imageurl, imageurl.LastIndexOf('.') + 1, imageurl.Length);
-          if DownloadFile(imageurl, fname) then
+          fname := 'C:\Windows\Temp\tempinternetimg' + ValidateFileName(Copy(ImageURL, ImageURL.LastIndexOf('.') + 1, ImageURL.Length));
+          if DownloadFile(ImageURL, fname) then
             try
-              Result.LoadFromFile(fname);
+              Image.LoadFromFile(fname);
             except
               RaiseLastOSError;
             end;
@@ -119,12 +196,12 @@ begin
         end;
     end;
   finally
-
     // Free Memory
     FreeAndNil(MS);
     HTTP.Free;
   end;
 end;
+{$ENDIF}
 
 function MaskEmailAdress(Adress: string): string;
 var

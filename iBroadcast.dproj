@@ -125,7 +125,6 @@
         <VerInfo_MinorVer>8</VerInfo_MinorVer>
         <VerInfo_Keys>CompanyName=Codrut Software;FileDescription=Codrut&apos;s iBroadcast for Windows;FileVersion=1.8.4.0;InternalName=;LegalCopyright=Codrut Software;LegalTrademarks=Petculescu Codrut;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=Codrut&apos;s iBroadcast for Windows;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_Release>4</VerInfo_Release>
-        <Debugger_RunParams>-log32</Debugger_RunParams>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>

@@ -8,7 +8,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
   Vcl.Graphics, Registry, Vcl.Dialogs, Vcl.Forms, UITypes, Types, Winapi.shlobj,
   Cod.Registry, IOUtils, ActiveX, ComObj, ShellApi, Cod.ColorUtils, PsApi,
-  Cod.Files, Cod.Types, Cod.MesssageConst, Winapi.TlHelp32;
+  Cod.Files, Cod.Types, Cod.MesssageConst, Winapi.TlHelp32, Cod.Windows.ThemeApi;
 
   type
     // Cardinals
@@ -48,54 +48,179 @@ uses
       function FindProcess(Executable: string): integer;
     end;
 
+    // Handle helper
+    THWNDHelper = record helper for HWND
+  private
+    public
+      // Information
+      function GetTitle: string;
+      function GetBoundsRect: TRect;
+      function GetClientRect: TRect;
+      function GetCanvas: TCanvas;
+
+      procedure SendCloseMessage;
+
+      // Process
+      function GetProcessID: DWORD;
+      function GetProcessHandle(Permissions: DWORD): THandle; // needs to be closed with CloseHandle()
+      function GetModuleFilePath: string;
+      function GetModuleName: string;
+      function GetModuleFilePathEx: string;
+      function TerminateProcess(AExitCode: integer=1): boolean;
+
+      // Children
+      function GetChildWindows: TArray<HWND>;
+    end;
+
+
+  { Forms }
+  /// <summary>
+  ///  Remove the WS_CAPTION style flag from the form and make a border only form which supports Windows Aero.
+  ///  </summary>
+  procedure MakeBorderForm(Form: TForm);
+
   { Shell32 }
+  function HasAdministratorPrivileges: boolean;
   function IsUserAnAdmin(): BOOL; external shell32;
+  function IsAdministrator32: boolean;
 
   { AdvApi32 }
-  function CheckTokenMembership(TokenHandle: THANDLE; SidToCheck: Pointer; var IsMember: BOOL): BOOL; stdcall; external advapi32 name 'CheckTokenMembership'
+  function CheckTokenMembership(TokenHandle: THANDLE; SidToCheck: Pointer;
+    var IsMember: BOOL): BOOL; stdcall; external advapi32 name 'CheckTokenMembership'
 
-  { Windows API }
+  { Windows }
   function GetWindowsPlatform: TWinVersion;
   function IsWOW64Emulated: boolean;
   function IsWow64Executable: Boolean;
   function GetWindowsArhitecture: TWinPlatform;
   function NTKernelVersion: single;
-  function IdleTime: DWord;
+
+  { Personalisation }
+  procedure SetWallpaper(const FileName: string);
+  function DarkModeAppsActive: Boolean;
+  function DarkModeSystemActive: Boolean;
+  procedure DarkModeApplyToWindow(Handle: HWND); overload;
+  procedure DarkModeApplyToWindow(Handle: HWND; DarkTheme: boolean); overload;
+  function TransparencyEnabled: Boolean;
   function GetAccentColor(brightencolor: boolean = false): TColor;
-  function IsAppsUseDarkTheme: Boolean;
-  function IsSystemUseDarkTheme: Boolean;
-  function IsTransparencyEnabled: Boolean;
-  function GetUserNameString: string;
-  function GetCompleteUserName: string;
-  function GetFileTypeDescription(filetype: string): string;
+
+  { Shell }
+  function GetWinlogonShell: string;
   function GetTaskbarHeight: integer;
+  procedure MinimiseAllWindows;
+  function IdleTime: DWord;
+  procedure FlashWindowInTaskbar;
+  function SHDoDragDrop(Handle: hwnd; dataObj: IDataObject; dropSource: IDropSource;
+    dwEffect: Longint; var pdwEffect: Longint): integer; stdcall; external shell32 name 'SHDoDragDrop';
+
+  { User }
+  function GetUserCLSID: string;
+  function GetUserGUID: string; (* This currently seems to not work/ is unrelated to user picture tasks *)
+  /// <summary> Returns user name. The value used in the users folder and login. </summary>
+  function GetUserNameString: string;
+  /// <summary> Returns computer name. eg. "HOME-COMPUTER". </summary>
+  function GetComputerNameString: string;
+  /// <summary> Returns account name of computer name. eg. "COMPUTER-NAME\john-doe" </summary>
+  function GetComputerAccountName: string;
+  /// <summary> Returns account display name. eg. "John Doe" </summary>
+  function GetCompleteUserName: string;
+  /// <summary>
+  /// Get account profile picture based on the provided resolution.
+  ///  These can by standard, be as follows: 1080, 448, 424, 208, 192, 96, 64, 48, 40, 32
+  /// </summary>
+  function GetUserProfilePicturePath(PrefferedResolution: string = '1080'): string;
+  /// <summary> [DEPRACATED] Returns user profile picture location based on old standard. </summary>
+  function GetUserProfilePictureEx: string;
+
+  { Process }
+  /// <summary> Returns list of all running processes. </summary>
+  function GetProcessList: TProcessList;
+  /// <summary> Returns process ID (PID) of this application. </summary>
+  function ProcessID: integer;
   function GetCurrentAppName: string;
   function GetOpenProgramFileName: string;
   function GetOpenProgramFileNameEx: ansistring;
-  function GetUserCLSID: string;
-  function GetUserGUID: string; (* This currently seems to not work/ is unrelated to user picture tasks *)
-  function GetUserProfilePicturePath(PrefferedResolution: string = '1080'): string;
-  (* Avalabile Resolutions are 1080, 448, 424, 208, 192, 96, 64, 48, 40, 32 *)
-  function GetUserProfilePictureEx: string;
-  procedure SetWallpaper(const FileName: string);
-  procedure MinimiseAllWindows;
+  function GetActiveWindow: HWND;
+  function GetActiveWindows: TArray<HWND>;
 
-  function GetProcessList: TProcessList;
-
+  { Input }
   procedure SimulateKeyPress32(key: Word; const shift: TShiftState; specialkey: Boolean);
+
+  { Registry }
+  procedure RegisterApplicationPath(Name: string; Executable: string; Directory: string = '');
+  procedure UnregisterApplicationPath(Name: string);
+
+  { Dialogs }
   procedure OpenWindowsUI(WinInterface: TWinUX; SuppressAnimation: boolean = false);
   procedure OpenWindowsSettings(Page: TWinSettingsPage);
   procedure OpenWindowsUWPApp(AppURI: string);
-
   procedure ShutDownWindows;
 
   { File and Folder Related Tasks }
-  procedure CreateShortcut(const PathObj, PathLink, Desc, Param: string);
+  procedure CreateShortcut(const Target, DestinationFile, Description, Parameters: string);
+  function GetFileTypeDescription(filetype: string): string;
+
+const
+  KEYEVENTF_KEYDOWN = 0; // declaration
+  VK_ENTER = VK_RETURN;
 
 implementation
 
 const
   USER_PROFILE_PICTURES_LOCATION = '%PUBLIC%\AccountPictures\';
+  APP_PATH_REGISTER_LOCATION = 'HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\';
+
+procedure MakeBorderForm(Form: TForm);
+var
+  Style: Cardinal;
+begin
+  Style := GetWindowLong(Form.Handle, GWL_STYLE);
+
+  // Remove caption bar
+  Style := Style and not (WS_CAPTION) or WS_SIZEBOX;
+  SetWindowLong(Form.Handle, GWL_STYLE, Style);
+
+  // Crate
+  Form.Perform(WM_NCCREATE, 0, 0);
+
+  // Is minimised?
+  if not IsIconic(Form.Handle) then
+    // Re-calculate bounds
+    SetWindowPos(Form.Handle, 0, Form.Left, Form.Top, Form.Width, Form.Height,
+      SWP_NOZORDER or SWP_NOACTIVATE or SWP_FRAMECHANGED)
+end;
+
+function HasAdministratorPrivileges: boolean;
+begin
+  Result := IsUserAnAdmin;
+end;
+
+function IsAdministrator32: boolean;
+const
+  SECURITY_NT_AUTHORITY: TSIDIdentifierAuthority =
+    (Value: (0, 0, 0, 0, 0, 5));
+  SECURITY_BUILTIN_DOMAIN_RID = $00000020;
+  DOMAIN_ALIAS_RID_ADMINS = $00000220;
+var
+  AdminGroup: PSID;
+  Res: longbool;
+begin
+  // IsUserAdmin from Shell32 also works
+  if AllocateAndInitializeSid(
+    SECURITY_NT_AUTHORITY, 2,
+    SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS,
+    0, 0, 0, 0, 0, 0, AdminGroup) then
+  begin
+    try
+      CheckTokenMembership(0, AdminGroup, Res);
+      Result := Res;
+    finally
+      FreeSid(AdminGroup);
+    end;
+  end
+  else
+    Result := False;
+end;
 
 function GetWindowsPlatform: TWinVersion;
 var
@@ -185,6 +310,19 @@ begin
   Result := (GetTickCount - LastInput.dwTime) DIV 1000;
 end;
 
+procedure FlashWindowInTaskbar;
+var
+  Flash: FLASHWINFO;
+begin
+  FillChar(Flash, SizeOf(Flash), 0);
+  Flash.cbSize := SizeOf(Flash);
+  Flash.hwnd := Application.Handle;
+  Flash.uCount := 5;
+  Flash.dwTimeOut := 2000;
+  Flash.dwFlags := FLASHW_ALL;
+  FlashWindowEx(Flash);
+end;
+
 function GetAccentColor(brightencolor: boolean ): TColor;
 var
   R: TRegistry;
@@ -206,64 +344,92 @@ begin
     Result := ChangeColorSat(Result, 50);
 end;
 
-function IsAppsUseDarkTheme: Boolean;
-var
-  R: TRegistry;
+function DarkModeAppsActive: Boolean;
 begin
-  Result := False;
-  R := TRegistry.Create;
-  try
-    R.RootKey := HKEY_CURRENT_USER;
-    if R.OpenKeyReadOnly('Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\') and R.ValueExists('AppsUseLightTheme') then begin
-      Result := R.ReadInteger('AppsUseLightTheme') <> 1;
-    end;
-  finally
-    R.Free;
-  end;
+  Result := Cod.Windows.ThemeApi.ShouldAppsUseDarkMode;
 end;
 
-function IsSystemUseDarkTheme: Boolean;
-var
-  R: TRegistry;
+function DarkModeSystemActive: Boolean;
 begin
-  Result := False;
-  R := TRegistry.Create;
-  try
-    R.RootKey := HKEY_CURRENT_USER;
-    if R.OpenKeyReadOnly('Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\') and R.ValueExists('SystemUsesLightTheme') then begin
-      Result := R.ReadInteger('SystemUsesLightTheme') <> 1;
-    end;
-  finally
-    R.Free;
-  end;
+  Result := Cod.Windows.ThemeApi.ShouldSystemUseDarkMode;
+end;
+procedure DarkModeApplyToWindow(Handle: HWND);
+begin
+  DarkModeApplyToWindow(Handle, DarkModeAppsActive);
 end;
 
-function IsTransparencyEnabled: Boolean;
+procedure DarkModeApplyToWindow(Handle: HWND; DarkTheme: boolean); overload;
 var
-  R: TRegistry;
+  Value: longbool;
 begin
-  Result := False;
-  R := TRegistry.Create;
-  try
-    R.RootKey := HKEY_CURRENT_USER;
-    if R.OpenKeyReadOnly('Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\') and R.ValueExists('EnableTransparency') then begin
-      Result := R.ReadInteger('EnableTransparency') <> 1;
-    end;
-  finally
-    R.Free;
-  end;
+  Value := DarkTheme; // must be longbool
+
+  DwmSetWindowAttribute(Handle, ImmersiveDarkMode, Value, SizeOf(Value));
+  AllowDarkModeForWindow(Handle, Value);
+  AllowDarkModeForApp(Value);
+end;
+
+function TransparencyEnabled: Boolean;
+begin
+  Result := TQuickReg.GetBoolValue('Software\Microsoft\Windows\CurrentVersion\Themes\Personalize\', 'EnableTransparency');
 end;
 
 function GetUserNameString: string;
 var
-  nSize: DWord;
+  dwSize: DWORD;
 begin
- nSize := 1024;
- SetLength(Result, nSize);
- if GetUserName(PChar(Result), nSize) then
-   SetLength(Result, nSize-1)
- else
-   RaiseLastOSError;
+  // Get size
+  dwSize := 0;
+  GetUserName(nil, dwSize);
+
+  // None
+  if dwSize = 0 then
+    Exit('');
+
+  // Provide address
+  SetLength(Result, dwSize-1); // exclude null-terminated
+  if not GetUserName(PWideChar(Result), dwSize) then
+    RaiseLastOSError;
+end;
+
+function GetComputerNameString: string;
+const
+  nameType = TComputerNameFormat.ComputerNameNetBIOS;
+var
+  dwSize: DWord;
+begin
+  // Get size
+  dwSize := 0;
+  GetComputerNameEx(nameType, nil, dwSize);
+
+  // None
+  if dwSize = 0 then
+    Exit('');
+
+  // Provide address
+  SetLength(Result, dwSize-1); // exclude null-terminated
+  if not GetComputerNameEx(nameType, PWideChar(Result), dwSize) then
+    RaiseLastOSError;
+end;
+
+function GetComputerAccountName: string;
+const
+  nameType = EXTENDED_NAME_FORMAT.NameSamCompatible;
+var
+  dwSize: DWORD;
+begin
+  // Get size
+  dwSize := 0;
+  GetUserNameEx(nameType, nil, dwSize);
+
+  // None
+  if dwSize = 0 then
+    Exit('');
+
+  // Provide address
+  SetLength(Result, dwSize-1); // exclude null-terminated
+  if not GetUserNameEx(nameType, PWideChar(Result), dwSize) then
+    RaiseLastOSError;
 end;
 
 function GetCompleteUserName: string;
@@ -271,25 +437,18 @@ const
   nameType = NameDisplay;
 var
   dwSize: DWORD;
-  userName: PWideChar;
 begin
+  // Get size
   dwSize := 0;
-  if Succeeded(GetUserNameEx(nameType, nil, dwSize)) then
-  begin
-    GetMem(userName, dwSize * SizeOf(WideChar));
-    try
-      if Succeeded(GetUserNameEx(nameType, userName, dwSize)) then
-      begin
-        // use the name
-        Result := PChar(userName);
-      end
-      else
-        RaiseLastOSError;
-    finally
-      FreeMem(userName);
-    end;
-  end
-  else
+  GetUserNameEx(nameType, nil, dwSize);
+
+  // None
+  if dwSize = 0 then
+    Exit('');
+
+  // Provide address
+  SetLength(Result, dwSize-1); // exclude null-terminated
+  if not GetUserNameEx(nameType, PWideChar(Result), dwSize) then
     RaiseLastOSError;
 end;
 
@@ -299,6 +458,11 @@ begin
     Exit('File Folder');
 
   Result := STRING_UNKNOWN;
+end;
+
+function GetWinlogonShell: string;
+begin
+  Result := TQuickReg.GetStringValue('Computer\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon', 'Shell');
 end;
 
 function GetTaskbarHeight: integer;
@@ -348,6 +512,32 @@ begin
   H := getforegroundwindow;
   Getwindowmodulefilename(h,s,max_path);
   result := ansistring(S);
+end;
+
+function GetActiveWindow: HWND;
+begin
+  Result := GetForegroundWindow;
+end;
+
+function EnumWindowsCallback_ProcessPointer(Wnd: HWND; lParam: LPARAM): BOOL; stdcall;
+type
+  AType = TArray<HWND>;
+  ATypeP = ^AType;
+var
+  ArrayP: ATypeP;
+begin
+  ArrayP := ATypeP(lParam);
+  const Index = Length(ArrayP^);
+  SetLength(ArrayP^, Index+1);
+  ArrayP^[Index] := Wnd;
+
+  Result := true;
+end;
+function GetActiveWindows: TArray<HWND>;
+begin
+  Result := [];
+
+  EnumWindows(@EnumWindowsCallback_ProcessPointer, LPARAM(@Result));
 end;
 
 function GetUserCLSID: string;
@@ -427,7 +617,7 @@ end;
 function GetUserProfilePictureEx: string;
 begin
   Result :=
-    IncludeTrailingPathDelimiter( GetUserShellLocation(TUserShellLocation.shlAppDataLocal) )
+    IncludeTrailingPathDelimiter( GetUserShellLocation(TUserShellLocation.AppDataLocal) )
       + 'Microsoft\Windows\AccountPicture\UserImage.jpg';
 end;
 
@@ -444,6 +634,11 @@ begin
   hTaskBar := FindWindow('Shell_TrayWnd', nil);
   if hTaskBar <> 0 then
     SendMessage(hTaskBar, WM_COMMAND, MAKEWPARAM(419, 0), 0);
+end;
+
+function ProcessID: integer;
+begin
+  Result := GetCurrentProcessId;
 end;
 
 function GetProcessList: TArray<TProcess>;
@@ -559,6 +754,38 @@ begin
   end;
 end;
 
+procedure RegisterApplicationPath(Name: string; Executable: string; Directory: string);
+const
+  N_PATH = 'Path';
+var
+  R: TWinRegistry;
+begin
+  const RegPath = APP_PATH_REGISTER_LOCATION + Name + '\';
+
+  R := TWinRegistry.Create;
+  try
+    if not R.KeyExists(RegPath) then
+      R.CreateKey(RegPath);
+
+    R.WriteValue(RegPath, '', Executable);
+
+    if Directory <> '' then
+      R.WriteValue(RegPath, N_PATH, Directory)
+    else
+      if R.GetValueExists(RegPath, N_PATH) then
+        R.DeleteValue(Regpath, N_PATH);
+  finally
+    R.Free;
+  end;
+end;
+
+procedure UnregisterApplicationPath(Name: string);
+begin
+  const RegPath = APP_PATH_REGISTER_LOCATION + Name + '\';
+  if TQuickReg.KeyExists(RegPath) then
+    TQuickReg.DeleteKey(RegPath);
+end;
+
 procedure OpenWindowsUI(WinInterface: TWinUX; SuppressAnimation: boolean);
 var
   URI, PARAM: string;
@@ -636,7 +863,7 @@ begin
   ShellExecute(0, 'open', 'powershell', '-c "(New-Object -Com Shell.Application).ShutdownWindows()"', nil, 0);
 end;
 
-procedure CreateShortcut(const PathObj, PathLink, Desc, Param: string);
+procedure CreateShortcut(const Target, DestinationFile, Description, Parameters: string);
 var
   IObject: IUnknown;
   SLink: IShellLink;
@@ -647,12 +874,12 @@ begin
   PFile:=IObject as IPersistFile;
   with SLink do
   begin
-    SetArguments(PChar(Param));
-    SetDescription(PChar(Desc));
-    SetPath(PChar(PathObj));
-    SetWorkingDirectory(PChar(ExtractFileDir(PathObj)));
+    SetArguments(PChar(Parameters));
+    SetDescription(PChar(Description));
+    SetPath(PChar(Target));
+    SetWorkingDirectory(PChar(ExtractFileDir(Target)));
   end;
-  PFile.Save(PWChar(WideString(PathLink)), FALSE);
+  PFile.Save(PWChar(WideString(DestinationFile)), FALSE);
 end;
 
 { TProcessListHelper }
@@ -695,6 +922,117 @@ end;
 procedure TProcess.KillProcess;
 begin
   ShellExecute( 0, 'open', 'taskkill', PChar(Format('/PID "%D" /F', [PID])), nil, 0);
+end;
+
+{ THWNDHelper }
+
+function THWNDHelper.GetBoundsRect: TRect;
+begin
+  GetWindowRect(Self, Result);
+end;
+
+function THWNDHelper.GetCanvas: TCanvas;
+begin
+  Result := TCanvas.Create;
+  Result.Handle := GetWindowDC(Self);
+end;
+
+function THWNDHelper.GetChildWindows: TArray<HWND>;
+begin
+  EnumChildWindows(Self, @EnumWindowsCallback_ProcessPointer, LPARAM(@Result));
+end;
+
+function THWNDHelper.GetClientRect: TRect;
+begin
+  Winapi.Windows.GetClientRect(Self, Result);
+end;
+
+function THWNDHelper.GetModuleFilePath: string;
+var
+  HProcess: THandle;
+  path: array[0..4095] of Char;
+begin
+  HProcess := GetProcessHandle(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ);
+  if HProcess <> 0 then
+    try
+      if GetModuleFileNameEx(HProcess, 0, @path[0], Length(path)) = 0 then
+        RaiseLastOSError;
+
+      Result := path;
+    finally
+      CloseHandle(HProcess);
+    end
+  else
+    RaiseLastOSError;
+end;
+
+function THWNDHelper.GetModuleFilePathEx: string;
+var
+  OutValue: array[0..MAX_PATH] of Char;
+begin
+  GetWindowModuleFileName(Self, OutValue, Length(OutValue));
+
+  Result := OutValue;
+end;
+
+function THWNDHelper.GetModuleName: string;
+var
+  HProcess: THandle;
+  path: array[0..4095] of Char;
+begin
+  HProcess := GetProcessHandle(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ);
+  if HProcess <> 0 then
+    try
+      if GetModuleBaseName(HProcess, 0, @path[0], Length(path)) = 0 then
+        RaiseLastOSError;
+
+      Result := path;
+    finally
+      CloseHandle(HProcess);
+    end
+  else
+    RaiseLastOSError;
+end;
+
+function THWNDHelper.GetProcessHandle(Permissions: DWORD): THandle;
+begin
+  Result := OpenProcess(Permissions, FALSE, GetProcessID);
+end;
+
+function THWNDHelper.GetProcessID: DWORD;
+begin
+  GetWindowThreadProcessId(Self, Result);
+end;
+
+function THWNDHelper.GetTitle: string;
+var
+  Title: array[0..255] of Char;
+begin
+  GetWindowText(Self, Title, Length(Title));
+
+  Result := Title;
+end;
+
+procedure THWNDHelper.SendCloseMessage;
+begin
+  PostMessage(Self, WM_CLOSE, 0, 0);
+end;
+
+function THWNDHelper.TerminateProcess(AExitCode: integer): boolean;
+var
+  HProcess: THandle;
+begin
+  Result := false;
+
+  HProcess := GetProcessHandle(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ or PROCESS_VM_WRITE or PROCESS_TERMINATE);
+  if HProcess <> 0 then
+    try
+      Result := Winapi.Windows.TerminateProcess( HProcess, AExitCode );
+    finally
+      CloseHandle(HProcess);
+    end
+  else
+    RaiseLastOSError;
 end;
 
 end.

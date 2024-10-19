@@ -10,19 +10,19 @@ uses
   Vcl.ActnCtrls, Vcl.ActnMenus, Vcl.TitleBarCtrls, Vcl.StdActns, Vcl.ExtActns,
   Vcl.ActnList, System.Actions, Vcl.PlatformDefaultStyleActnCtrls, Vcl.ExtCtrls,
   Vcl.WinXCtrls, Cod.Visual.Button, Cod.Visual.Image, Vcl.StdCtrls,
-  Vcl.Imaging.pngimage, DebugForm, Cod.Visual.Slider,
+  Vcl.Imaging.pngimage, DebugForm, Cod.Visual.Slider, Cod.WindowsRT.MediaControls,
   Cod.ColorUtils, Cod.Graphics, Cod.VarHelpers, Cod.Types,
   Cod.Visual.StandardIcons, Imaging.jpeg, Threading, Cod.Dialogs,
   Vcl.Imaging.GIFImg, Cod.Visual.Panels, IOUtils, Cod.Internet,
-  Cod.Audio, UITypes, Types, Math, Performance,
+  Cod.Audio, UITypes, Types, Math, Performance,  Cod.WindowsRT.AppRegistration,
   Cod.Math, System.IniFiles, System.Generics.Collections, Web.HTTPApp,
   Bass, System.Win.TaskbarCore, Vcl.Taskbar, Cod.Visual.CheckBox,
   Vcl.ControlList, Vcl.OleCtrls, SHDocVw, Vcl.Menus,
-  Cod.MasterVolume, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
+  Cod.WindowsRT.MasterVolume, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   IdHTTP, CreatePlaylistForm, Offline, Cod.StringUtils, iBroadcastUtils,
   PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar, Cod.Windows,
   Cod.VersionUpdate, Cod.ArrayHelpers, Cod.Components, RatingPopup,
-  CodeSources, SpectrumVis3D, Vcl.Buttons, LoggingFOrm;
+  CodeSources, SpectrumVis3D, Vcl.Buttons, LoggingForm;
 
 type
   // Cardinals
@@ -189,7 +189,6 @@ type
     Player_Position: CSlider;
     Time_Pass: TLabel;
     QueueDraw: TPaintBox;
-    QueueSwitchAnimation: TTimer;
     QueueDownGo: TTimer;
     Label3: TLabel;
     Panel15: TPanel;
@@ -506,7 +505,6 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure QueueDrawMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure QueueSwitchAnimationTimer(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure QueueDownGoTimer(Sender: TObject);
     procedure HomeDrawPaint(Sender: TObject);
@@ -699,6 +697,7 @@ type
     procedure StatusChanged;
     procedure UpdateRatingIcon;
     procedure UpdateVolumeIcon;
+    procedure MediaControlsUpdateTimeline;
     procedure TickUpdate;
 
     procedure LoadPlayerSettings;
@@ -732,6 +731,9 @@ type
 
     procedure ToggleShuffle(Value: boolean);
     procedure ToggleRepeat;
+
+    procedure MusicSeekTo(Value: int64);
+    procedure MusicSeekBy(Value: int64);
 
     // Searching
     procedure FiltrateSearch(Term: string; Flags: TSearchFlags = [TSearchFlag.SearchInfo]);
@@ -789,6 +791,13 @@ type
     // External Update
     procedure SetCurrentSongRating(AValue: integer);
 
+    // Media event updates
+    procedure MediaControlsButton(Sender: TTransportCompatibleClass; Button: TSystemMediaTransportControlsButton);
+    procedure MediaControlsPos(Sender: TTransportCompatibleClass; Value: int64);
+    procedure MediaControlsRate(Sender: TTransportCompatibleClass; Value: double);
+    procedure MediaControlsShuffle(Sender: TTransportCompatibleClass; Value: boolean);
+    procedure MediaControlsRepeat(Sender: TTransportCompatibleClass; Value: TMediaPlaybackAutoRepeatMode);
+
     // Utils
     function IntArrayToStr(AArray: TArray<integer>): string;
     function StrArrayToStr(AArray: TArray<string>): string;
@@ -808,7 +817,7 @@ type
 
 const
   // SYSTEM
-  VERSION: TVersionRec = (Major:1; Minor:9; Maintenance: 0);
+  VERSION: TVersionRec = (Major:1; Minor:10; Maintenance: 0);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://api.codrutsoft.com/';
@@ -1009,6 +1018,10 @@ var
   DrawnQueueButtons: boolean;
 
   StartingPoint: TPoint;
+
+  // Player
+  MediaControls: TWindowMediaTransportControls;
+  LastTimeLineUpdate: TDateTime;
 
   // Page Specific Data
   SavedViews: TArray<TViewSave>;
@@ -2959,6 +2972,13 @@ begin
   // Page Navigation
   SetLength(PageHistory, 0);
 
+  // Media controls
+  MediaControls.OnButtonPressed.Add( MediaControlsButton );
+  MediaControls.OnPlaybackPositionChangeRequested.Add( MediaControlsPos );
+  MediaControls.OnPlaybackRateChangeRequested.Add( MediaControlsRate );
+  MediaControls.OnShuffleEnabledChangeRequested.Add( MediaControlsShuffle );
+  MediaControls.OnRepeatModeChangeRequested.Add( MediaControlsRepeat );
+
   AddToLog('Obtaining Form.Create.DEVICE_NAME');
   // Get Client Information
   DEVICE_NAME := Format(DEVICE_NAME_CONST, [GetCompleteUserName + #39's']);
@@ -4536,7 +4556,8 @@ begin
         begin
           QueuePos2 := QueueHover;
 
-          QueueSwitchAnimation.Enabled := true;
+          QueuePos1 := QueuePos2;
+          //QueueSwitchAnimation.Enabled := true;
         end;
 
       // Scroll
@@ -4714,17 +4735,12 @@ begin
               // Skip
               if QueueDragPress then
                 begin
-                  (* Spacing 2 *)
-                  if (I = QueuePos2) then
-                    Inc(Y, trunc((QueueSwitchProgress / 100) * (QListHeight + QListSpacing)));
+                  if (I = QueueDragItem) then begin
+                    Inc( Y, QListHeight+QListSpacing);
 
-                  if (I = QueuePos1) then
-                    (* Spacing *)
-                    Inc(Y, trunc(((100-QueueSwitchProgress) / 100) * (QListHeight + QListSpacing)));
-
-                  if (I = QueueDragItem) then
                     (* Skip *)
                     Continue;
+                  end;
                 end;
 
               // Fill Color
@@ -4826,6 +4842,8 @@ begin
           Brush.Color := ChangeColorSat(ActiveItemColor, 120);
 
           ARect := Rect(0, QueueCursor.Y - QListHeight div 2, AWidth, QueueCursor.Y + QListHeight div 2);
+          ARect.Inflate(-3, -3);
+
           RoundRect( ARect, QListRadius, QListRadius );
 
           // Picture
@@ -5641,23 +5659,6 @@ begin
     end;
 
   QueueUpdated;
-end;
-
-procedure TUIForm.QueueSwitchAnimationTimer(Sender: TObject);
-begin
-  Inc(QueueSwitchProgress, 5);
-  if QueueSwitchProgress > 100 then
-    QueueSwitchProgress := 100;
-  QueueDraw.Repaint;
-
-  if QueueSwitchProgress = 100 then
-    begin
-      QueueSwitchAnimation.Enabled := false;
-
-      QueuePos1 := QueuePos2; 
-      
-      QueueSwitchProgress := 0;
-    end;
 end;
 
 procedure TUIForm.QueueUpdated;
@@ -6992,7 +6993,6 @@ begin
   try
     Song_Cover.Picture.Assign( Tracks[PlayIndex].GetArtwork() );
   except
-    Abort;
   end;
 
   // Player
@@ -7006,6 +7006,17 @@ begin
 
   // Update rating
   UpdateRatingIcon;
+
+  // Update media controls
+  MediaControls.EnablePlayer := true;
+  MediaControls.MediaPlaybackType := TMediaPlaybackType.Music;
+  MediaControls.PlaybackStatus := TMediaPlaybackStatus.Stopped;
+
+  if Song_Cover.Picture <> nil then
+    MediaControls.Thumbnail := Song_Cover.Picture.Graphic;
+  MediaControls.InfoMusic.Title := Tracks[PlayIndex].Title;
+  MediaControls.InfoMusic.Artist := Artists[A].ArtistName;
+  MediaControls.UpdateInformation;
 
   // Update
   StatusChanged;
@@ -7126,6 +7137,93 @@ begin
   SendMessage(Self.Handle, WM_NCLBUTTONDOWN, HTCAPTION, 0);
 end;
 
+procedure TUIForm.MusicSeekBy(Value: int64);
+begin
+  MusicSeekTo( Player.Position + Value );
+end;
+
+procedure TUIForm.MusicSeekTo(Value: int64);
+begin
+  // Range
+  Value := EnsureRange(Value, 0, Player.Duration);
+
+  // Seek point
+  SeekPoint := Value;
+
+  // Value
+  SeekUpdateStatus := Player.PlayStatus;
+  Player.Position := SeekPoint;
+  NeedSeekUpdate := true;
+end;
+
+procedure TUIForm.MediaControlsButton(Sender: TTransportCompatibleClass;
+  Button: TSystemMediaTransportControlsButton);
+begin
+  case Button of
+    TSystemMediaTransportControlsButton.Stop: begin
+      Player.Stop;
+      StatusChanged;
+    end;
+    TSystemMediaTransportControlsButton.Play: begin
+      Player.Play;
+      StatusChanged;
+    end;
+    TSystemMediaTransportControlsButton.Pause: begin
+      Player.Pause;
+      StatusChanged;
+    end;
+
+    TSystemMediaTransportControlsButton.FastForward: MusicSeekBy( 3000 );
+    TSystemMediaTransportControlsButton.Rewind: MusicSeekBy( -3000 );
+    TSystemMediaTransportControlsButton.Next: Action_Next.Execute;
+    TSystemMediaTransportControlsButton.Previous: Action_Previous.Execute;
+  end;
+end;
+
+procedure TUIForm.MediaControlsPos(Sender: TTransportCompatibleClass;
+  Value: int64);
+begin
+  MusicSeekTo( Value );
+end;
+
+procedure TUIForm.MediaControlsRate(Sender: TTransportCompatibleClass;
+  Value: double);
+begin
+  UIForm.AudioSpeed := Value;
+end;
+
+procedure TUIForm.MediaControlsRepeat(Sender: TTransportCompatibleClass;
+  Value: TMediaPlaybackAutoRepeatMode);
+begin
+  case Value of
+    TMediaPlaybackAutoRepeatMode.None: RepeatMode := TRepeat.Off;
+    TMediaPlaybackAutoRepeatMode.Track: RepeatMode := TRepeat.One;
+    TMediaPlaybackAutoRepeatMode.List: RepeatMode := TRepeat.All;
+  end;
+
+  StatusChanged;
+end;
+
+procedure TUIForm.MediaControlsShuffle(Sender: TTransportCompatibleClass;
+  Value: boolean);
+begin
+  ToggleShuffle( not Shuffled );
+
+  // Player
+  UpdateMiniPlayer;
+end;
+
+procedure TUIForm.MediaControlsUpdateTimeline;
+begin
+  MediaControls.Timeline.StartTime := 0;
+  MediaControls.Timeline.EndTime := Player.Duration;
+  MediaControls.Timeline.Position := Player.Position;
+
+  MediaControls.PushTimeline;
+
+  LastTimeLineUpdate := Now;
+end;
+
 procedure TUIForm.MenuStartedAnimation(Sender: TObject);
 begin
   PauseDrawing := true;
@@ -7189,6 +7287,19 @@ begin
 
   // Repaint UI
   RedrawPaintBox;
+
+  // Update media controls
+  if not Player.IsFileOpen then
+    MediaControls.PlaybackStatus := TMediaPlaybackStatus.Stopped
+  else
+    case Player.PlayStatus of
+      TPlayStatus.psStopped: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Stopped;
+      TPlayStatus.psPaused: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Paused;
+      TPlayStatus.psPlaying: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Playing;
+      TPlayStatus.psStalled: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Changing;
+    end;
+
+  MediaControlsUpdateTimeline;
 
   // Mini Player
   if (MiniPlayer <> nil) and MiniPlayer.Visible then
@@ -7327,6 +7438,10 @@ begin
        CalculateLength( trunc(Player.DurationSeconds) )])
   else
     Time_Pass.Caption := '0:00 / 0:00';
+
+  // Media controls
+  if MillisecondsBetween(LastTimeLineUpdate, Now) > 2000 then
+    MediaControlsUpdateTimeline;
 
   // Fix data
   if NeedSeekUpdate and (player.PlayStatus = psPlaying) and (SeekPoint <> -1) and Player.IsFileOpen then
@@ -7705,11 +7820,14 @@ end;
 procedure TUIForm.UpdateVolumeIcon;
 var
   VolPosition: integer;
+  VolMute: boolean;
 begin
   try
     VolPosition := ceil(VolumeApplication.Volume * 4);
+    VolMute := VolumeApplication.Mute;
   except
     VolPosition := ceil(Player.Volume * 4);
+    VolMute := false;
   end;
   case VolPosition of
     0: Button_Volume.BSegoeIcon := #$E992;
@@ -7718,7 +7836,7 @@ begin
     else Button_Volume.BSegoeIcon := #$E995;
   end;
 
-  if VolumeApplication.Mute then
+  if VolMute then
     Button_Volume.BSegoeIcon := #$E74F;
 end;
 
@@ -8414,8 +8532,12 @@ begin
                 FileName := AppData + DOWNLOAD_DIR + ItemIdentifier + ART_EXT;
                 if TFile.Exists(FileName) then
                   begin
+                    Tracks[ItemIndex].Status := Tracks[ItemIndex].Status + [TWorkItem.DownloadingImage];
+
                     Tracks[ItemIndex].CachedImage := TJpegImage.Create;
                     Tracks[ItemIndex].CachedImage.LoadFromFile(FileName);
+
+                    Tracks[ItemIndex].Status := Tracks[ItemIndex].Status - [TWorkItem.DownloadingImage];
                   end;
               end;
 
@@ -8436,9 +8558,13 @@ begin
       TThread.Synchronize(nil, procedure
         begin
           if AImagePointer <> nil then
-            if InfoBox.Visible and (ItemIndex = InfoBoxIndex) then
+            if InfoBox.Visible and (ItemIndex = InfoBoxIndex) then begin
               (* Info Box *)
-              InfoBox.Song_Cover.Picture.Assign( AImagePointer )
+              InfoBox.Song_Cover.Picture.Assign( AImagePointer );
+
+              (* Media controls *)
+              MediaControls.Thumbnail := AImagePointer;
+            end
                 else
               (* Info View Page *)
               if UIForm.Page_SubView.Visible and (ItemIdentifier = LocationExtra) then
@@ -8508,4 +8634,23 @@ begin
   UIForm.UpdateDownloads;
 end;
 
+initialization
+  // Register
+  AppRegistration.AppUserModelID := 'com.codrutsoft.ibroadcast';
+  AppRegistration.AppName := 'Cod'#39's iBroadcast';
+  AppRegistration.AppDescription := 'Codrut'#39's iBroadcast for Windows';
+
+  // Media
+  MediaControls := TWindowMediaTransportControls.Create;
+
+  MediaControls.MediaPlaybackType := TMediaPlaybackType.Music;
+  MediaControls.SupportedMediaControls := [TMediaControlAction.Play,
+    TMediaControlAction.Pause, TMediaControlAction.Stop,
+    TMediaControlAction.SkipPrevious, TMediaControlAction.SkipNext,
+    TMediaControlAction.FastForward, TMediaControlAction.Rewind];
+
+  MediaControls.EnablePlayer := false;
+
+finalization
+  MediaControls.Free;
 end.

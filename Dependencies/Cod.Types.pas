@@ -17,20 +17,49 @@ unit Cod.Types;
 
 interface
   uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
-  Vcl.Graphics, Variants, Vcl.Clipbrd, IOUtils, Math, Types, DateUtils;
+  System.SysUtils, System.Classes,
+  Variants, IOUtils, Math, Types, DateUtils;
 
   type
     // Cardinals
     TCorners = (TopLeft, TopRight, BottomLeft, BottomRight);
 
-    TRelation = (Smaller, Equal, Bigger);
+    TLayout = (Beginning, Center, Ending);
 
-    TFileType = (Text, BMP, PNG, JPEG, GIF, HEIC, TIFF, MP3, MP4, Flac, MDI,
-    OGG, SND, M3U8, EXE, MSI, Zip, GZip, Zip7, Cabinet, TAR, RAR, LZIP, ISO,
-    PDF, HLP, CHM);
+    TFileType = (Unknown,
+      Text, // Default
+      BMP, // Bitmap
+      PNG, // Portable Network Graphic
+      JPEG, // Joint Photography Experts Group
+      GIF, // Graphics Interchange Format
+      HEIC, // High Efficency Image Codec
+      TIFF, // Tagged Image File Format
+      MP3, // MPEG Layer-3
+      MP4, // MPEG Layer-4
+      MKV, // Matroska Container
+      FLAC, // Free lossless audio codec
+      MDI, // MDI
+      OGG, // OGG
+      SND, // Sound
+      M3U8, // Text Playlist file
+      EXE, MSI, // Executable
+      Zip, GZip, Zip7, Cabinet, TAR, RAR, LZIP, ISO, // Zipped containers
+      PDF, // Portable document format
+      HLP, CHM // Windows help file
+      );
+
+    // Const
+    TValueRelationshipHelper = record helper for TValueRelationship
+      const
+        Smaller = LessThanValue;
+        Equal = EqualsValue;
+        Greater = GreaterThanValue;
+    end;
 
     // Graphic ans Canvas
+    TPoints = TArray<TPoint>;
+    TPointsF = TArray<TPointF>;
+
     TRoundRect = record
       public
         Rect: TRect;
@@ -72,9 +101,14 @@ interface
 
       procedure OffSet(const DX, DY: Integer);
 
+      function Points: TPoints;
+
       function Rect: TRect;
       function GetHeight: integer;
       function GetWidth: integer;
+
+      function Length: single;
+      function Angle: single;
 
       function Center: TPoint;
     end;
@@ -90,6 +124,9 @@ interface
       function Rect: TRectF;
       function GetHeight: single;
       function GetWidth: single;
+
+      function Length: single;
+      function Angle: single;
 
       function Center: TPointF;
     end;
@@ -176,13 +213,8 @@ interface
   function MakeRoundRect(SRect: TRect; RndX, RndY: integer): TRoundRect; overload;
   function MakeRoundRect(X1, Y1, X2, Y2: integer; Rnd: integer): TRoundRect; overload;
 
-  function Line(Point1, Point2: TPoint): TLine; overload;
-  function Line(X1, Y1, X2, Y2: integer): TLine; overload;
-
-  function CompareItems(Primary, Secondary: string): TRelation; overload;
-  function CompareItems(Primary, Secondary: integer): TRelation; overload;
-  function CompareItems(Primary, Secondary: real): TRelation; overload;
-  function CompareItems(Primary, Secondary: TDateTime): TRelation; overload;
+  function MakeLine(Point1, Point2: TPoint): TLine; overload;
+  function MakeLine(X1, Y1, X2, Y2: integer): TLine; overload;
 
   // Utilities
   function PointOnLine(X, Y, x1, y1, x2, y2, d: Integer): Boolean;
@@ -190,11 +222,17 @@ interface
   { Rectangles }
   function GetValidRect(Point1, Point2: TPoint): TRect; overload;
   function GetValidRect(Points: TArray<TPoint>): TRect; overload;
+  function GetValidRect(Points: TArray<TPointF>): TRectF; overload;
   function GetValidRect(Rect: TRect): TRect; overload;
   procedure CenterRectInRect(var ARect: TRect; const ParentRect: TRect);
   procedure CenterRectAtPoint(var ARect: TRect; const APoint: TPoint);
   function PointInRect(Point: TPoint; Rect: TRect): boolean;
   procedure ContainRectInRect(var ARect: TRect; const ParentRect: TRect);
+  ///  Morph rectangle or point from a value to the destination rectangle
+  ///  based on the percent provided. The percent is from 0.00 to 1.00
+  ///  NOTE: Rectangles must be normalised!
+  function MorphToRect(Source: TRect; Destination: TRect; Percent: single): TRect; overload;
+  function MorphToRect(Source: TPoint; Destination: TRect; Percent: single): TRect; overload;
 
   { Points }
   function SetPositionAroundPoint(Point: TPoint; Center: TPoint; degree: real; customradius: real = -1): TPoint;
@@ -206,7 +244,9 @@ interface
   function StringToBoolean(str: string): Boolean;
   function BooleanToString(value: boolean): String;
   function BooleanToYesNo(value: boolean): String;
+  {$IFDEF WINDOWS}
   function IconToBitmap(icon: TIcon): TBitMap;
+  {$ENDIF}
   function IntToStrIncludePrefixZeros(Value: integer; NumbersCount: integer): string;
 
   function DecToHex(Dec: int64): string;
@@ -220,7 +260,6 @@ interface
   procedure ArrayRemove(Data: string; var AArray: TArray<string>; RemoveAll: boolean = true);
 
 implementation
-
 
 function MakeRoundRect(SRect: TRect; Rnd: integer): TRoundRect;
 var
@@ -246,54 +285,16 @@ begin
   Result := rec;
 end;
 
-function Line(Point1, Point2: TPoint): TLine;
+function MakeLine(Point1, Point2: TPoint): TLine;
 begin
   Result.Point1 := Point1;
   Result.Point2 := Point2;
 end;
 
-function Line(X1, Y1, X2, Y2: integer): TLine;
+function MakeLine(X1, Y1, X2, Y2: integer): TLine;
 begin
   Result.Point1 := Point(X1, Y1);
   Result.Point2 := Point(X2, Y2);
-end;
-
-function CompareItems(Primary, Secondary: string): TRelation;
-begin
-  Result := TRelation.Smaller;
-
-  if Primary > Secondary then
-    Result := TRelation.Bigger
-      else
-        if Primary = Secondary then
-          Result := TRelation.Equal;
-end;
-
-function CompareItems(Primary, Secondary: integer): TRelation; overload;
-begin
-  Result := TRelation.Smaller;
-
-  if Primary > Secondary then
-    Result := TRelation.Bigger
-      else
-        if Primary = Secondary then
-          Result := TRelation.Equal;
-end;
-
-function CompareItems(Primary, Secondary: real): TRelation; overload;
-begin
-  Result := TRelation.Smaller;
-
-  if Primary > Secondary then
-    Result := TRelation.Bigger
-      else
-        if Primary = Secondary then
-          Result := TRelation.Equal;
-end;
-
-function CompareItems(Primary, Secondary: TDateTime): TRelation; overload;
-begin
-  Result :=  TRelation(CompareDateTime(Primary, Secondary)+1);
 end;
 
 function PointOnLine(X, Y, x1, y1, x2, y2, d: Integer): Boolean;
@@ -328,6 +329,30 @@ begin
 end;
 
 function GetValidRect(Points: TArray<TPoint>): TRect; overload
+var
+  I: Integer;
+begin
+  if Length( Points ) = 0 then
+    Exit;
+
+  Result.TopLeft := Points[0];
+  Result.BottomRight := Points[0];
+
+  for I := 1 to High(Points) do
+    begin
+      if Points[I].X < Result.Left then
+        Result.Left := Points[I].X;
+      if Points[I].Y < Result.Top then
+        Result.Top := Points[I].Y;
+
+      if Points[I].X > Result.Right then
+        Result.Right := Points[I].X;
+      if Points[I].Y > Result.Bottom then
+        Result.Bottom := Points[I].Y;
+    end;
+end;
+
+function GetValidRect(Points: TArray<TPointF>): TRectF; overload;
 var
   I: Integer;
 begin
@@ -403,6 +428,29 @@ begin
     ARect.Offset(Right, 0);
   if Bottom < 0 then
     ARect.Offset(0, Bottom);
+end;
+
+function MorphToRect(Source: TRect; Destination: TRect; Percent: single): TRect;
+begin
+  Result := Source;
+
+  Inc(Result.Left,
+    round((Destination.Left-Source.Left)*Percent)
+    );
+  Inc(Result.Top,
+    round((Destination.Top-Source.Top)*Percent)
+    );
+  Inc(Result.Right,
+    round((Destination.Right-Source.Right)*Percent)
+    );
+  Inc(Result.Bottom,
+    round((Destination.Bottom-Source.Bottom)*Percent)
+    );
+end;
+
+function MorphToRect(Source: TPoint; Destination: TRect; Percent: single): TRect;
+begin
+  Result := MorphToRect(TRect.Create(Source), Destination, Percent);
 end;
 
 function SetPositionAroundPoint(Point: TPoint; Center: TPoint; degree: real; customradius: real = -1): TPoint;
@@ -494,10 +542,10 @@ end;
 
 function StringToBoolean(str: string): boolean;
 begin
-  if (AnsiLowerCase(str) = 'true') or (str = '1') or (str = '-1') then
-    Result := true
+  if (LowerCase(str) = 'false') or (str = '0') then
+    Result := false
   else
-    Result := false;
+    Result := true;
 end;
 
 function BooleanToString(value: boolean): string;
@@ -516,6 +564,7 @@ begin
     Result := 'no'
 end;
 
+{$IFDEF WINDOWS}
 function IconToBitmap(icon: TIcon): TBitMap;
 begin
   Result := TBitmap.Create;
@@ -526,6 +575,7 @@ begin
   Result.Transparent := true;
   Result.TransparentMode := tmAuto;
 end;
+{$ENDIF}
 
 function IntToStrIncludePrefixZeros(Value: integer; NumbersCount: integer): string;
 var
@@ -753,6 +803,11 @@ begin
   Result := abs(Point1.X - Point2.X);
 end;
 
+function TLine.Length: single;
+begin
+  Result := sqrt(power(Point1.X-Point2.X, 2)+power(Point1.Y-Point2.Y, 2));
+end;
+
 procedure TLine.OffSet(const DX, DY: Integer);
 begin
   Inc( Point1.X, DX );
@@ -761,9 +816,27 @@ begin
   Inc( Point2.Y, DY );
 end;
 
+function TLine.Points: TPoints;
+begin
+  Result := [Point1, Point2];
+end;
+
 function TLine.Rect: TRect;
 begin
   Result := GetValidRect(Point1, Point2);
+end;
+
+function TLine.Angle: single;
+begin
+  if Point2.X = Point1.X then
+    if Point2.Y > Point1.Y then
+      Result := 90
+    else
+      Result := 270
+  else
+    Result := RadToDeg(ArcTan2(Point2.Y - Point1.Y, Point2.X - Point1.X));
+  if Result < 0 then
+    Result := Result + 360;
 end;
 
 function TLine.Center: TPoint;
@@ -844,27 +917,38 @@ var
 
 begin
   Result := False;
-  L := 0;
-  H := FList.Count - 1;
+  if Sorted then
+    begin
+      L := 0;
+      H := FList.Count - 1;
 
-  while (L <= H) do begin
-    I := (L + H) shr 1;
-    C := IntegerCompare(Items[I], aValue);
+      while (L <= H) do begin
+        I := (L + H) shr 1;
+        C := IntegerCompare(Items[I], aValue);
 
-    if (C < 0) then
-      L := I + 1
-    else begin
-      H := I - 1;
+        if (C < 0) then
+          L := I + 1
+        else begin
+          H := I - 1;
 
-      if (C = 0) then begin
-        Result := True;
-        if (Duplicates <> dupAccept) then
-          L := I;
+          if (C = 0) then begin
+            Result := True;
+            if (Duplicates <> dupAccept) then
+              L := I;
+          end;
+        end;
       end;
-    end;
-  end;
 
-  Index := L;
+      Index := L;
+    end
+      else
+        for I := 0 to Count-1 do
+          if Items[I] = aValue then
+            begin
+              Result := true;
+              Index := I;
+              Break;
+            end;
 end;
 
 function TIntegerList.First(): Integer;
@@ -1101,6 +1185,11 @@ begin
   Result := abs(Point1.X - Point2.X);
 end;
 
+function TLineF.Length: single;
+begin
+  Result := sqrt(power(Point1.X-Point2.X, 2)+power(Point1.Y-Point2.Y, 2));
+end;
+
 procedure TLineF.OffSet(const DX, DY: single);
 begin
   Point1.X := Point1.X + DX;
@@ -1112,6 +1201,19 @@ end;
 function TLineF.Rect: TRectF;
 begin
   Result := TRectF.Create(Point1, Point2, true);
+end;
+
+function TLineF.Angle: single;
+begin
+  if Point2.X = Point1.X then
+    if Point2.Y > Point1.Y then
+      Result := 90
+    else
+      Result := 270
+  else
+    Result := RadToDeg(ArcTan2(Point2.Y - Point1.Y, Point2.X - Point1.X));
+  if Result < 0 then
+    Result := Result + 360;
 end;
 
 function TLineF.Center: TPointF;
