@@ -1,4 +1,4 @@
-unit Cod.VersionUpdate;
+unit Cod.Version;
 
 interface
   uses
@@ -7,7 +7,7 @@ interface
   JSON, IdSSLOpenSSL;
 
 type
-  TVersionRec = record
+  TVersion = record
     Major,
     Minor,
     Maintenance,
@@ -25,30 +25,35 @@ type
     procedure NetworkLoad(URL: string);
     procedure HtmlLoad(URL: string);
     procedure APILoad(AppName: string; Endpoint: string = 'https://api.codrutsoft.com/'); overload;
-    procedure APILoad(AppName: string; Current: TVersionRec; Endpoint: string = 'https://api.codrutsoft.com/'); overload;
+    procedure APILoad(AppName: string; Current: TVersion; Endpoint: string = 'https://api.codrutsoft.com/'); overload;
 
     // Utils
     function GetDownloadLink(JSONValue: string = 'updateurl'): string;
 
     // Comparation
     function Empty: boolean;
-    function CompareTo(Version: TVersionRec): TValueRelationship;
-    function NewerThan(Version: TVersionRec): boolean;
+    function CompareTo(Version: TVersion): TValueRelationship;
+    function NewerThan(Version: TVersion): boolean;
+    function OlderThan(Version: TVersion): boolean;
 
     // Conversion
     function ToString: string; overload;
     function ToString(IncludeBuild: boolean): string; overload;
     function ToString(Separator: char; IncludeBuild: boolean = false): string; overload;
+
+    // Operators
+    class operator Equal(A, B: TVersion): Boolean;
+    class operator NotEqual(A, B: TVersion): Boolean;
   end;
 
-  function MakeVersion(Major, Minor, Maintenance: cardinal; Build: cardinal = 0): TVersionRec;
+  function MakeVersion(Major, Minor, Maintenance: cardinal; Build: cardinal = 0): TVersion;
 
 const
-  VERSION_EMPTY: TVersionRec = (Major:0; Minor:0; Maintenance:0; Build:0);
+  VERSION_EMPTY: TVersion = (Major:0; Minor:0; Maintenance:0; Build:0);
 
 implementation
 
-function MakeVersion(Major, Minor, Maintenance: cardinal; Build: cardinal = 0): TVersionRec;
+function MakeVersion(Major, Minor, Maintenance: cardinal; Build: cardinal = 0): TVersion;
 begin
   Result.Major := Major;
   Result.Minor := Minor;
@@ -57,9 +62,9 @@ begin
 end;
 
 
-{ TVersionRec }
+{ TVersion }
 
-procedure TVersionRec.NetworkLoad(URL: string);
+procedure TVersion.NetworkLoad(URL: string);
 var
   IdHttp: TIdHTTP;
   HTML: string;
@@ -75,12 +80,22 @@ begin
 end;
 
 
-function TVersionRec.NewerThan(Version: TVersionRec): boolean;
+function TVersion.NewerThan(Version: TVersion): boolean;
 begin
   Result := CompareTo(Version) = TValueRelationship.Greater;
 end;
 
-procedure TVersionRec.APILoad(AppName: string; Current: TVersionRec; Endpoint: string);
+class operator TVersion.NotEqual(A, B: TVersion): Boolean;
+begin
+  Result := A.CompareTo(B) <> TValueRelationship.Equal;
+end;
+
+function TVersion.OlderThan(Version: TVersion): boolean;
+begin
+  Result := CompareTo(Version) = TValueRelationship.Smaller;
+end;
+
+procedure TVersion.APILoad(AppName: string; Current: TVersion; Endpoint: string);
 var
   HTTP: TIdHTTP;
   SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
@@ -127,12 +142,12 @@ begin
   end;
 end;
 
-procedure TVersionRec.APILoad(AppName, Endpoint: string);
+procedure TVersion.APILoad(AppName, Endpoint: string);
 begin
   APILoad(AppName, VERSION_EMPTY, EndPoint);
 end;
 
-procedure TVersionRec.Clear;
+procedure TVersion.Clear;
 begin
   Major := 0;
   Minor := 0;
@@ -140,7 +155,7 @@ begin
   Build := 0;
 end;
 
-function TVersionRec.CompareTo(Version: TVersionRec): TValueRelationship;
+function TVersion.CompareTo(Version: TVersion): TValueRelationship;
 begin
   Result := GetNumberRelation(Major, Version.Major);
   if Result <> TValueRelationship.Equal then
@@ -157,12 +172,12 @@ begin
   Result := GetNumberRelation(Build, Version.Build);
 end;
 
-constructor TVersionRec.Create(AString: string);
+constructor TVersion.Create(AString: string);
 begin
   Parse( AString );
 end;
 
-constructor TVersionRec.Create(AMajor, AMinor, AMaintenance, ABuild: cardinal);
+constructor TVersion.Create(AMajor, AMinor, AMaintenance, ABuild: cardinal);
 begin
   Major := AMajor;
   Minor := AMinor;
@@ -170,18 +185,23 @@ begin
   Build := ABuild;
 end;
 
-function TVersionRec.Empty: boolean;
+function TVersion.Empty: boolean;
 begin
   Result := CompareTo(VERSION_EMPTY) = TValueRelationship.Equal;
 end;
 
-function TVersionRec.GetDownloadLink(JSONValue: string): string;
+class operator TVersion.Equal(A, B: TVersion): Boolean;
+begin
+  Result := A.CompareTo(B) = TValueRelationship.Equal;
+end;
+
+function TVersion.GetDownloadLink(JSONValue: string): string;
 begin
   if not APIResponse.TryGetValue<string>(JSONValue, Result) then
     Result := '';
 end;
 
-procedure TVersionRec.HtmlLoad(URL: string);
+procedure TVersion.HtmlLoad(URL: string);
 var
   IdHttp: TIdHTTP;
   HTML: string;
@@ -199,7 +219,7 @@ begin
   end;
 end;
 
-procedure TVersionRec.Parse(From: string);
+procedure TVersion.Parse(From: string);
 var
   Separator: char;
   Splitted: TArray<string>;
@@ -242,17 +262,17 @@ begin
     end;
 end;
 
-function TVersionRec.ToString: string;
+function TVersion.ToString: string;
 begin
   Result := ToString(false);
 end;
 
-function TVersionRec.ToString(IncludeBuild: boolean): string;
+function TVersion.ToString(IncludeBuild: boolean): string;
 begin
   Result := ToString('.', IncludeBuild);
 end;
 
-function TVersionRec.ToString(Separator: char; IncludeBuild: boolean): string;
+function TVersion.ToString(Separator: char; IncludeBuild: boolean): string;
 begin
   Result := Major.ToString + Separator + Minor.ToString + Separator + Maintenance.ToString;
 

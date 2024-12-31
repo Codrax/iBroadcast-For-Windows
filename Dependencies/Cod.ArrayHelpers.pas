@@ -20,24 +20,6 @@ uses
   System.Generics.Collections, System.Generics.Defaults;
 
 type
-  TMultiSwitch<T> = class
-    type
-    TCase = record
-      Values: TArray<T>;
-      CallBack: TProc;
-
-      procedure Execute;
-    end;
-
-    // Make
-    class function Option(Value: T; Call: TProc): TCase; overload;
-    class function Option(Values: TArray<T>; Call: TProc): TCase; overload;
-
-    // Switch
-    class procedure Switch(Value: T; Cases: TArray<TCase>); overload;
-    class procedure Switch(Value: T; Cases: TArray<TCase>; Default: TProc); overload;
-  end;
-
   /// Note about internal errors
   ///  This class uses lComparer to compare values because some value types,
   ///  such as record cannot be directly compared and would give the
@@ -66,6 +48,11 @@ type
     class function Contains(const Values: TArray<T>; Callback: TArrayFindItemCallback): boolean; overload;
     /// <summary> Compares is two arrays are equal. </summary>
     class function CheckEquality(const First, Second: TArray<T>) : boolean;
+
+    /// <summary> Create a copy of the array. </summary>
+    class function CreateCopy(const Source: TArray<T>): TArray<T>;
+    /// <summary> Create a copy of the array. </summary>
+    class procedure CopyTo(const Source: TArray<T>; var Destination: TArray<T>);
 
     /// <summary> Get the index if element x. </summary>
     class function GetIndex(const x: T; const Values: TArray<T>): integer; overload;
@@ -249,6 +236,12 @@ begin
       Exit(true);
 end;
 
+class procedure TArrayUtils<T>.CopyTo(const Source: TArray<T>;
+  var Destination: TArray<T>);
+begin
+  Destination := Copy(Source, 0, Length(Source));
+end;
+
 class function TArrayUtils<T>.Contains(const x: T; const Values: TArray<T>): boolean;
 var
   y : T;
@@ -266,6 +259,11 @@ end;
 class function TArrayUtils<T>.Count(const Values: TArray<T>): integer;
 begin
   Result := Length(Values);
+end;
+
+class function TArrayUtils<T>.CreateCopy(const Source: TArray<T>): TArray<T>;
+begin
+  Result := Copy(Source, 0, Length(Source));
 end;
 
 class procedure TArrayUtils<T>.Delete(const Index: integer;
@@ -425,38 +423,41 @@ end;
 class procedure TArrayUtils<T>.DoQuickSort(var Values: TArray<T>;
   const Callback: TArrayDualCallback; Left, Right: Integer);
 var
-  I, J: Integer;
+  Lower, Upper: Integer;
   Pivot, Temp: T;
 begin
-  I := Left;
-  J := Right;
+  if Right - Left = 0 then
+    Exit;
+
+  Lower := Left;
+  Upper := Right;
   Pivot := Values[(Left + Right) div 2]; // Choosing middle item as pivot
 
   repeat
-    // Move I right while Values[I] < Pivot and ensure I stays within bounds
-    while (I <= Right) and (Callback(Values[I], Pivot) = LessThanValue) do
-      Inc(I);
+    // Move Lower right while Values[Lower] < Pivot and ensure Lower stays within bounds
+    while (Lower <= Right) and (Callback(Values[Lower], Pivot) = LessThanValue) do
+      Inc(Lower);
 
-    // Move J left while Values[J] > Pivot and ensure J stays within bounds
-    while (J >= Left) and (Callback(Values[J], Pivot) = GreaterThanValue) do
-      Dec(J);
+    // Move Upper left while Values[Upper] > Pivot and ensure Upper stays within bounds
+    while (Upper >= Left) and (Callback(Values[Upper], Pivot) = GreaterThanValue) do
+      Dec(Upper);
 
-    if I <= J then begin
-      // Swap Values[I] and Values[J]
-      Temp := Values[I];
-      Values[I] := Values[J];
-      Values[J] := Temp;
+    if Lower <= Upper then begin
+      // Swap Values[Lower] and Values[Upper]
+      Temp := Values[Lower];
+      Values[Lower] := Values[Upper];
+      Values[Upper] := Temp;
 
-      Inc(I);
-      Dec(J);
+      Inc(Lower);
+      Dec(Upper);
     end;
-  until I > J;
+  until Lower > Upper;
 
   // Recursively sort the sub-arrays
-  if Left < J then
-    DoQuickSort(Values, Callback, Left, J);
-  if I < Right then
-    DoQuickSort(Values, Callback, I, Right);
+  if Left < Upper then
+    DoQuickSort(Values, Callback, Left, Upper);
+  if Lower < Right then
+    DoQuickSort(Values, Callback, Lower, Right);
 end;
 
 class procedure TArrayUtils<T>.SetLength(const Length: integer;
@@ -485,8 +486,7 @@ end;
 class procedure TArrayUtils<T>.Sort(var Values: TArray<T>;
   const Callback: TArrayDualCallback);
 begin
-  if Length(Values) > 1 then
-    DoQuickSort(Values, Callback, 0, Length(Values) - 1);
+  DoQuickSort(Values, Callback, 0, Length(Values) - 1);
 end;
 
 class procedure TArrayUtils<T>.Switch(var Values: TArray<T>; const Source,
@@ -780,44 +780,6 @@ end;
 procedure TCharArrayHelper.SetToLength(ALength: integer);
 begin
   SetLength(Self, ALength);
-end;
-
-{ TMultiSwitch<T> }
-
-class function TMultiSwitch<T>.Option(Value: T; Call: TProc): TCase;
-begin
-  Result := Option([Value], Call);
-end;
-
-class function TMultiSwitch<T>.Option(Values: TArray<T>; Call: TProc): TCase;
-begin
-  Result.Values := Values;
-  Result.CallBack := Call;
-end;
-
-class procedure TMultiSwitch<T>.Switch(Value: T; Cases: TArray<TCase>; Default: TProc);
-begin
-  for var I := 0 to High(Cases) do
-    if TArrayUtils<T>.Contains(Value, Cases[I].Values) then begin
-      Cases[I].Execute;
-      Exit;
-    end;
-
-  // Default
-  if Assigned(Default) then
-    Default;
-end;
-
-class procedure TMultiSwitch<T>.Switch(Value: T; Cases: TArray<TCase>);
-begin
-  Switch(Value, Cases, nil);
-end;
-
-{ TMultiSwitch<T>.TCase }
-
-procedure TMultiSwitch<T>.TCase.Execute;
-begin
-  Callback;
 end;
 
 end.

@@ -42,6 +42,11 @@ interface
   function StringToFloat(str: string): Extended;
   // Better string to float conversion
 
+  // Factorial
+  function Factorial(N: Integer): Int64;
+  // Uses base 10 starting from 0
+  function GetNthPermutation(Base: Integer; X: Integer): TArray<Integer>;
+
   // Number Sequences
   // Fisher-Yates shuffle algorithm
   function GenerateRandomSequence(count: Integer): TArray<Integer>;
@@ -246,6 +251,61 @@ begin
       end;
 
   Result := StrToFloat(str);
+end;
+
+function Factorial(N: Integer): Int64;
+var
+  I: Integer;
+  ResultValue: Int64;
+begin
+  if N < 0 then
+    raise Exception.Create('Factorial is undefined for negative numbers.');
+
+  ResultValue := 1; // Initialize value
+  for I := 2 to N do
+    ResultValue := ResultValue * I;
+
+  Result := ResultValue;
+end;
+
+function GetNthPermutation(Base: Integer; X: Integer): TArray<Integer>;
+var
+  Permutation: TArray<Integer>;
+  Used: TArray<Boolean>;
+  AFactorial, Temp, I, J, Index: Integer;
+begin
+  // Initialize the permutation array
+  SetLength(Permutation, Base);
+  SetLength(Used, Base);
+
+  // Calculate the factorial of the base
+  AFactorial := Factorial(Base);
+
+  // Generate the Xth permutation
+  for I := 0 to Base - 1 do
+  begin
+    AFactorial := AFactorial div (Base - I); // Factorial for the current position
+    Index := X div AFactorial;              // Determine which element to pick
+    X := X mod AFactorial;                  // Update X for the next position
+
+    // Find the Index-th unused element
+    Temp := 0;
+    for J := 0 to Base - 1 do
+    begin
+      if not Used[J] then
+      begin
+        if Temp = Index then
+        begin
+          Permutation[I] := J; // Store the chosen element
+          Used[J] := True;        // Mark it as used
+          Break;
+        end;
+        Inc(Temp);
+      end;
+    end;
+  end;
+
+  Result := Permutation;
 end;
 
 function GetParanthStart(from: integer; InText: string; paranthtype: char): integer;

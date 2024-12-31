@@ -8,157 +8,214 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
   Vcl.Graphics, Registry, Vcl.Dialogs, Vcl.Forms, UITypes, Types, Winapi.shlobj,
   Cod.Registry, IOUtils, ActiveX, ComObj, ShellApi, Cod.ColorUtils, PsApi,
-  Cod.Files, Cod.Types, Cod.MesssageConst, Winapi.TlHelp32, Cod.Windows.ThemeApi;
+  Vcl.Imaging.pngimage, Cod.Graphics, Cod.Files, Cod.Types, Cod.MesssageConst,
+  Winapi.TlHelp32, Cod.Windows.ThemeApi, Cod.SysUtils, Winapi.PropKey, Winapi.PropSys;
 
-  type
-    // Cardinals
-    TWinPlatform = (Platform32, Platform64);
-    TWinVersion = (Win2000, WinXp, WinXp64, Vista2008, Win72008R2, Win8, Win10);
+type
+  // Cardinals
+  TWinPlatform = (Platform32, Platform64);
+  TWinVersion = (Win2000, WinXp, WinXp64, Vista2008, Win72008R2, Win8, Win10);
 
-    TWinUX = (ActionCenter, Notifications, Calculator, Store, Support, Maps,
-      Network, Cast, Wifi, Project, Bluetooth, Clock, Xbox, MediaPlayer,
-      Weather, TaskSwitch, Settings, ScreenClip, Photos, PrintQueue,
-      WinDefender, StartMenu);
+  TWinUX = (ActionCenter, Notifications, Calculator, Store, Support, Maps,
+    Network, Cast, Wifi, Project, Bluetooth, Clock, Xbox, MediaPlayer,
+    Weather, TaskSwitch, Settings, ScreenClip, Photos, PrintQueue,
+    WinDefender, StartMenu);
 
-    TWinSettingsPage = (Home, FlightMode, Bluetooth, Cellular, Accounts,
-      Language, Location, LockScreen, Hotspot, Notifications, Power, Privacy,
-      Display, Wifi, Workplace);
+  TWinSettingsPage = (Home, FlightMode, Bluetooth, Cellular, Accounts,
+    Language, Location, LockScreen, Hotspot, Notifications, Power, Privacy,
+    Display, Wifi, Workplace);
 
-    // Records
-    TProcess = record
-      Module,  // Exe name, eg. "explorer.exe"
-      FileName, // Exe Location
-      Command: string;
-      PID, // App PID
-      ParentPID, // Parent PID
-      Modules, // Attatched DLLs
-      Threads, // Thread Count
-      Priority, // Process Priority
-      Flags: integer;
+  // Records
+  TProcess = record
+    Module,  // Exe name, eg. "explorer.exe"
+    FileName, // Exe Location
+    Command: string;
+    PID, // App PID
+    ParentPID, // Parent PID
+    Modules, // Attatched DLLs
+    Threads, // Thread Count
+    Priority, // Process Priority
+    Flags: integer;
 
-      // Utils
-      procedure CloseProcess;
-      procedure KillProcess;
-      function GetIcon: TIcon;
-    end;
+    // Utils
+    procedure CloseProcess;
+    procedure KillProcess;
+    function GetIcon: TIcon;
+  end;
 
-    TProcessList = TArray<TProcess>;
+  TProcessList = TArray<TProcess>;
 
-    TProcessListHelper = record helper for TProcessList
-      function FindProcess(Executable: string): integer;
-    end;
+  TProcessListHelper = record helper for TProcessList
+    function FindProcess(Executable: string): integer;
+  end;
 
-    // Handle helper
-    THWNDHelper = record helper for HWND
-  private
-    public
-      // Information
-      function GetTitle: string;
-      function GetBoundsRect: TRect;
-      function GetClientRect: TRect;
-      function GetCanvas: TCanvas;
+  // Process handle
+  TProcessHandle = type THandle;
+  TProcessHandleHelper = record helper for TProcessHandle
+  public
+    function ModuleFilePath: string;
+    function ProcessName: string;
+    function ModuleName: string;
 
-      procedure SendCloseMessage;
+    // For applications
+    function GetAppUserModelID: string;
 
-      // Process
-      function GetProcessID: DWORD;
-      function GetProcessHandle(Permissions: DWORD): THandle; // needs to be closed with CloseHandle()
-      function GetModuleFilePath: string;
-      function GetModuleName: string;
-      function GetModuleFilePathEx: string;
-      function TerminateProcess(AExitCode: integer=1): boolean;
+    // Commands
+    function Terminate(AExitCode: integer=1): boolean;
 
-      // Children
-      function GetChildWindows: TArray<HWND>;
-    end;
+    // Main
+    constructor Create(ProcessID: DWORD; Permissions: DWORD; InheritHandle: boolean);
+    procedure CloseHandle; // must be called after tasks are done
+  end;
+
+  // Process ID
+  TProcessID = type DWORD;
+  TProcessIDHelper = record helper for TProcessID
+  public
+    function ProcessHandle(Permissions: DWORD): TProcessHandle;
+    function ProcessHandleReadOnly: TProcessHandle;
+    function ProcessHandleAllAcccess: TProcessHandle;
+  end;
+
+  // Handle helper
+  THWNDHelper = record helper for HWND
+  public
+    // Information
+    function GetTitle: string;
+    function GetBoundsRect: TRect;
+    function GetClientRect: TRect;
+    function GetCanvas: TCanvas;
+
+    function GetAppUserModelID: string;
+
+    // Messages
+    function PostMessage(Message: UINT; wParam: WPARAM; lParam: LPARAM): boolean;
+    function SendMessage(Message: UINT; wParam: WPARAM; lParam: LPARAM): int64;
+    procedure PostCloseMessage;
+
+    // Extras
+    function GetModuleFilePathEx: string;
+
+    // Process
+    function GetProcessID: TProcessID;
+
+    // Children
+    function GetChildWindows: TArray<HWND>;
+  end;
+
+const
+  shlwapi = 'shlwapi.dll';
 
 
-  { Forms }
-  /// <summary>
-  ///  Remove the WS_CAPTION style flag from the form and make a border only form which supports Windows Aero.
-  ///  </summary>
-  procedure MakeBorderForm(Form: TForm);
+{ Forms }
+/// <summary>
+///  Remove the WS_CAPTION style flag from the form and make a border only form which supports Windows Aero.
+///  </summary>
+procedure MakeBorderForm(Form: TForm);
 
-  { Shell32 }
-  function HasAdministratorPrivileges: boolean;
-  function IsUserAnAdmin(): BOOL; external shell32;
-  function IsAdministrator32: boolean;
+{ shlwapi }
+function SHLoadIndirectString(pszSource: PWideChar; pszOutBuf: PWideChar; cchOutBuf: UINT; ppvReserved: Pointer): HRESULT; stdcall; external shlwapi;
 
-  { AdvApi32 }
-  function CheckTokenMembership(TokenHandle: THANDLE; SidToCheck: Pointer;
-    var IsMember: BOOL): BOOL; stdcall; external advapi32 name 'CheckTokenMembership'
+{ Shell32 }
+function HasAdministratorPrivileges: boolean;
+function IsUserAnAdmin(): BOOL; external shell32;
+function IsAdministrator32: boolean;
+function SHDoDragDrop(Handle: hwnd; dataObj: IDataObject; dropSource: IDropSource;
+  dwEffect: Longint; var pdwEffect: Longint): integer; stdcall; external shell32 name 'SHDoDragDrop';
 
-  { Windows }
-  function GetWindowsPlatform: TWinVersion;
-  function IsWOW64Emulated: boolean;
-  function IsWow64Executable: Boolean;
-  function GetWindowsArhitecture: TWinPlatform;
-  function NTKernelVersion: single;
+{ AdvApi32 }
+function CheckTokenMembership(TokenHandle: THANDLE; SidToCheck: Pointer;
+  var IsMember: BOOL): BOOL; stdcall; external advapi32 name 'CheckTokenMembership'
 
-  { Personalisation }
-  procedure SetWallpaper(const FileName: string);
-  function DarkModeAppsActive: Boolean;
-  function DarkModeSystemActive: Boolean;
-  procedure DarkModeApplyToWindow(Handle: HWND); overload;
-  procedure DarkModeApplyToWindow(Handle: HWND; DarkTheme: boolean); overload;
-  function TransparencyEnabled: Boolean;
-  function GetAccentColor(brightencolor: boolean = false): TColor;
+{ Kernel32 }
+function GetApplicationUserModelId(hProcess: THandle; var AppUserModelIdLength: DWORD; AppUserModelId: PWideChar): HRESULT; stdcall; external kernel32;
 
-  { Shell }
-  function GetWinlogonShell: string;
-  function GetTaskbarHeight: integer;
-  procedure MinimiseAllWindows;
-  function IdleTime: DWord;
-  procedure FlashWindowInTaskbar;
-  function SHDoDragDrop(Handle: hwnd; dataObj: IDataObject; dropSource: IDropSource;
-    dwEffect: Longint; var pdwEffect: Longint): integer; stdcall; external shell32 name 'SHDoDragDrop';
+{ Resources }
+function LoadIndirectString(const Source: string; var Output: string; BufferSize: cardinal=4096): boolean;
 
-  { User }
-  function GetUserCLSID: string;
-  function GetUserGUID: string; (* This currently seems to not work/ is unrelated to user picture tasks *)
-  /// <summary> Returns user name. The value used in the users folder and login. </summary>
-  function GetUserNameString: string;
-  /// <summary> Returns computer name. eg. "HOME-COMPUTER". </summary>
-  function GetComputerNameString: string;
-  /// <summary> Returns account name of computer name. eg. "COMPUTER-NAME\john-doe" </summary>
-  function GetComputerAccountName: string;
-  /// <summary> Returns account display name. eg. "John Doe" </summary>
-  function GetCompleteUserName: string;
-  /// <summary>
-  /// Get account profile picture based on the provided resolution.
-  ///  These can by standard, be as follows: 1080, 448, 424, 208, 192, 96, 64, 48, 40, 32
-  /// </summary>
-  function GetUserProfilePicturePath(PrefferedResolution: string = '1080'): string;
-  /// <summary> [DEPRACATED] Returns user profile picture location based on old standard. </summary>
-  function GetUserProfilePictureEx: string;
+function LoadIndirectStringFromResourceID(const FilePath: string; const ResourceID: string; out Output: string): boolean; overload;
+function LoadIndirectStringFromResourceID(const FilePath: string; const ResourceID: string; out Output: string; VersionModifier: string): boolean; overload;
 
-  { Process }
-  /// <summary> Returns list of all running processes. </summary>
-  function GetProcessList: TProcessList;
-  /// <summary> Returns process ID (PID) of this application. </summary>
-  function ProcessID: integer;
-  function GetCurrentAppName: string;
-  function GetOpenProgramFileName: string;
-  function GetOpenProgramFileNameEx: ansistring;
-  function GetActiveWindow: HWND;
-  function GetActiveWindows: TArray<HWND>;
+{ Windows }
+function GetWindowsPlatform: TWinVersion;
+function IsWOW64Emulated: boolean;
+function IsWow64Executable: Boolean;
+function GetWindowsArhitecture: TWinPlatform;
+function NTKernelVersion: single;
 
-  { Input }
-  procedure SimulateKeyPress32(key: Word; const shift: TShiftState; specialkey: Boolean);
+{ Personalisation }
+procedure SetWallpaper(const FileName: string);
+function DarkModeAppsActive: Boolean;
+function DarkModeSystemActive: Boolean;
+procedure DarkModeApplyToWindow(Handle: HWND); overload;
+procedure DarkModeApplyToWindow(Handle: HWND; DarkTheme: boolean); overload;
+function TransparencyEnabled: Boolean;
+function GetAccentColor(brightencolor: boolean = false): TColor;
 
-  { Registry }
-  procedure RegisterApplicationPath(Name: string; Executable: string; Directory: string = '');
-  procedure UnregisterApplicationPath(Name: string);
+{ Shell }
+function GetWinlogonShell: string;
+function GetTaskbarHeight: integer;
+procedure MinimiseAllWindows;
+function IdleTime: DWord;
+procedure FlashWindowInTaskbar;
 
-  { Dialogs }
-  procedure OpenWindowsUI(WinInterface: TWinUX; SuppressAnimation: boolean = false);
-  procedure OpenWindowsSettings(Page: TWinSettingsPage);
-  procedure OpenWindowsUWPApp(AppURI: string);
-  procedure ShutDownWindows;
+{ User }
+function GetUserCLSID: string;
+function GetUserGUID: string; (* This currently seems to not work/ is unrelated to user picture tasks *)
+/// <summary> Returns user name. The value used in the users folder and login. </summary>
+function GetUserNameString: string;
+/// <summary> Returns computer name. eg. "HOME-COMPUTER". </summary>
+function GetComputerNameString: string;
+/// <summary> Returns account name of computer name. eg. "COMPUTER-NAME\john-doe" </summary>
+function GetComputerAccountName: string;
+/// <summary> Returns account display name. eg. "John Doe" </summary>
+function GetCompleteUserName: string;
+/// <summary>
+/// Get account profile picture based on the provided resolution.
+///  These can by standard, be as follows: 1080, 448, 424, 208, 192, 96, 64, 48, 40, 32
+/// </summary>
+function GetUserProfilePicturePath(PrefferedResolution: string = '1080'): string;
+/// <summary> [DEPRACATED] Returns user profile picture location based on old standard. </summary>
+function GetUserProfilePictureEx: string;
 
-  { File and Folder Related Tasks }
-  procedure CreateShortcut(const Target, DestinationFile, Description, Parameters: string);
-  function GetFileTypeDescription(filetype: string): string;
+{ Process }
+/// <summary> Returns list of all running processes. </summary>
+function GetProcessList: TProcessList;
+/// <summary> Returns process ID (PID) of this application. </summary>
+function ProcessID: integer;
+function GetCurrentAppName: string;
+function GetOpenProgramFileName: string;
+function GetOpenProgramFileNameEx: ansistring;
+function GetActiveWindow: HWND;
+function GetActiveWindows: TArray<HWND>;
+
+{ HWND }
+function GetAppUserModelIDFromWindow(Window: HWND; out Output: string): boolean;
+
+{ Icons }
+function GetIconStrIcon(IconString: string; Icon: TIcon): boolean; overload;
+function GetIconStrIcon(IconString: string; PngImage: TPngImage): boolean; overload;
+procedure GetFileIcon(FileName: string; PngImage: TPngImage; IconIndex: word = 0);
+procedure GetFileIconEx(FileName: string; PngImage: TPngImage; IconIndex: word = 0; SmallIcon: boolean = false);
+function GetFileIconCount(FileName: string): integer;
+function GetAllFileIcons(FileName: string): TArray<TPngImage>;
+
+{ Input }
+procedure SimulateKeyPress32(key: Word; const shift: TShiftState; specialkey: Boolean);
+
+{ Registry }
+procedure RegisterApplicationPath(Name: string; Executable: string; Directory: string = '');
+procedure UnregisterApplicationPath(Name: string);
+
+{ Dialogs }
+procedure OpenWindowsUI(WinInterface: TWinUX; SuppressAnimation: boolean = false);
+procedure OpenWindowsSettings(Page: TWinSettingsPage);
+procedure OpenWindowsUWPApp(AppURI: string);
+procedure ShutDownWindows;
+
+{ File and Folder Related Tasks }
+procedure CreateShortcut(const Target, DestinationFile, Description, Parameters: string);
+function GetFileTypeDescription(filetype: string): string;
 
 const
   KEYEVENTF_KEYDOWN = 0; // declaration
@@ -220,6 +277,36 @@ begin
   end
   else
     Result := False;
+end;
+
+function LoadIndirectString(const Source: string; var Output: string; BufferSize: cardinal): boolean;
+var
+  OutputBuffer: WideString;
+begin
+  // Create
+  SetLength(OutputBuffer, BufferSize);
+  ZeroMemory(@OutputBuffer[1], BufferSize);
+
+  // SHLoadIndirectString
+  Result := Succeeded(SHLoadIndirectString(PWideChar(Source), @OutputBuffer[1], BufferSize, nil));
+
+  // Result
+  if Result then
+    Output := WideCharToString(@OutputBuffer[1]);
+end;
+
+function LoadIndirectStringFromResourceID(const FilePath: string; const ResourceID: string; out Output: string): boolean;
+begin
+  Result := LoadIndirectString(
+    Format('@%S,%S', [FilePath, ResourceID]), Output
+  );
+end;
+
+function LoadIndirectStringFromResourceID(const FilePath: string; const ResourceID: string; out Output: string; VersionModifier: string): boolean;
+begin
+  Result := LoadIndirectString(
+    Format('@%S,%S;%S', [FilePath, ResourceID, VersionModifier]), Output
+  );
 end;
 
 function GetWindowsPlatform: TWinVersion;
@@ -538,6 +625,166 @@ begin
   Result := [];
 
   EnumWindows(@EnumWindowsCallback_ProcessPointer, LPARAM(@Result));
+end;
+
+function GetAppUserModelIDFromWindow(Window: HWND; out Output: string): boolean;
+var
+  propStore: IPropertyStore;
+  propVariant: TPropVariant;
+begin
+  Result := false;
+  Output := '';
+
+  // Get prop store
+  if not Succeeded(SHGetPropertyStoreForWindow(Window, IID_IPropertyStore, Pointer(propStore))) then
+    Exit;
+
+  // Assert
+  ZeroMemory(@propVariant, SizeOf(propVariant));
+  try
+    if not Succeeded(propStore.GetValue(PKEY_AppUserModel_ID, propVariant)) then
+      Exit;
+
+    // Variant type
+    case propVariant.vt of
+      VT_EMPTY: Output := ''; // result false
+      VT_BSTR: begin
+        Result := true;
+        Output := string(propVariant.bstrVal);
+      end;
+      VT_LPWSTR: begin
+        Result := true;
+        Output := string(propVariant.pwszVal);
+      end;
+
+      //else ;
+    end;
+  finally
+    PropVariantClear(propVariant);
+  end;
+end;
+
+function GetIconStrIcon(IconString: string; Icon: TIcon): boolean; overload;
+var
+  IconIndex: word;
+  FilePath: string;
+begin
+  Result := false;
+
+  // Load
+  ExtractIconDataEx(IconString, FilePath, IconIndex);
+  if not TFile.Exists(FilePath) then
+    Exit;
+
+  // Get TIcon
+  Icon.Handle := ExtractAssociatedIcon(HInstance, PChar(FilePath), IconIndex);
+  Icon.Transparent := true;
+
+  // Success
+  Result := true;
+end;
+
+function GetIconStrIcon(IconString: string; PngImage: TPngImage): boolean;
+var
+  Icon: TIcon;
+  IconIndex: word;
+begin
+  Result := false;
+
+  // Load
+  ExtractIconDataEx(IconString, IconString, IconIndex);
+  if not TFile.Exists(IconString) then
+    Exit;
+
+  // Get TIcon
+  Icon := TIcon.Create;
+  try
+    Icon.Handle := ExtractAssociatedIcon(HInstance, PChar(IconString), IconIndex);
+    Icon.Transparent := true;
+
+    // Convert to PNG
+    ConvertToPNG(Icon, PngImage);
+
+    // Success
+    Result := true;
+  finally
+    Icon.Free;
+  end;
+end;
+
+procedure GetFileIcon(FileName: string; PngImage: TPngImage; IconIndex: word);
+var
+  ic: TIcon;
+begin
+  // Get TIcon
+  ic := TIcon.Create;
+  try
+    ic.Handle := ExtractAssociatedIcon(HInstance, PChar(FileName), IconIndex);
+    ic.Transparent := true;
+
+    // Convert to PNG
+    ConvertToPNG(ic, PngImage);
+  finally
+    ic.Free;
+  end;
+end;
+
+procedure GetFileIconEx(FileName: string; PngImage: TPngImage; IconIndex: word;
+  SmallIcon: boolean);
+var
+  ic: TIcon;
+  SHFileInfo: TSHFileInfo;
+  Flags: Cardinal;
+begin
+  Flags := SHGFI_ICON or SHGFI_USEFILEATTRIBUTES;
+  if SmallIcon then
+    Flags := Flags or SHGFI_SMALLICON
+  else
+    Flags := Flags or SHGFI_LARGEICON;
+
+  SHGetFileInfo(PChar(FileName), 0, SHFileInfo, SizeOf(TSHFileInfo),
+    Flags);
+
+  // Get TIcon
+  ic := TIcon.Create;
+  try
+    ic.Handle := SHFileInfo.hIcon;;
+    ic.Transparent := true;
+
+    // Convert to PNG
+    PngImage := TPngImage.Create;
+
+    ConvertToPNG(ic, PngImage);
+  finally
+    ic.Free;
+  end;
+end;
+
+function GetFileIconCount(FileName: string): integer;
+begin
+  Result := ExtractIcon(0, PChar(FileName), Cardinal(-1));
+end;
+
+function GetAllFileIcons(FileName: string): TArray<TPngImage>;
+var
+  cnt: integer;
+  I: Integer;
+begin
+  // Get Count
+  cnt := GetFileIconCount(FileName);
+
+  SetLength(Result, cnt);
+
+  for I := 0 to cnt - 1 do
+    begin
+      Result[I] := TPngImage.Create;
+
+      try
+        GetFileIcon(FileName, Result[I], I);
+      except
+        // Invalid icon handle
+      end;
+    end;
 end;
 
 function GetUserCLSID: string;
@@ -926,6 +1173,12 @@ end;
 
 { THWNDHelper }
 
+function THWNDHelper.GetAppUserModelID: string;
+begin
+  if not GetAppUserModelIDFromWindow(Self, Result) then
+    Result := '';
+end;
+
 function THWNDHelper.GetBoundsRect: TRect;
 begin
   GetWindowRect(Self, Result);
@@ -947,61 +1200,9 @@ begin
   Winapi.Windows.GetClientRect(Self, Result);
 end;
 
-function THWNDHelper.GetModuleFilePath: string;
-var
-  HProcess: THandle;
-  path: array[0..4095] of Char;
+function THWNDHelper.GetProcessID: TProcessID;
 begin
-  HProcess := GetProcessHandle(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ);
-  if HProcess <> 0 then
-    try
-      if GetModuleFileNameEx(HProcess, 0, @path[0], Length(path)) = 0 then
-        RaiseLastOSError;
-
-      Result := path;
-    finally
-      CloseHandle(HProcess);
-    end
-  else
-    RaiseLastOSError;
-end;
-
-function THWNDHelper.GetModuleFilePathEx: string;
-var
-  OutValue: array[0..MAX_PATH] of Char;
-begin
-  GetWindowModuleFileName(Self, OutValue, Length(OutValue));
-
-  Result := OutValue;
-end;
-
-function THWNDHelper.GetModuleName: string;
-var
-  HProcess: THandle;
-  path: array[0..4095] of Char;
-begin
-  HProcess := GetProcessHandle(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ);
-  if HProcess <> 0 then
-    try
-      if GetModuleBaseName(HProcess, 0, @path[0], Length(path)) = 0 then
-        RaiseLastOSError;
-
-      Result := path;
-    finally
-      CloseHandle(HProcess);
-    end
-  else
-    RaiseLastOSError;
-end;
-
-function THWNDHelper.GetProcessHandle(Permissions: DWORD): THandle;
-begin
-  Result := OpenProcess(Permissions, FALSE, GetProcessID);
-end;
-
-function THWNDHelper.GetProcessID: DWORD;
-begin
-  GetWindowThreadProcessId(Self, Result);
+  GetWindowThreadProcessId(Self, DWORD(Result));
 end;
 
 function THWNDHelper.GetTitle: string;
@@ -1013,26 +1214,108 @@ begin
   Result := Title;
 end;
 
-procedure THWNDHelper.SendCloseMessage;
+function THWNDHelper.GetModuleFilePathEx: string;
+var
+  OutValue: array[0..MAX_PATH] of Char;
 begin
-  PostMessage(Self, WM_CLOSE, 0, 0);
+  GetWindowModuleFileName(Self, OutValue, Length(OutValue));
+
+  Result := OutValue;
 end;
 
-function THWNDHelper.TerminateProcess(AExitCode: integer): boolean;
-var
-  HProcess: THandle;
+function THWNDHelper.PostMessage(Message: UINT; wParam: WPARAM;
+  lParam: LPARAM): boolean;
 begin
-  Result := false;
+  Result := Winapi.Windows.PostMessage(Self, Message, wParam, lParam);
+end;
 
-  HProcess := GetProcessHandle(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ or PROCESS_VM_WRITE or PROCESS_TERMINATE);
-  if HProcess <> 0 then
-    try
-      Result := Winapi.Windows.TerminateProcess( HProcess, AExitCode );
-    finally
-      CloseHandle(HProcess);
-    end
-  else
+function THWNDHelper.SendMessage(Message: UINT; wParam: WPARAM;
+  lParam: LPARAM): int64;
+begin
+  Result := Winapi.Windows.SendMessage(Self, Message, wParam, lParam);
+end;
+
+procedure THWNDHelper.PostCloseMessage;
+begin
+  PostMessage(WM_CLOSE, 0, 0);
+end;
+
+{ TProcessIDHelper }
+
+function TProcessIDHelper.ProcessHandle(Permissions: DWORD): TProcessHandle;
+begin
+  Result := TProcessHandle.Create(Self, Permissions, false);
+end;
+
+function TProcessIDHelper.ProcessHandleAllAcccess: TProcessHandle;
+begin
+  Result := ProcessHandle(PROCESS_ALL_ACCESS);
+end;
+
+function TProcessIDHelper.ProcessHandleReadOnly: TProcessHandle;
+begin
+  Result := ProcessHandle(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ);
+end;
+
+{ TProcessHandleHelper }
+
+procedure TProcessHandleHelper.CloseHandle;
+begin
+  Winapi.Windows.CloseHandle(Self);
+end;
+
+constructor TProcessHandleHelper.Create(ProcessID, Permissions: DWORD;
+  InheritHandle: boolean);
+begin
+  Self := OpenProcess(DWORD(Permissions), InheritHandle, DWORD(ProcessID));
+end;
+
+function TProcessHandleHelper.GetAppUserModelID: string;
+var
+  dwSize: DWORD;
+begin
+  // Get size
+  dwSize := 0;
+  GetApplicationUserModelId(Self, dwSize, nil);
+
+  // None
+  if dwSize = 0 then
+    Exit('');
+
+  // Provide address
+  SetLength(Result, dwSize-1); // exclude null-terminated
+  if not Succeeded(GetApplicationUserModelId(Self, dwSize, PWideChar(Result))) then
     RaiseLastOSError;
+end;
+
+function TProcessHandleHelper.ModuleFilePath: string;
+var
+  path: array[0..4095] of Char;
+begin
+  if GetModuleFileNameEx(Self, 0, @path[0], Length(path)) = 0 then
+    RaiseLastOSError;
+
+  Result := path;
+end;
+
+function TProcessHandleHelper.ModuleName: string;
+var
+  path: array[0..4095] of Char;
+begin
+  if GetModuleBaseName(Self, 0, @path[0], Length(path)) = 0 then
+    RaiseLastOSError;
+
+  Result := path;
+end;
+
+function TProcessHandleHelper.ProcessName: string;
+begin
+  Result := ChangeFileExt(ModuleName, '');
+end;
+
+function TProcessHandleHelper.Terminate(AExitCode: integer): boolean;
+begin
+  Result := Winapi.Windows.TerminateProcess( Self, AExitCode );
 end;
 
 end.

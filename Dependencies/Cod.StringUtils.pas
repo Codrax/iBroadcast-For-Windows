@@ -16,60 +16,77 @@
 unit Cod.StringUtils;
 
 interface
-  uses
+uses
   System.SysUtils, System.Classes, Math;
 
-  type
-    TStringFindFlag = (IgnoreCase, FoundOnce, FoundMultiple);
-    TStringFindFlags = set of TStringFindFlag;
+type
+  TStringFindFlag = (IgnoreCase, FoundOnce, FoundMultiple);
+  TStringFindFlags = set of TStringFindFlag;
 
-    TStrGenFlag = (UppercaseLetters, LowercaseLetters, Numbers, Symbols);
-    TStrGenFlags = set of TStrGenFlag;
+  TStrGenFlag = (UppercaseLetters, LowercaseLetters, Numbers, Symbols);
+  TStrGenFlags = set of TStrGenFlag;
 
-  // Upper String, Lower string
-  function SuperStr(nr: string): string;
-  function SubStr(nr: string): string;
+  TIDGenerator = class
+  public
+    class function GenerateSequence(Sequence: string; Length: integer): string;
 
-  // String Func
-  function GetAllSeparatorItems(str: string; separators: TArray<string>): TArray<string>; overload;
-  function GetAllSeparatorItems(str: string; separator: string = ','): TArray<string>; overload;
-  function GenerateStringSequence(Length: integer; Characters: string): string;
-  function GenerateString(Length: integer; Flags: TStrGenFlags): string;
-  function GenerateStringEx(strlength: integer; letters: boolean = true;
-                          capitalization: boolean = true; numbers: boolean = true;
-                          symbols: boolean = true): string;
-  function StringBuild(Length: integer; Character: char): string;
+    // Basic
+    class function GenerateLetterNumber(Length: integer): string;
+    class function GenerateHex(Length: integer): string;
 
+    // Known
+    class function GenerateUUID: string;
+    class function GenerateGUID: string; // microsoft language for UUID
+    class function GenerateCLSID: string; // microsoft language for UUID
+  end;
 
-  // String Alterations
-  function StrCopy(MainString: string; frompos, topos: integer; justcontent: boolean = false): string;
-  function StrRemove(MainString: string; frompos, topos: integer): string;
-  function StrReplZone(MainString: string; frompos, topos: integer; ReplaceWith: string): string;
-  function StrInsert(MainString: string; AtPos: integer; InsertText: string): string;
-  function StrFirst(MainString: string; Count: integer = 1): string;
-  function StrClearUntilDifferent(MainString: string; ReplaceChar: char): string;
-  function StringClearLineBreaks(MainString: string; ReplaceWith: string = ''): string;
+// Upper String, Lower string
+function SuperStr(nr: string): string;
+function SubStr(nr: string): string;
 
-  // String Search
-  function StrCount(SubString: string; MainString: string; Flags: TStringFindFlags = []): integer;
-  function StrPos(SubString: string; MainString: string; index: integer = 1; offset: integer = 0; Flags: TStringFindFlags = []): integer;
-  function InString(SubString, MainString: string; Flags: TStringFindFlags = []): boolean;
+// String Func
+function GetAllSeparatorItems(str: string; separators: TArray<string>): TArray<string>; overload;
+function GetAllSeparatorItems(str: string; separator: string = ','): TArray<string>; overload;
+function GenerateStringSequence(Length: integer; Characters: string): string;
+function GenerateString(Length: integer; Flags: TStrGenFlags): string;
+function GenerateStringEx(strlength: integer; letters: boolean = true;
+                        capitalization: boolean = true; numbers: boolean = true;
+                        symbols: boolean = true): string;
+function StringBuild(Length: integer; Character: char): string;
 
-  // Search Utilities
-  function ClearStringSimbols(MainString: string): string;
-  /// <summary> Return the first string which is not Empty. </summary>
-  function StringNullLess(Strings: TArray<string>): string; overload;
-  /// <summary> Return the first string which is not Empty. </summary>
-  function StringNullLess(First, Second: string): string; overload;
+// String Alterations
+function StrCopy(MainString: string; frompos, topos: integer; justcontent: boolean = false): string;
+function StrRemove(MainString: string; frompos, topos: integer): string;
+function StrReplZone(MainString: string; frompos, topos: integer; ReplaceWith: string): string;
+function StrInsert(MainString: string; AtPos: integer; InsertText: string): string;
+function StrFirst(MainString: string; Count: integer = 1): string;
+function StrClearUntilDifferent(MainString: string; ReplaceChar: char): string;
+function StringClearLineBreaks(MainString: string; ReplaceWith: string = ''): string;
 
-  // String List
-  procedure InsertStListInStList(insertindex: integer; SubStrList: TStringList; var ParentStringList: TStringList);
-  function StringToStringList(str: string; Separator: string = #13): TStringList;
-  function StringToArray(str: string; Separator: string = #13): TArray<string>;
-  function StringListToString(stringlist: TStringList; Separator: string = #13): string;
-  function StringListToArray(stringlist: TStrings): TArray<string>;
-  procedure ArrayToStringList(AArray: TArray<string>; StringList: TStringList);
-  function ArrayToString(AArray: TArray<string>; Separator: string = #13): string;
+// String Search
+function StrCount(SubString: string; MainString: string; Flags: TStringFindFlags = []): integer;
+function StrPos(SubString: string; MainString: string; index: integer = 1; offset: integer = 0; Flags: TStringFindFlags = []): integer;
+function InString(SubString, MainString: string; Flags: TStringFindFlags = []): boolean;
+
+// Search Utilities
+function ClearStringSimbols(MainString: string): string;
+/// <summary> Return the first string which is not Empty. </summary>
+function StringNullLess(Strings: TArray<string>): string; overload;
+/// <summary> Return the first string which is not Empty. </summary>
+function StringNullLess(First, Second: string): string; overload;
+
+// String comparison
+function DamerauLevenshteinDistance(const Str1, Str2: String): Integer;
+function StringSimilarityRatio(const Str1, Str2: String; IgnoreCase: Boolean): Double;
+
+// String List
+procedure InsertStListInStList(insertindex: integer; SubStrList: TStringList; var ParentStringList: TStringList);
+function StringToStringList(str: string; Separator: string = #13): TStringList;
+function StringToArray(str: string; Separator: string = #13): TArray<string>;
+function StringListToString(stringlist: TStringList; Separator: string = #13): string;
+function StringListToArray(stringlist: TStrings): TArray<string>;
+procedure ArrayToStringList(AArray: TArray<string>; StringList: TStringList);
+function ArrayToString(AArray: TArray<string>; Separator: string = #13): string;
 
 const
   allchars = ['0'..'9', 'a'..'z', 'A'..'Z', '~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '=', '+', '[', ']', '{', '}', ';', ':', '"', '\', '|', '<', '>', ',', '.', '/', '?', #39, '`', ' '];
@@ -527,6 +544,112 @@ begin
   Result := Copy(mainstring, frompos, topos - frompos + 1);
 end;
 
+function DamerauLevenshteinDistance(const Str1, Str2: String): Integer;
+
+  function Min(const A, B, C: Integer): Integer;
+  begin
+    Result := A;
+    if B < Result then
+      Result := B;
+    if C < Result then
+      Result := C;
+  end;
+
+var
+  LenStr1, LenStr2: Integer;
+  I, J, T, Cost, PrevCost: Integer;
+  pStr1, pStr2, S1, S2: PChar;
+  D: PIntegerArray;
+begin
+  LenStr1 := Length(Str1);
+  LenStr2 := Length(Str2);
+
+  // save a bit memory by making the second index points to the shorter string
+  if LenStr1 < LenStr2 then
+  begin
+    T := LenStr1;
+    LenStr1 := LenStr2;
+    LenStr2 := T;
+    pStr1 := PChar(Str2);
+    pStr2 := PChar(Str1);
+  end
+  else
+  begin
+    pStr1 := PChar(Str1);
+    pStr2 := PChar(Str2);
+  end;
+
+  // bypass leading identical characters
+  while (LenStr2 <> 0) and (pStr1^ = pStr2^) do
+  begin
+    Inc(pStr1);
+    Inc(pStr2);
+    Dec(LenStr1);
+    Dec(LenStr2);
+  end;
+
+  // bypass trailing identical characters
+  while (LenStr2 <> 0) and ((pStr1 + LenStr1 - 1)^ = (pStr2 + LenStr2 - 1)^) do
+  begin
+    Dec(LenStr1);
+    Dec(LenStr2);
+  end;
+
+  // is the shorter string empty? so, the edit distance is length of the longer one
+  if LenStr2 = 0 then
+  begin
+    Result := LenStr1;
+    Exit;
+  end;
+
+  // calculate the edit distance
+  GetMem(D, (LenStr2 + 1) * SizeOf(Integer));
+
+  for I := 0 to LenStr2 do
+    D[I] := I;
+
+  S1 := pStr1;
+  for I := 1 to LenStr1 do
+  begin
+    PrevCost := I - 1;
+    Cost := I;
+    S2 := pStr2;
+    for J := 1 to LenStr2 do
+    begin
+      if (S1^ = S2^) or ((I > 1) and (J > 1) and (S1^ = (S2 - 1)^) and (S2^ = (S1 - 1)^)) then
+        Cost := PrevCost
+      else
+        Cost := 1 + Min(Cost, PrevCost, D[J]);
+      PrevCost := D[J];
+      D[J] := Cost;
+      Inc(S2);
+    end;
+    Inc(S1);
+  end;
+  Result := D[LenStr2];
+  FreeMem(D);
+end;
+
+function StringSimilarityRatio(const Str1, Str2: String; IgnoreCase: Boolean): Double;
+var
+  MaxLen: Integer;
+  Distance: Integer;
+begin
+  Result := 1.0;
+  if Length(Str1) > Length(Str2) then
+    MaxLen := Length(Str1)
+  else
+    MaxLen := Length(Str2);
+  if MaxLen <> 0 then
+  begin
+    if IgnoreCase then
+      Distance := DamerauLevenshteinDistance(LowerCase(Str1), LowerCase(Str2))
+    else
+      Distance := DamerauLevenshteinDistance(Str1, Str2);
+    Result := Result - (Distance / MaxLen);
+  end;
+end;
+
 procedure InsertStListInStList(insertindex: integer; SubStrList: TStringList; var ParentStringList: TStringList);
 var
   I: Integer;
@@ -641,6 +764,39 @@ begin
     Result := Result + AArray[I] + Separator;
 
   Result := Result + AArray[High( AArray )];
+end;
+
+{ TIDGenerator }
+
+class function TIDGenerator.GenerateCLSID: string;
+begin
+  Result := GenerateGUID;
+end;
+
+class function TIDGenerator.GenerateGUID: string;
+begin
+  Result := TGUID.NewGuid.ToString;
+end;
+
+class function TIDGenerator.GenerateHex(Length: integer): string;
+begin
+  Result := GenerateStringSequence(Length, '0123456789abcdef');
+end;
+
+class function TIDGenerator.GenerateLetterNumber(Length: integer): string;
+begin
+  Result := GenerateStringSequence(Length, 'abcdefghijklmnopqrstuvwxyz0123456789');
+end;
+
+class function TIDGenerator.GenerateSequence(Sequence: string; Length: integer): string;
+begin
+  Result := GenerateStringSequence(Length, Sequence);
+end;
+
+class function TIDGenerator.GenerateUUID: string;
+begin
+  Result := TGUID.NewGuid.ToString;
+  Result := Result.Substring(1, Result.Length-2);
 end;
 
 end.

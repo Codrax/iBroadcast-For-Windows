@@ -17,104 +17,150 @@
 unit Cod.Files;
 
 interface
-  uses
+uses
   {$IFDEF MSWINDOWS}
   Winapi.Windows, ShellAPI, Cod.Registry, Registry, ComObj,
   {$ENDIF}
   System.SysUtils, System.Variants, System.Classes, IOUtils, Math,
   Cod.MesssageConst, Cod.ArrayHelpers;
 
-  type
-    // Disk Item
-    {$IFDEF MSWINDOWS}
-    TFileAttribute = (Hidden, ReadOnly, SysFile, Compressed, Encrypted);
-    TFileAttributes = set of TFileAttribute;
+{$IFDEF MSWINDOWS}
+const
+  IOCTL_STORAGE_QUERY_PROPERTY =  $002D1400;
 
-    TAppDataType = (Local, Roaming, LocalLow);
+type
+  {$SCOPEDENUMS OFF}
+  STORAGE_QUERY_TYPE = (PropertyStandardQuery = 0, PropertyExistsQuery, PropertyMaskQuery, PropertyQueryMaxDefined);
+  TStorageQueryType = STORAGE_QUERY_TYPE;
 
-    TUserShellLocation = (User, AppData, AppDataLocal, Documents, Pictures,
-      Desktop, Music, Videos, Network, Recent, StartMenu, Startup, Downloads,
-      Programs);
+  STORAGE_PROPERTY_ID = (StorageDeviceProperty = 0, StorageAdapterProperty);
+  TStoragePropertyID = STORAGE_PROPERTY_ID;
 
-    TFileIOFlag = (ConfirmMouse, Silent, NoConfirmation, AllowUndo, FilesOnly,
-      SimpleProgress, NoConfirMakeDir, NoErrorUI, NoSecurityAttrib, NoRecursion,
-      WantNukeWarning, NoUI);
-    TFileIOFlags = set of TFileIOFlag;
-    {$ENDIF}
+  STORAGE_PROPERTY_QUERY = packed record
+    PropertyId: STORAGE_PROPERTY_ID;
+    QueryType: STORAGE_QUERY_TYPE;
+    AdditionalParameters: array [0..9] of AnsiChar;
+  end;
+  TStoragePropertyQuery = STORAGE_PROPERTY_QUERY;
 
-    TSourceSize = (Bytes, Kilobytes, Megabytes, Gigbytes, Terrabytes, Petabytes);
-    TFileDateTimeType = (Create, Modify, Access);
+  STORAGE_BUS_TYPE = (BusTypeUnknown = 0, BusTypeScsi, BusTypeAtapi, BusTypeAta, BusType1394, BusTypeSsa, BusTypeFibre,
+    BusTypeUsb, BusTypeRAID, BusTypeiScsi, BusTypeSas, BusTypeSata, BusTypeMaxReserved = $7F);
+  {$SCOPEDENUMS ON}
+  TStorageBusType = STORAGE_BUS_TYPE;
 
-  // Path
-  function GetSystemRoot: string;
-  function GetPathDepth(Path: string): integer;
-  function GetDisallowedFilenameCharacters: TCharArray;
-  function ValidateFileName(const AString: string): string;
-  function IsFileNameValid(const AString: string): boolean;
+  STORAGE_DEVICE_DESCRIPTOR = packed record
+    Version: DWORD;
+    Size: DWORD;
+    DeviceType: Byte;
+    DeviceTypeModifier: Byte;
+    RemovableMedia: Boolean;
+    CommandQueueing: Boolean;
+    VendorIdOffset: DWORD;
+    ProductIdOffset: DWORD;
+    ProductRevisionOffset: DWORD;
+    SerialNumberOffset: DWORD;
+    BusType: DWORD;
+    RawPropertiesLength: DWORD;
+    RawDeviceProperties: array [0..0] of AnsiChar;
+  end;
+  TStorageDeviceDescriptor = STORAGE_DEVICE_DESCRIPTOR;
+{$ENDIF}
 
-  // Size
-  function SizeInString(Size: int64; Scale: TSourceSize=TSourceSize.Bytes; MaxDecimals: cardinal=2): string;
-  function TransposeSize(Size: int64; Source, Destination: TSourceSize; MaxDecimals: cardinal=2): string;
-
-  function GetFolderSize(FolderPath: string): int64;
-  function GetFolderSizeInStr(FolderPath: string): string;
-
-  function GetFileSize(FilePath: string): Int64;
-  function GetFileSizeInStr(FilePath: string): string;
-
-  // File Information
+type
+  // Disk Item
   {$IFDEF MSWINDOWS}
-  function IsFileInUse(const FileName: string): Boolean;
+  TFileAttribute = (Hidden, ReadOnly, SysFile, Compressed, Encrypted);
+  TFileAttributes = set of TFileAttribute;
+
+  TAppDataType = (Local, Roaming, LocalLow);
+
+  TUserShellLocation = (User, AppData, AppDataLocal, Documents, Pictures,
+    Desktop, Music, Videos, Network, Recent, StartMenu, Startup, Downloads,
+    Programs);
+
+  TFileIOFlag = (ConfirmMouse, Silent, NoConfirmation, AllowUndo, FilesOnly,
+    SimpleProgress, NoConfirMakeDir, NoErrorUI, NoSecurityAttrib, NoRecursion,
+    WantNukeWarning, NoUI);
+  TFileIOFlags = set of TFileIOFlag;
   {$ENDIF}
-  function GetFileDate(const FileName: string; AType: TFileDateTimeType): TDateTime;
-  procedure SetFileDate(const FileName: string; AType: TFileDateTimeType; NewDate: TDateTime);
 
-  // Common locations
-  {$IFDEF POSIX}
-  function GetPathInAppData(AppName: string; Company: string; Create: boolean): string; overload;
-  function GetPathInAppData(AppName: string; Create: boolean=true): string; overload;
-  {$ENDIF}
-  {$IFDEF MSWINDOWS}
-  function GetPathInAppData(AppName: string; Company: string;
-    FolderType: TAppDataType; Create: boolean): string; overload;
-  function GetPathInAppData(AppName: string; FolderType: TAppDataType; Create: boolean=true): string; overload;
-  {$ENDIF}
+  TSourceSize = (Bytes, Kilobytes, Megabytes, Gigbytes, Terrabytes, Petabytes);
+  TFileDateTimeType = (Create, Modify, Access);
 
-  (* NTFS *)
-  {$IFDEF MSWINDOWS}
-  function ReplaceWinPath(SrcString: string): string;
+// Path
+function GetSystemRoot: string;
+function GetPathDepth(Path: string): integer;
+function GetDisallowedFilenameCharacters: TCharArray;
+function ValidateFileName(const AString: string): string;
+function IsFileNameValid(const AString: string): boolean;
 
-  function ReplaceEnviromentVariabiles(SrcString: string): string;
-  function ReplaceShellLocations(SrcString: string): string;
-  function GetUserShellLocation(ShellLocation: TUserShellLocation): string;
+// Size
+function SizeInString(Size: int64; Scale: TSourceSize=TSourceSize.Bytes; MaxDecimals: cardinal=2): string;
+function TransposeSize(Size: int64; Source, Destination: TSourceSize; MaxDecimals: cardinal=2): string;
 
-  function GetSystemDrive: string;
+function GetFolderSize(FolderPath: string): int64;
+function GetFolderSizeInStr(FolderPath: string): string;
 
-  // Redeclared
-  procedure RecycleFile(Path: string; Flags: TFileIOFlags = []);
-  procedure RecycleFolder(Path: string; Flags: TFileIOFlags = []);
+function GetFileSize(FilePath: string): Int64;
+function GetFileSizeInStr(FilePath: string): string;
 
-  // Shell file management
-  procedure DeleteFromDisk(Path: string; Flags: TFileIOFlags = [TFileIOFlag.AllowUndo]);
-  procedure RenameDiskItem(Source: string; NewName: string; Flags: TFileIOFlags);
-  procedure MoveDiskItem(Source: string; Destination: string; Flags: TFileIOFlags = [TFileIOFlag.AllowUndo]);
-  procedure CopyDiskItem(Source: string; Destination: string; Flags: TFileIOFlags = [TFileIOFlag.AllowUndo, TFileIOFlag.NoConfirMakeDir]);
+// File Information
+{$IFDEF MSWINDOWS}
+function IsFileInUse(const FileName: string): Boolean;
+{$ENDIF}
+function GetFileDate(const FileName: string; AType: TFileDateTimeType): TDateTime;
+procedure SetFileDate(const FileName: string; AType: TFileDateTimeType; NewDate: TDateTime);
 
-  // Volumes
-  procedure GetDiskSpace(const Disk: string; var FreeBytes, TotalBytes, TotalFreeBytes: int64);
+// Common locations
+{$IFDEF POSIX}
+function GetPathInAppData(AppName: string; Company: string; Create: boolean): string; overload;
+function GetPathInAppData(AppName: string; Create: boolean=true): string; overload;
+{$ENDIF}
+{$IFDEF MSWINDOWS}
+function GetPathInAppData(AppName: string; Company: string;
+  FolderType: TAppDataType; Create: boolean): string; overload;
+function GetPathInAppData(AppName: string; FolderType: TAppDataType; Create: boolean=true): string; overload;
+{$ENDIF}
 
-  // Attributes for Files & Folders
-  function GetAttributes(Path: string): TFileAttributes;
-  procedure WriteAttributes(Path: string; Attribs: TFileAttributes; HandleCompression: boolean = true);
+(* NTFS *)
+{$IFDEF MSWINDOWS}
+function ReplaceWinPath(SrcString: string): string;
 
-  // Utils
-  function FileTimeToDateTime(Value: TFileTime): TDateTime;
-  function FileFlagsToIOFlags(Flags: TFileIOFlags): FILEOP_FLAGS;
+function ReplaceEnviromentVariabiles(SrcString: string): string;
+function ReplaceShellLocations(SrcString: string): string;
+function GetUserShellLocation(ShellLocation: TUserShellLocation): string;
 
-  // Compression
-  function CompressFile(const FileName:string;Compress:Boolean):integer;
-  function CompressFolder(const FolderName:string;Recursive, Compress:Boolean): integer;
-  {$ENDIF}
+function GetSystemDrive: string;
+
+// Redeclared
+procedure RecycleFile(Path: string; Flags: TFileIOFlags = []);
+procedure RecycleFolder(Path: string; Flags: TFileIOFlags = []);
+
+// Shell file management
+procedure DeleteFromDisk(Path: string; Flags: TFileIOFlags = [TFileIOFlag.AllowUndo]);
+procedure RenameDiskItem(Source: string; NewName: string; Flags: TFileIOFlags);
+procedure MoveDiskItem(Source: string; Destination: string; Flags: TFileIOFlags = [TFileIOFlag.AllowUndo]);
+procedure CopyDiskItem(Source: string; Destination: string; Flags: TFileIOFlags = [TFileIOFlag.AllowUndo, TFileIOFlag.NoConfirMakeDir]);
+
+// Volumes
+{$IFDEF MSWINDOWS}
+procedure GetDiskSpace(const Disk: string; var FreeBytes, TotalBytes, TotalFreeBytes: int64);
+function GetBusType(Drive: AnsiChar): TStorageBusType;
+function GetUsbDrives: TArray<AnsiChar>;
+{$ENDIF}
+
+// Attributes for Files & Folders
+function GetAttributes(Path: string): TFileAttributes;
+procedure WriteAttributes(Path: string; Attribs: TFileAttributes; HandleCompression: boolean = true);
+
+// Utils
+function FileTimeToDateTime(Value: TFileTime): TDateTime;
+function FileFlagsToIOFlags(Flags: TFileIOFlags): FILEOP_FLAGS;
+
+// Compression
+function CompressFile(const FileName:string;Compress:Boolean):integer;
+function CompressFolder(const FolderName:string;Recursive, Compress:Boolean): integer;
+{$ENDIF}
 
 implementation
 
@@ -602,6 +648,7 @@ begin
   end;
 end;
 
+{$IFDEF MSWINDOWS}
 procedure GetDiskSpace(const Disk: string; var FreeBytes, TotalBytes, TotalFreeBytes: int64);
 var
   RootPath: PChar;
@@ -615,6 +662,60 @@ begin
   TotalBytes := ATotalBytes.QuadPart;
   TotalFreeBytes := ATotalFreeBytes.QuadPart;
 end;
+
+function GetBusType(Drive: AnsiChar): TStorageBusType;
+var
+  H: THandle;
+  Query: TStoragePropertyQuery;
+  dwBytesReturned: DWORD;
+  Buffer: array [0..1023] of Byte;
+  sdd: TStorageDeviceDescriptor absolute Buffer;
+  OldMode: UINT;
+begin
+  Result := BusTypeUnknown;
+
+  OldMode := SetErrorMode(SEM_FAILCRITICALERRORS);
+  try
+    H := CreateFile(PChar(Format('\\.\%s:', [string(Drive)])), 0, FILE_SHARE_READ or FILE_SHARE_WRITE, nil,
+      OPEN_EXISTING, 0, 0);
+    if H <> INVALID_HANDLE_VALUE then
+    begin
+      try
+        dwBytesReturned := 0;
+        FillChar(Query, SizeOf(Query), 0);
+        FillChar(Buffer, SizeOf(Buffer), 0);
+        sdd.Size := SizeOf(Buffer);
+        Query.PropertyId := StorageDeviceProperty;
+        Query.QueryType := PropertyStandardQuery;
+        if DeviceIoControl(H, IOCTL_STORAGE_QUERY_PROPERTY, @Query, SizeOf(Query), @Buffer, SizeOf(Buffer), dwBytesReturned, nil) then
+          Result := STORAGE_BUS_TYPE(sdd.BusType);
+      finally
+        CloseHandle(H);
+      end;
+    end;
+  finally
+    SetErrorMode(OldMode);
+  end;
+end;
+
+
+function GetUsbDrives: TArray<AnsiChar>;
+var
+  DriveBits: set of 0..25;
+  I: Integer;
+  Drive: AnsiChar;
+begin
+  Cardinal(DriveBits) := GetLogicalDrives;
+
+  for I := 0 to 25 do
+    if I in DriveBits then
+    begin
+      Drive := AnsiChar(Chr(Ord('a') + I));
+      if GetBusType(Drive) = BusTypeUsb then
+        TArrayUtils<AnsiChar>.AddValue(Drive, Result);
+    end;
+end;
+{$ENDIF}
 
 function GetAttributes(Path: string): TFileAttributes;
 var
