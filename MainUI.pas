@@ -21,7 +21,7 @@ uses
   Cod.WindowsRT.MasterVolume, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   IdHTTP, CreatePlaylistForm, Offline, Cod.StringUtils, iBroadcastUtils,
   PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar, Cod.Windows,
-  Cod.VersionUpdate, Cod.ArrayHelpers, Cod.Components, RatingPopup,
+  Cod.Version, Cod.ArrayHelpers, Cod.Components, RatingPopup,
   CodeSources, SpectrumVis3D, Vcl.Buttons, LoggingForm;
 
 type
@@ -459,6 +459,7 @@ type
     CButton36: CButton;
     CButton37: CButton;
     SaveMusicDialog: TSaveDialog;
+    Christmas_Mode: CImage;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -817,7 +818,7 @@ type
 
 const
   // SYSTEM
-  VERSION: TVersionRec = (Major:1; Minor:10; Maintenance: 0);
+  VERSION: TVersion = (Major:1; Minor:10; Maintenance: 1);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://api.codrutsoft.com/';
@@ -936,6 +937,7 @@ var
   // Draw
   Press10Stat: cardinal = 0;
   MouseIsPress: boolean;
+  IndexPress,
   IndexHover,
   IndexHoverSort: integer;
 
@@ -1038,6 +1040,9 @@ var
   ItemColor: TColor;
   ItemActiveColor: TColor;
   TextColor: TColor;
+
+  // Special time
+  ChristmasMode: boolean;
 
 implementation
 
@@ -2503,6 +2508,9 @@ begin
   Press10Stat := 0;
   PressNow.Enabled := true;
 
+  // Down
+  IndexPress := IndexHover;
+
   // Press
   MouseIsPress := true;
 end;
@@ -2523,6 +2531,18 @@ begin
         Break;
       end;
 
+  // Cancel press
+  if MouseIsPress and (IndexHover <> IndexPress) then begin
+    MouseIsPress := false;
+
+    // Press status
+    PressNow.Enabled := false;
+    Press10Stat := 0;
+
+    // Draw
+    RedrawPaintBox;
+  end;
+
   // Cursor
   if IndexHoverSort <> -1 then
     TPaintBox(Sender).Cursor := crHandPoint
@@ -2533,6 +2553,9 @@ end;
 procedure TUIForm.DrawItemMouseUp(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
+  if not MouseIsPress then
+    Exit;
+
   // Draw Settings
   PressNow.Enabled := false;
 
@@ -2925,6 +2948,15 @@ begin
       ButtonInactiveBackgroundColor := BackgroundColor;
     end;
 
+  // Christmas mode
+  const NowYear = YearOf(Now);
+  ChristmasMode := DateInRange(Now, EncodeDateDay(NowYear, 365-20), EncodeDateDay(NowYear+1, 10));
+
+  // Christmas mode UI
+  Christmas_Mode.Visible := ChristmasMode;
+  if ChristmasMode then
+    WELCOME_STRING := WELCOME_STRING_SPECIAL;
+
   // AppData
   AppData := GetPathInAppData('Cods iBroadcast', 'CodrutSoftware', TAppDataType.Local, true);
 
@@ -3313,7 +3345,7 @@ end;
 procedure TUIForm.GetVersionUpdateData;
 var
   Local,
-  Server: TVersionRec;
+  Server: TVersion;
 
   Download: string;
 begin
@@ -5186,7 +5218,7 @@ begin
       if Menu.Default then
         Font.Style := [fsBold];
       Text := Menu.Caption;
-      DrawTextRect( ACanvas, TextR, Text, [TTextFlag.VerticalCenter], 5);
+      DrawTextRect( ACanvas, TextR, Text, [TTextFlag.VerticalCenter, TTextFlag.ShowAccelChar], 5);
     end;
 end;
 

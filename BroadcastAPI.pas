@@ -321,10 +321,14 @@ interface
 
   procedure ResetWork;
 
+var
+  // Formattable Strings
+  WELCOME_STRING: string = 'Welcome, %S';
+
 const
   // Formattable Strings
   DEVICE_NAME_CONST = '%S' + ' iBroadcast for Windows';
-  WELCOME_STRING = 'Welcome, %S';
+  WELCOME_STRING_SPECIAL = 'Happy holidays, %S';
 
   // Login Constants
   CLIENT_NAME = 'Cods iBroadcast';
