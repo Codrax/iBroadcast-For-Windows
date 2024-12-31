@@ -2,7 +2,7 @@
  A unofficial iBroadcast client for Windows
  
 ### Description
-This is a native Windows client for the [iBroadcast](https://ibroadcast.com) music uploading platform. The application is made with Delphi 11 Comunity Edition. This app connects to your account via a access token.
+This is a native Windows client for the [iBroadcast](https://ibroadcast.com) music uploading platform. The application is made with Embarcadero Delphi 12. This app connects to your account with an official app integration on the iBroadcast website.
 
 ### Also try [iBroadcast for Linux](https://github.com/Codrax/iBroadcast-For-Linux)!
 
@@ -35,6 +35,7 @@ iBroadcast Apps Page
 ### Dependencies
 - Codrut Visual Library - https://github.com/Codrax/CodrutsVisualLibrary/
 - Codrut Fluent Design System - https://github.com/Codrax/CodrutFluentDesignSystem
+- Codrut Windows Runtime - https://github.com/Codrax/Cod-Windows-Runtime
 - Delphi BASS Audio Library - https://github.com/TDDung/Delphi-BASS
 - Units in the Dependencies folder
 
