@@ -35,6 +35,7 @@ iBroadcast Apps Page
 ### Dependencies
 - Codrut Visual Library - https://github.com/Codrax/CodrutsVisualLibrary/
 - Codrut Fluent Design System - https://github.com/Codrax/CodrutFluentDesignSystem
+- Codrut Windows Runtime - https://github.com/Codrax/Cod-Windows-Runtime
 - Delphi BASS Audio Library - https://github.com/TDDung/Delphi-BASS
 - Units in the Dependencies folder
 
