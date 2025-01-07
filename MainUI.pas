@@ -2949,8 +2949,8 @@ begin
     end;
 
   // Christmas mode
-  const NowYear = YearOf(Now);
-  ChristmasMode := DateInRange(Now, EncodeDateDay(NowYear, 365-20), EncodeDateDay(NowYear+1, 10));
+  const DayOfTheCurrentYear = DayOfTheYear(Now);
+  ChristmasMode := (DayOfTheCurrentYear > 365-20) or (DayOfTheCurrentYear <= 10);
 
   // Christmas mode UI
   Christmas_Mode.Visible := ChristmasMode;
