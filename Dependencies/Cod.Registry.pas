@@ -18,7 +18,7 @@ unit Cod.Registry;
 interface
   uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Registry, Vcl.Dialogs, Cod.ArrayHelpers, Cod.MesssageConst;
+  Win.Registry, Vcl.Dialogs, Cod.ArrayHelpers, Cod.MesssageConst;
 
   type
     TRegistryMode = (Unloaded, Windows32, Windows64, Automatic);
@@ -297,7 +297,7 @@ function TWinRegistry.DeleteKey(KeyLocation: string): boolean;
 begin
   // Prepare bPath & Open
   ApplyPath( KeyLocation );
-  PrepareReg( TRegistryNeed.Write, GetPathItem(KeyLocation) );
+  PrepareReg( TRegistryNeed.Complete, GetPathItem(KeyLocation) );
 
   // Create Key
   Result := false;

@@ -2,14 +2,18 @@ unit Cod.MesssageConst;
 
 interface
 
-resourcestring
+const // do not localise
   // Value
-  NOT_NUMBER = 'NaN'; // do not localise
+  NOT_NUMBER = 'NaN';
+  UNKNOWN = 'unknown';
+
+resourcestring
+  // Values
+  STRING_YES = 'yes';
+  STRING_NO = 'no';
   STRING_UNKNOWN = 'Unknown';
   NOT_FOUND = 'Not Found';
   NOT_DEFINED = 'Not Defined';
-  STRING_YES = 'yes';
-  STRING_NO = 'no';
 
   // General
   DEFAULT_COMPANY = 'Codrut Software'; // do not localise

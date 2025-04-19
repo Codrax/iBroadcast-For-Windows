@@ -7,7 +7,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Cod.SysUtils, Vcl.TitleBarCtrls, Cod.Visual.Image, Vcl.StdCtrls,
   Cod.Visual.Button, Vcl.ExtCtrls, Cod.Math, Math, Cod.Visual.Slider,
-  SpectrumVis3D, UITypes;
+  SpectrumVis3D, UITypes, Cod.Animation.Component;
 
 type
   TMiniPlayer = class(TForm)
@@ -32,6 +32,7 @@ type
     Mini_Transparent: CButton;
     SpectrumView: TPanel;
     Visualisation_Mini: TPaintBox;
+    NewAnimation1: TIntAnim;
     procedure FormCreate(Sender: TObject);
     procedure MoveMoveDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -60,6 +61,10 @@ type
     procedure UpdateHeights;
   public
     { Public declarations }
+    // Window
+    procedure RestoreMainForm;
+
+    // Data
     procedure PreparePosition;
 
     procedure MiniSetSeek;
@@ -135,14 +140,7 @@ end;
 
 procedure TMiniPlayer.Mini_CloseClick(Sender: TObject);
 begin
-  Self.Hide;
-
-  if ExperimentalTop then
-    begin
-      Self.FormStyle := fsNormal;
-      ChangeMainForm(UIForm);
-    end;
-  Application.MainForm.Show;
+  RestoreMainForm;
 end;
 
 procedure TMiniPlayer.Mini_ExpandClick(Sender: TObject);
@@ -263,12 +261,6 @@ begin
   // UI
   MainContain.Top := CustomTitlebar.Height;
   AdditionalOptions.Top := MainContain.Top + MainContain.Height;
-
-  // Heights
-  UpdateHeights;
-
-  // Apply Size
-  ClientHeight := HeightNormal;
 end;
 
 procedure TMiniPlayer.FormKeyUp(Sender: TObject; var Key: Word;
@@ -317,17 +309,34 @@ begin
 
   // Heights
   UpdateHeights;
-
-  // Reset Height
   ClientHeight := HeightNormal;
 
   // Show
   Show;
+
+  // Heights
+  UpdateHeights;
+  ClientHeight := HeightNormal;
+
+  // Fix ui
+  MainContain.Top := -1;
+end;
+
+procedure TMiniPlayer.RestoreMainForm;
+begin
+  Self.Hide;
+
+  if ExperimentalTop then
+    begin
+      Self.FormStyle := fsNormal;
+      ChangeMainForm(UIForm);
+    end;
+  Application.MainForm.Show;
 end;
 
 procedure TMiniPlayer.UpdateHeights;
 begin
-  HeightNormal := MainContain.Top + MainContain.Height;
+  HeightNormal := MainContain.Height;
   if SpectrumView.Visible then
     Inc(HeightNormal, SpectrumView.Height);
   HeightExtended := HeightNormal + AdditionalOptions.Height;

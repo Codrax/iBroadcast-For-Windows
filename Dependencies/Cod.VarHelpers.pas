@@ -17,9 +17,9 @@ unit Cod.VarHelpers;
 
 interface
   uses
-  System.SysUtils, System.Classes, IdHTTP,
+  System.SysUtils, System.Classes, IdHTTP, System.IniFiles,
   {$IFDEF MSWINDOWS}
-  Windows,
+  Winapi.Windows,
   {$ENDIF}
   VCL.Graphics, Winapi.ActiveX, Winapi.URLMon, IOUtils, System.Generics.Collections,
   Cod.ColorUtils, System.Generics.Defaults, Vcl.Imaging.pngimage,
@@ -108,6 +108,12 @@ interface
       procedure GDIGraphic(Graphic: TGraphic; Rect: TRect); overload;
       procedure GDIGraphic(Graphic: TGraphic; Rect: TRect; Angle: integer); overload;
       procedure GDIGraphicRound(Graphic: TGraphic; Rect: TRect; Round: real);
+    end;
+
+    // TIniFile
+    TIniFileHelper = class helper for TIniFile
+    public
+      function ReadString(const Section, Ident, Default: string; StringSize: integer=2047): string; overload;
     end;
 
     // Registry
@@ -373,6 +379,25 @@ end;
 function TPointHelper.ToString: string;
 begin
   Result := Format('%D,%D', [X, Y]);
+end;
+
+{ TIniFileHelper }
+
+function TIniFileHelper.ReadString(const Section, Ident, Default: string;
+  StringSize: integer): string;
+var
+  Buffer: PChar;
+  BufSize: NativeInt;
+begin
+  BufSize := StringSize * SizeOf(char);
+  Buffer := AllocMem(BufSize);
+  try
+    SetString(Result, Buffer, GetPrivateProfileString(MarshaledString(Section),
+      MarshaledString(Ident), MarshaledString(Default), Buffer, Length(Buffer),
+      MarshaledString(FileName)));
+  finally
+    FreeMem(Buffer, BufSize);
+  end;
 end;
 
 end.

@@ -24,6 +24,10 @@ uses
   Cod.Version, Cod.ArrayHelpers, Cod.Components, RatingPopup,
   CodeSources, SpectrumVis3D, Vcl.Buttons, LoggingForm;
 
+const
+  WM_CUSTOMAPPMESSAGE = WM_USER + 100;
+  WM_RESTOREMAINWINDOW = WM_CUSTOMAPPMESSAGE + 1;
+
 type
   // Cardinals
   TViewStyle = (List, Cover);
@@ -614,6 +618,9 @@ type
     // Detect mouse Back/Forward
     procedure WMAppCommand(var Msg: TMessage); message WM_APPCOMMAND;
 
+    // Detect mouse Back/Forward
+    procedure WMRestoreMainWindow(var Msg: TMessage); message WM_RESTOREMAINWINDOW;
+
     // Shutting down / Logging off
     procedure WMQueryEndSession(var Msg: TWMQueryEndSession); message WM_QUERYENDSESSION;
 
@@ -789,6 +796,9 @@ type
     procedure CloseApplication;
     procedure CancelClose;
 
+    // Forms
+    procedure MinimizeToMiniPlayer;
+
     // External Update
     procedure SetCurrentSongRating(AValue: integer);
 
@@ -818,7 +828,11 @@ type
 
 const
   // SYSTEM
-  VERSION: TVersion = (Major:1; Minor:10; Maintenance: 1);
+  APP_NAME = 'Cod'#39's iBroadcast';
+  APP_DESCRIPTION = 'Codrut'#39's iBroadcast for Windows';
+  APP_USERMODELID = 'com.codrutsoft.ibroadcast';
+
+  VERSION: TVersion = (Major:1; Minor:10; Maintenance: 2);
 
   API_APPNAME = 'ibroadcast';
   API_ENDPOINT = 'https://api.codrutsoft.com/';
@@ -1404,19 +1418,7 @@ end;
 
 procedure TUIForm.Button_MiniPlayerClick(Sender: TObject);
 begin
-  Hide;
-  MiniPlayer.PreparePosition;
-  MiniPlayer.FormStyle := fsNormal;
-
-  ExperimentalTop := Setting_PlayerOnTop.Checked;
-  if ExperimentalTop then
-    begin
-      MiniPlayer.FormStyle := fsStayOnTop;
-      ChangeMainForm(MiniPlayer);
-    end;
-
-  // Get data
-  UpdateMiniPlayer;
+  MinimizeToMiniPlayer;
 end;
 
 procedure TUIForm.Button_NextClick(Sender: TObject);
@@ -3352,7 +3354,7 @@ begin
   // Get HTML
   Local := Version;
   try
-    Server.APILoad(API_APPNAME, API_ENDPOINT);
+    Server.APILoad(API_APPNAME, VERSION, API_ENDPOINT);
   except
     Latest_Version.Caption := 'Latest version on server: Server Error';
     exit;
@@ -7162,6 +7164,23 @@ begin
   HiddenToTray := true;
 end;
 
+procedure TUIForm.MinimizeToMiniPlayer;
+begin
+  Hide;
+  MiniPlayer.PreparePosition;
+  MiniPlayer.FormStyle := fsNormal;
+
+  ExperimentalTop := Setting_PlayerOnTop.Checked;
+  if ExperimentalTop then
+    begin
+      MiniPlayer.FormStyle := fsStayOnTop;
+      ChangeMainForm(MiniPlayer);
+    end;
+
+  // Get data
+  UpdateMiniPlayer;
+end;
+
 procedure TUIForm.MoveByHold(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
@@ -8136,6 +8155,20 @@ begin
   CloseApplication;
 end;
 
+procedure TUIForm.WMRestoreMainWindow(var Msg: TMessage);
+begin
+  // Close mini player
+  if MiniPlayer.Visible then
+    MiniPlayer.RestoreMainForm;
+
+  // Restore from tray
+  if HiddenToTray then
+    OpenFromTray;
+
+  // Bring to top
+  BringToTopAndFocusWindow(Handle);
+end;
+
 { TDrawableItem }
 
 procedure TDrawableItem.TrashFromLibrary;
@@ -8668,9 +8701,9 @@ end;
 
 initialization
   // Register
-  AppRegistration.AppUserModelID := 'com.codrutsoft.ibroadcast';
-  AppRegistration.AppName := 'Cod'#39's iBroadcast';
-  AppRegistration.AppDescription := 'Codrut'#39's iBroadcast for Windows';
+  AppRegistration.AppUserModelID := APP_USERMODELID;
+  AppRegistration.AppName := APP_NAME;
+  AppRegistration.AppDescription := APP_DESCRIPTION;
 
   // Media
   MediaControls := TWindowMediaTransportControls.Create;

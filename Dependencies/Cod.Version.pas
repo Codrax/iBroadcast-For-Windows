@@ -3,7 +3,7 @@ unit Cod.Version;
 interface
   uses
   System.SysUtils, System.Classes, IdSNTP,
-  System.Types, DateUtils, IdHTTP, Math, Cod.Math, Cod.Types,
+  System.Types, DateUtils, IdHTTP, Math, Cod.Math,
   JSON, IdSSLOpenSSL;
 
 type
@@ -82,17 +82,17 @@ end;
 
 function TVersion.NewerThan(Version: TVersion): boolean;
 begin
-  Result := CompareTo(Version) = TValueRelationship.Greater;
+  Result := CompareTo(Version) = GreaterThanValue;
 end;
 
 class operator TVersion.NotEqual(A, B: TVersion): Boolean;
 begin
-  Result := A.CompareTo(B) <> TValueRelationship.Equal;
+  Result := A.CompareTo(B) <> EqualsValue;
 end;
 
 function TVersion.OlderThan(Version: TVersion): boolean;
 begin
-  Result := CompareTo(Version) = TValueRelationship.Smaller;
+  Result := CompareTo(Version) = LessThanValue;
 end;
 
 procedure TVersion.APILoad(AppName: string; Current: TVersion; Endpoint: string);
@@ -158,15 +158,15 @@ end;
 function TVersion.CompareTo(Version: TVersion): TValueRelationship;
 begin
   Result := GetNumberRelation(Major, Version.Major);
-  if Result <> TValueRelationship.Equal then
+  if Result <> EqualsValue then
     Exit;
 
   Result := GetNumberRelation(Minor, Version.Minor);
-  if Result <> TValueRelationship.Equal then
+  if Result <> EqualsValue then
     Exit;
 
   Result := GetNumberRelation(Maintenance, Version.Maintenance);
-  if Result <> TValueRelationship.Equal then
+  if Result <> EqualsValue then
     Exit;
 
   Result := GetNumberRelation(Build, Version.Build);
@@ -187,12 +187,12 @@ end;
 
 function TVersion.Empty: boolean;
 begin
-  Result := CompareTo(VERSION_EMPTY) = TValueRelationship.Equal;
+  Result := CompareTo(VERSION_EMPTY) = EqualsValue;
 end;
 
 class operator TVersion.Equal(A, B: TVersion): Boolean;
 begin
-  Result := A.CompareTo(B) = TValueRelationship.Equal;
+  Result := A.CompareTo(B) = EqualsValue;
 end;
 
 function TVersion.GetDownloadLink(JSONValue: string): string;

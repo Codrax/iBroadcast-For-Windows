@@ -11,16 +11,41 @@
 {                   -- WORK IN PROGRESS --                  }
 {***********************************************************}
 
+{$SCOPEDENUMS ON}
+
 unit Cod.Internet;
 
 interface
   uses
-  System.SysUtils, System.Classes, IdHTTP, IdSSLOpenSSL,
+  System.SysUtils, System.Classes, IdHTTP, IdSSLOpenSSL, IdIcmpClient, Types,
   {$IFDEF MSWINDOWS}
-  Vcl.Graphics, Vcl.Imaging.jpeg, Vcl.Imaging.GIFImg, Vcl.Imaging.pngimage,
-  URLMon,
+  Windows, Vcl.Graphics, Vcl.Imaging.jpeg, Vcl.Imaging.GIFImg, Vcl.Imaging.pngimage,
+  URLMon, ActiveX, Variants, Winapi.IpTypes, Winapi.IpHlpApi, Win.ComObj,
   {$ENDIF}
-  IOUtils, Cod.Files, Cod.StringUtils;
+  IOUtils, Cod.Files, Cod.StringUtils, Cod.MesssageConst;
+
+type
+  // Types
+  TNetworkProtocol = (Unknown, TCP, UDP);
+  TNetworkProtocolHelper = record helper for TNetworkProtocol
+  public
+    class function FromString(Value: string): TNetworkProtocol; static;
+
+    function ToString: string;
+  end;
+
+  // Net utils
+  {$IFDEF MSWINDOWS}
+  function GetAdapterDescription: string;
+  function GetGatewayIP: string;
+  function GetLocalIP: string;
+  {$ENDIF}
+
+  // UPnP
+  {$IFDEF MSWINDOWS}
+  function RegisterUPnPPort(const Port: Word; const Protocol: TNetworkProtocol; const Description: string): boolean;
+  function UnregisterUPnPPort(const Port: Word; const Protocol: TNetworkProtocol): boolean;
+  {$ENDIF}
 
   // General
   function DownloadFile(Source, Destination: string): Boolean;
@@ -29,6 +54,9 @@ interface
   function GetInternetImage(ImageURL: string; downloadfallback: boolean = true): TGraphic; overload;
   procedure GetInternetImage(ImageURL: string; var Image: TGraphic; downloadfallback: boolean = true); overload;
   {$ENDIF}
+
+  // Devices
+  function PingDevice(Destination: string): boolean;
 
   // Util
   function DownloadFileHTTP(Source, Destination: string): Boolean;
@@ -39,7 +67,149 @@ interface
   // String Data
   function MaskEmailAdress(Adress: string): string;
 
+  // Utils
+  function AnsiCharArrayToString(AnsiChars: array of AnsiChar): AnsiString;
+
 implementation
+
+function AnsiCharArrayToString(AnsiChars: array of AnsiChar): AnsiString;
+begin
+  Result := Copy(AnsiChars, 0, Length(AnsiChars));
+end;
+
+{$IFDEF MSWINDOWS}
+function GetAdapterDescription: string;
+var
+  AdapterInfo: PIP_ADAPTER_INFO;
+  BufLen: ULONG;
+  Res: DWORD;
+  P: PIP_ADAPTER_INFO;
+begin
+  Result := '0.0.0.0';
+  BufLen := 0;
+  GetAdaptersInfo(nil, BufLen); // First call to get required buffer size
+  GetMem(AdapterInfo, BufLen);
+  try
+    Res := GetAdaptersInfo(AdapterInfo, BufLen);
+    if Res = ERROR_SUCCESS then
+    begin
+      P := AdapterInfo;
+      Result := string(AnsiCharArrayToString(P.Description));
+    end;
+  finally
+    FreeMem(AdapterInfo);
+  end;
+end;
+
+function GetGatewayIP: string;
+var
+  AdapterInfo: PIP_ADAPTER_INFO;
+  BufLen: ULONG;
+  Res: DWORD;
+  P: PIP_ADAPTER_INFO;
+begin
+  Result := '0.0.0.0';
+  BufLen := 0;
+  GetAdaptersInfo(nil, BufLen); // First call to get required buffer size
+  GetMem(AdapterInfo, BufLen);
+  try
+    Res := GetAdaptersInfo(AdapterInfo, BufLen);
+    if Res = ERROR_SUCCESS then
+    begin
+      P := AdapterInfo;
+      while P <> nil do begin
+        if (P^.GatewayList.IpAddress.S[0] <> #0) and
+           (AnsiCharArrayToString(P^.GatewayList.IpAddress.S) <> '0.0.0.0') then
+        begin
+          Result := string(AnsiCharArrayToString(P^.GatewayList.IpAddress.S));
+          Break;
+        end;
+        P := P^.Next;
+      end;
+    end;
+  finally
+    FreeMem(AdapterInfo);
+  end;
+end;
+
+function GetLocalIP: string;
+var
+  AdapterInfo: PIP_ADAPTER_INFO;
+  BufLen: ULONG;
+  Res: DWORD;
+  P: PIPAdapterInfo;
+begin
+  Result := '127.0.0.1';
+  BufLen := 0;
+  GetAdaptersInfo(nil, BufLen); // First call to get required buffer size
+  GetMem(AdapterInfo, BufLen);
+  try
+    Res := GetAdaptersInfo(AdapterInfo, BufLen);
+    if Res = ERROR_SUCCESS then
+    begin
+      P := AdapterInfo;
+      while P <> nil do begin
+        if (P^.IpAddressList.IpAddress.S[0] <> #0) and
+           (AnsiCharArrayToString(P^.IpAddressList.IpAddress.S) <> '0.0.0.0') then
+        begin
+          Result := string(AnsiCharArrayToString(P^.IpAddressList.IpAddress.S));
+          Break;
+        end;
+        P := P^.Next;
+      end;
+    end;
+  finally
+    FreeMem(AdapterInfo);
+  end;
+end;
+{$ENDIF}
+
+{$IFDEF MSWINDOWS}
+function RegisterUPnPPort(const Port: Word; const Protocol: TNetworkProtocol; const Description: string): boolean;
+const
+  CLSID_UPnPNAT = '{AE1E00AA-3FD5-403C-8A27-2BBDC30CD0E1}';
+var
+  UPnPNAT: OleVariant;
+  Mappings: OleVariant;
+begin
+  Result := false;
+  if Protocol = TNetworkProtocol.Unknown then
+    raise Exception.Create('Unknown network protocol.');
+
+  UPnPNAT := CreateOleObject('HNetCfg.NATUPnP');
+  Mappings := UPnPNAT.StaticPortMappingCollection;
+  if not VarIsNull(Mappings) then
+    try
+      // Add the port mapping
+      Mappings.Add(Port, Protocol.ToString, Port, GetLocalIP, True, Description);
+      Result := true;
+    except
+      Result := false;
+    end;
+end;
+
+function UnregisterUPnPPort(const Port: Word; const Protocol: TNetworkProtocol): boolean;
+const
+  CLSID_UPnPNAT = '{AE1E00AA-3FD5-403C-8A27-2BBDC30CD0E1}';
+var
+  UPnPNAT: OleVariant;
+  Mappings: OleVariant;
+begin
+  Result := false;
+  if Protocol = TNetworkProtocol.Unknown then
+    raise Exception.Create('Unknown network protocol.');
+
+  UPnPNAT := CreateOleObject('HNetCfg.NATUPnP');
+  Mappings := UPnPNAT.StaticPortMappingCollection;
+  if not VarIsNull(Mappings) then
+    // Remove mapping
+    try
+      Result := Mappings.Remove(Port, Protocol.ToString) = S_OK;
+    except
+      Result := false;
+    end;
+end;
+{$ENDIF}
 
 function DownloadFile(Source, Destination: string): Boolean;
 begin
@@ -54,6 +224,24 @@ begin
   if DownloadFileMon( Source, Destination) then
     Exit(true);
   {$ENDIF}
+end;
+
+function PingDevice(Destination: string): boolean;
+var
+  Icmp: TIdIcmpClient;
+begin
+  Icmp := TIdIcmpClient.Create(nil);
+  try
+    Icmp.Host := Destination;
+    Icmp.ReceiveTimeout := 1000; // 1 second timeout
+    Icmp.Ping;
+
+    // Icmp.ReplyStatus.MsRoundTripTime.ToString is the response time in ms
+
+    Result := Icmp.ReplyStatus.ReplyStatusType = rsEcho;
+  finally
+    Icmp.Free;
+  end;
 end;
 
 function DownloadFileHTTP(Source, Destination: string): Boolean;
@@ -215,6 +403,28 @@ begin
     First[I] := '*';
 
   Result := First + Second;
+end;
+
+{ TNetworkProtocolHelper }
+
+class function TNetworkProtocolHelper.FromString(
+  Value: string): TNetworkProtocol;
+begin
+  Result := TNetworkProtocol.Unknown;
+  Value := Value.ToLower;
+
+  for var X := Low(TNetworkProtocol) to High(TNetworkProtocol) do
+    if X.ToString.ToLower = Value then
+      Exit( X );
+end;
+
+function TNetworkProtocolHelper.ToString: string;
+begin
+  case Self of
+    TNetworkProtocol.Unknown: Exit( UNKNOWN );
+    TNetworkProtocol.TCP: Exit('TCP');
+    TNetworkProtocol.UDP: Exit('UDP');
+  end;
 end;
 
 end.

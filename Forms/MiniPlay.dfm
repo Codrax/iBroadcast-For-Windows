@@ -5,8 +5,8 @@ object MiniPlayer: TMiniPlayer
   BorderIcons = []
   BorderStyle = bsSingle
   Caption = 'Mini Player'
-  ClientHeight = 470
-  ClientWidth = 309
+  ClientHeight = 338
+  ClientWidth = 260
   Color = 2886676
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
@@ -23,11 +23,11 @@ object MiniPlayer: TMiniPlayer
   object MainContain: TPanel
     AlignWithMargins = True
     Left = 0
-    Top = 10
-    Width = 309
-    Height = 175
+    Top = 0
+    Width = 260
+    Height = 110
     Margins.Left = 0
-    Margins.Top = 10
+    Margins.Top = 0
     Margins.Right = 0
     Margins.Bottom = 0
     Align = alTop
@@ -37,55 +37,62 @@ object MiniPlayer: TMiniPlayer
     ShowCaption = False
     TabOrder = 0
     OnMouseDown = MoveMoveDown
+    DesignSize = (
+      260
+      110)
     object Mini_Song: TLabel
-      Left = 96
-      Top = 16
-      Width = 213
-      Height = 30
+      Left = 62
+      Top = 8
+      Width = 198
+      Height = 26
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Song name here'
       EllipsisPosition = epEndEllipsis
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
-      Font.Height = -21
+      Font.Height = -19
       Font.Name = 'Segoe UI Semibold'
       Font.Style = []
       ParentFont = False
       ShowAccelChar = False
       OnMouseDown = MoveMoveDown
+      ExplicitWidth = 247
     end
     object Mini_Cover: CImage
-      Left = 25
+      Left = 20
       Top = 16
-      Width = 56
-      Height = 56
+      Width = 36
+      Height = 36
       GifSettings.Enable = False
       GifSettings.AnimationSpeed = 100
       OnMouseDown = MoveMoveDown
     end
     object Mini_Artist: TLabel
-      Left = 96
-      Top = 47
-      Width = 210
-      Height = 25
+      Left = 62
+      Top = 36
+      Width = 195
+      Height = 21
+      Anchors = [akLeft, akTop, akRight]
       AutoSize = False
       Caption = 'Artist name here'
       EllipsisPosition = epEndEllipsis
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
-      Font.Height = -19
+      Font.Height = -12
       Font.Name = 'Segoe UI'
       Font.Style = []
       ParentFont = False
       ShowAccelChar = False
       OnMouseDown = MoveMoveDown
+      ExplicitWidth = 244
     end
     object Mini_Close: CButton
       AlignWithMargins = True
-      Left = 23
-      Top = 114
-      Width = 40
-      Height = 30
+      Left = 15
+      Top = 70
+      Width = 36
+      Height = 26
       Hint = 'Exit Mini Player (Alt+O)'
       Margins.Left = 10
       Margins.Right = 10
@@ -101,7 +108,7 @@ object MiniPlayer: TMiniPlayer
       GradientOptions.Down = clMaroon
       ControlStyle = []
       Font.Charset = DEFAULT_CHARSET
-      Font.Color = 14123546
+      Font.Color = 14123540
       Font.Height = -16
       Font.Name = 'Segoe UI Semibold'
       Font.Style = []
@@ -149,10 +156,10 @@ object MiniPlayer: TMiniPlayer
     end
     object Button_Prev: CButton
       AlignWithMargins = True
-      Left = 75
-      Top = 111
-      Width = 50
-      Height = 37
+      Left = 56
+      Top = 68
+      Width = 46
+      Height = 32
       Hint = 'Previous (Alt+L)'
       OnClick = Button_PrevClick
       ShowHint = True
@@ -213,10 +220,10 @@ object MiniPlayer: TMiniPlayer
       Animations.FASpeed = 10
     end
     object MiniButton_Play: CButton
-      Left = 128
-      Top = 108
+      Left = 105
+      Top = 65
       Width = 50
-      Height = 43
+      Height = 38
       Hint = 'Play/Pause (Alt+P)'
       OnClick = MiniButton_PlayClick
       ShowHint = True
@@ -278,10 +285,10 @@ object MiniPlayer: TMiniPlayer
     end
     object Button_Next: CButton
       AlignWithMargins = True
-      Left = 182
-      Top = 111
-      Width = 50
-      Height = 37
+      Left = 158
+      Top = 68
+      Width = 46
+      Height = 32
       Hint = 'Next (Alt+N)'
       OnClick = Button_NextClick
       ShowHint = True
@@ -343,10 +350,10 @@ object MiniPlayer: TMiniPlayer
     end
     object Mini_Expand: CButton
       AlignWithMargins = True
-      Left = 242
-      Top = 114
-      Width = 40
-      Height = 30
+      Left = 210
+      Top = 70
+      Width = 36
+      Height = 26
       Margins.Left = 10
       Margins.Right = 10
       OnClick = Mini_ExpandClick
@@ -360,7 +367,7 @@ object MiniPlayer: TMiniPlayer
       GradientOptions.Down = clMaroon
       ControlStyle = []
       Font.Charset = DEFAULT_CHARSET
-      Font.Color = 14123546
+      Font.Color = 14123540
       Font.Height = -16
       Font.Name = 'Segoe UI Semibold'
       Font.Style = []
@@ -409,9 +416,9 @@ object MiniPlayer: TMiniPlayer
   end
   object AdditionalOptions: TPanel
     Left = 0
-    Top = 286
-    Width = 309
-    Height = 185
+    Top = 186
+    Width = 260
+    Height = 150
     Margins.Top = 0
     Align = alTop
     BevelOuter = bvNone
@@ -423,36 +430,49 @@ object MiniPlayer: TMiniPlayer
     object Label3: TLabel
       AlignWithMargins = True
       Left = 3
-      Top = 64
-      Width = 303
-      Height = 21
-      Margins.Top = 15
+      Top = 53
+      Width = 254
+      Height = 15
+      Margins.Top = 10
       Margins.Bottom = 0
       Align = alTop
       Alignment = taCenter
       Caption = 'Seek'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -12
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
       OnMouseDown = MoveMoveDown
-      ExplicitWidth = 33
+      ExplicitWidth = 24
     end
     object Label4: TLabel
       AlignWithMargins = True
       Left = 3
       Top = 0
-      Width = 303
-      Height = 21
+      Width = 254
+      Height = 15
       Margins.Top = 0
       Margins.Bottom = 0
       Align = alTop
       Alignment = taCenter
       Caption = 'Next Up:'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWhite
+      Font.Height = -12
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
+      Layout = tlBottom
       OnMouseDown = MoveMoveDown
-      ExplicitWidth = 59
+      ExplicitWidth = 46
     end
     object Mini_NextSong: TLabel
       AlignWithMargins = True
       Left = 3
-      Top = 24
-      Width = 303
+      Top = 18
+      Width = 254
       Height = 25
       Margins.Bottom = 0
       Align = alTop
@@ -463,20 +483,21 @@ object MiniPlayer: TMiniPlayer
       EllipsisPosition = epEndEllipsis
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
-      Font.Height = -19
+      Font.Height = -16
       Font.Name = 'Segoe UI Semibold'
       Font.Style = []
       ParentColor = False
       ParentFont = False
       ShowAccelChar = False
       OnMouseDown = MoveMoveDown
+      ExplicitTop = 24
       ExplicitWidth = 100
     end
     object Mini_Seek: CSlider
       AlignWithMargins = True
       Left = 25
-      Top = 85
-      Width = 259
+      Top = 68
+      Width = 210
       Height = 30
       Margins.Left = 25
       Margins.Top = 0
@@ -525,10 +546,10 @@ object MiniPlayer: TMiniPlayer
     end
     object Mini_Shuffle: CButton
       AlignWithMargins = True
-      Left = 182
-      Top = 121
+      Left = 158
+      Top = 113
       Width = 50
-      Height = 37
+      Height = 30
       Hint = 'Toggle Shuffle (Alt+S)'
       Margins.Left = 10
       Margins.Right = 10
@@ -592,10 +613,10 @@ object MiniPlayer: TMiniPlayer
     end
     object Mini_Repeat: CButton
       AlignWithMargins = True
-      Left = 76
-      Top = 121
+      Left = 52
+      Top = 113
       Width = 50
-      Height = 37
+      Height = 30
       Hint = 'Toggle Repeat (Alt+R)'
       Margins.Left = 10
       Margins.Right = 10
@@ -659,10 +680,10 @@ object MiniPlayer: TMiniPlayer
     end
     object Mini_Transparent: CButton
       AlignWithMargins = True
-      Left = 129
-      Top = 121
+      Left = 105
+      Top = 113
       Width = 50
-      Height = 37
+      Height = 30
       Margins.Left = 10
       Margins.Right = 10
       OnClick = Mini_TransparentClick
@@ -725,16 +746,16 @@ object MiniPlayer: TMiniPlayer
   end
   object TitleBarPanel: TTitleBarPanel
     Left = 0
-    Top = 285
-    Width = 309
+    Top = 185
+    Width = 260
     Height = 1
     CustomButtons = <>
   end
   object SpectrumView: TPanel
     Left = 0
-    Top = 185
-    Width = 309
-    Height = 100
+    Top = 110
+    Width = 260
+    Height = 75
     Margins.Top = 0
     Align = alTop
     BevelOuter = bvNone
@@ -748,8 +769,8 @@ object MiniPlayer: TMiniPlayer
       AlignWithMargins = True
       Left = 20
       Top = 3
-      Width = 269
-      Height = 94
+      Width = 220
+      Height = 69
       Margins.Left = 20
       Margins.Right = 20
       Align = alClient
@@ -757,17 +778,24 @@ object MiniPlayer: TMiniPlayer
       ParentColor = False
       OnMouseDown = MoveMoveDown
       OnPaint = Visualisation_MiniPaint
-      ExplicitLeft = 27
-      ExplicitTop = 23
-      ExplicitWidth = 105
-      ExplicitHeight = 105
+      ExplicitWidth = 219
+      ExplicitHeight = 75
     end
   end
   object AnimTo: TTimer
     Enabled = False
     Interval = 10
     OnTimer = AnimToTimer
-    Left = 264
-    Top = 24
+    Left = 200
+    Top = 184
+  end
+  object NewAnimation1: TIntAnim
+    Duration = 2.000000000000000000
+    Kind = Linear
+    PropertyName = 'Width'
+    Component = MiniButton_Play
+    StartValue = 50
+    EndValue = 0
+    CurrentValue = 0
   end
 end

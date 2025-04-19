@@ -593,10 +593,9 @@ begin
 end;
 
 initialization
-  BASS_Init(-1, 44100, 0, 0, nil);
+  BASS_Init(-1, 44100, 0, {$IFDEF FRAMEWORK_FMX}nil{$ELSE}0{$ENDIF}, nil);
 
 finalization
   BASS_Free;
-
 end.
 

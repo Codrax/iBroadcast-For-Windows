@@ -4,9 +4,10 @@ unit Cod.Dialogs;
 interface
 
   uses
-    Cod.Files, Windows, Vcl.Dialogs, Cod.Visual.Button, UITypes, Types, Classes, Variants, Vcl.Graphics,
-    Vcl.Forms, Vcl.StdCtrls, Cod.Visual.StandardIcons, Vcl.Themes, Vcl.Styles,
-    Vcl.Controls, Cod.Components, Cod.ColorUtils, SysUtils, Vcl.ExtCtrls,
+    Cod.Files, Winapi.Windows, Vcl.Dialogs, Cod.Visual.Button, UITypes,
+    Types, Classes, Variants, Vcl.Graphics, Vcl.Forms, Vcl.StdCtrls,
+    Cod.Visual.StandardIcons, Vcl.Themes, Vcl.Styles, Vcl.Controls,
+    Cod.Components, Cod.ColorUtils, SysUtils, Vcl.ExtCtrls,
     Vcl.TitleBarCtrls, Cod.SysUtils, Math, Cod.Math, Vcl.ComCtrls,
     Cod.Windows;
 
@@ -1138,6 +1139,14 @@ end;
 procedure CButtonHelper.ApplyButtonSettings(LoadFromButton: CButton);
 begin
   with Self do begin
+    // Animations
+    Animations.PressAnimation := LoadFromButton.Animations.PressAnimation;
+    Animations.PADelay := LoadFromButton.Animations.PADelay;
+    Animations.PAShrinkAmount := LoadFromButton.Animations.PAShrinkAmount;
+    Animations.PAAnimateEngine := LoadFromButton.Animations.PAAnimateEngine;
+    Animations.FadeAnimation := LoadFromButton.Animations.FadeAnimation;
+    Animations.FASpeed := LoadFromButton.Animations.FASpeed;
+
     // Preset
     Preset.Color := LoadFromButton.Preset.Color;
     Preset.Kind := LoadFromButton.Preset.Kind;

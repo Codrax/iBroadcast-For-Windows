@@ -57,6 +57,7 @@ type
 
       procedure Execute;
     end;
+    TCases = TArray<TCase>;
 
     // Make
     class function Option(Value: T; Call: TProc): TCase; overload;
@@ -72,15 +73,21 @@ type
   public
     class function IfElse(Condition: boolean; IfTrue: T; IfFalse: T): T;
     class procedure Switch(var A, B: T);
-    class function Compare(var A, B: T): TValueRelationship;
+    class function Compare(const A, B: T): TValueRelationship;
   end;
 
   // Const
   TValueRelationshipHelper = record helper for TValueRelationship
     const
-      Smaller = LessThanValue;
+      Less = LessThanValue;
       Equal = EqualsValue;
       Greater = GreaterThanValue;
+
+      function IsLess: boolean;
+      function IsLessOrEqual: boolean;
+      function IsEqual: boolean;
+      function IsGreater: boolean;
+      function IsGreaterOrEqual: boolean;
   end;
 
   // Graphic ans Canvas
@@ -724,25 +731,12 @@ begin
 end;
 
 function PointAngle(APoint: TPoint; ACenter: TPoint; offset: integer): integer;
-var
-  alpha, r: real;
 begin
-  r := sqrt( Power(APoint.X - ACenter.X,2)+Power(APoint.Y - ACenter.Y,2) );
-
-  if APoint.Y >= ACenter.Y then
-    alpha := ArcCos( (APoint.X - ACenter.X) / r)
-  else
-    alpha := 2 * pi - ArcCos( (APoint.X - ACenter.X) / r);
-
-  Result := offset + round(180 * alpha / pi);
-
-  if offset <> 0 then
-  begin
-    if Result < 0 then
-      Result := Result + 360;
-    if Result > 360 then
-      Result := Result - 360;
-  end;
+  Result := (Round(RadToDeg(
+    ArcTan2(APoint.Y - ACenter.Y, APoint.X - ACenter.X)
+  )) + offset) mod 360;
+  if Result < 0 then
+    Result := Result + 360; // Ensures a positive angle
 end;
 
 function StringToBoolean(str: string): boolean;
@@ -1467,7 +1461,7 @@ end;
 
 { TType<T> }
 
-class function TType<T>.Compare(var A, B: T): TValueRelationship;
+class function TType<T>.Compare(const A, B: T): TValueRelationship;
 var
   lComparer: IComparer<T>;
 begin
@@ -1510,6 +1504,33 @@ begin
   Result.MarginTile := 0;
   Result.MarginParent := 0;
   Result.MarginsELF := 0;
+end;
+
+{ TValueRelationshipHelper }
+
+function TValueRelationshipHelper.IsEqual: boolean;
+begin
+  Result := Self = EqualsValue;
+end;
+
+function TValueRelationshipHelper.IsGreater: boolean;
+begin
+  Result := Self = GreaterThanValue;
+end;
+
+function TValueRelationshipHelper.IsGreaterOrEqual: boolean;
+begin
+  Result := Self >= EqualsValue;
+end;
+
+function TValueRelationshipHelper.IsLess: boolean;
+begin
+  Result := Self = LessThanValue;
+end;
+
+function TValueRelationshipHelper.IsLessOrEqual: boolean;
+begin
+  Result := Self <= EqualsValue;
 end;
 
 end.

@@ -1,14 +1,11 @@
 ﻿{***********************************************************}
-{                    Codruts Time Utilities                 }
+{                     Codruts Math Library                  }
 {                                                           }
-{                        version 0.2                        }
-{                           ALPHA                           }
+{                        version 1.0                        }
 {                                                           }
+{             Copyright (c) 2025 Petculescu Codrut          }
+{                   All Rights Reserved.                    }
 {                                                           }
-{                                                           }
-{                                                           }
-{                                                           }
-{                   -- WORK IN PROGRESS --                  }
 {***********************************************************}
 
 unit Cod.Math;
@@ -17,10 +14,10 @@ unit Cod.Math;
 interface
   uses
   {$IFDEF MSWINDOWS}
-  Windows,
+  Winapi.Windows,
   {$ENDIF}
   System.SysUtils, System.Classes, Math, Cod.ArrayHelpers,
-  System.Types, Cod.SysUtils, System.Generics.Collections,
+  System.Types, System.Generics.Collections,
   Cod.StringUtils, Cod.Types;
 
   // This function gets a string and automaticly calculates any
@@ -154,7 +151,7 @@ begin
         if Primary > Secondary then
           Result := TValueRelationship.Greater
             else
-              Result := TValueRelationship.Smaller;
+              Result := TValueRelationship.Less;
 end;
 
 {$IFDEF WIN32}

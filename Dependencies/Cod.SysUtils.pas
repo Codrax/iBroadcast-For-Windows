@@ -18,15 +18,17 @@ unit Cod.SysUtils;
 interface
   uses
   {$IFDEF MSWINDOWS}
-  Registry, ShellApi, ActiveX, ComObj, Winapi.shlobj,
-  Cod.Registry, Cod.ColorUtils, Vcl.Imaging.pngimage,
+  Win.Registry, Winapi.ShellApi, Winapi.ActiveX, Win.ComObj, Winapi.shlobj,
+  Cod.Registry, Cod.ColorUtils, Vcl.Imaging.pngimage, Vcl.Dialogs,
   Vcl.Graphics, Winapi.Windows, Vcl.Controls, Vcl.Themes, Vcl.Forms,
   Winapi.Messages,
   {$ENDIF}
-  System.SysUtils, System.Classes, Types, IOUtils,
+  System.SysUtils, System.Classes, Types, IOUtils, UITypes,
   Variants, System.TypInfo, Cod.MesssageConst, IniFiles;
 
   type
+    TMethodAccess = procedure of object;
+
     { If the number of attributes if ever changed, it is required to update the
     write atttributes procedure with the new number in mind!! }
     TFileVersionInfo = record
@@ -102,6 +104,11 @@ interface
   procedure SetIntegerProperty(const AObject: TObject; PropertyName: string; NewValue: integer);
   procedure SetBooleanProperty(const AObject: TObject; PropertyName: string; NewValue: boolean);
 
+  { Procedures }
+  /// Usage:
+  ///  HookMethod(@TClass.ProcInitialFunc, @TClass.ProcNewFunc);
+  procedure HookMethod(OldProc, NewProc: Pointer);
+
   { File Associations }
   {$IFDEF MSWINDOWS}
   procedure RegisterFileType( FileExt: String; FileTypeDescription: String;
@@ -135,6 +142,11 @@ interface
 
   {$IFNDEF CONSOLE}
   function GetFormMonitorIndex(Form: TForm): integer;
+  {$ENDIF}
+
+  { Dialogs }
+  {$IFDEF MSWINDOWS}
+  procedure FixDelphiXDialogs;
   {$ENDIF}
 
   { Paths }
@@ -382,6 +394,27 @@ procedure AssertCon(Condition: boolean; Message: string);
 begin
   if not Condition then
     raise Exception.Create(Message);
+end;
+
+procedure HookMethod(OldProc, NewProc: Pointer);
+const
+  JMP_REL32 = $E9;
+var
+  dwOldProtect: DWORD;
+  Offset: Integer;
+begin
+  // Allow write access to memory
+  VirtualProtect(OldProc, 5, PAGE_EXECUTE_READWRITE, @dwOldProtect);
+
+  // Calculate the relative jump offset
+  Offset := NativeInt(NewProc) - NativeInt(OldProc) - 5;
+
+  // Write JMP instruction
+  PByte(OldProc)^ := JMP_REL32;
+  PInteger(Pointer(NativeInt(OldProc) + 1))^ := Offset;
+
+  // Restore memory protection
+  VirtualProtect(OldProc, 5, dwOldProtect, @dwOldProtect);
 end;
 
 {$IFDEF MSWINDOWS}
@@ -891,7 +924,7 @@ begin
 
   {$IFDEF MSWINDOWS}
   // Fix WinNT
-  if (Result[1] = '/') then
+  if (Length(Result)>0) and (Result[1] = '/') then
     Result[1] := '-';
   {$ENDIF}
 end;
@@ -1255,6 +1288,13 @@ begin
     Result := true
   else
     Result := false;
+end;
+{$ENDIF}
+
+{$IFDEF MSWINDOWS}
+procedure FixDelphiXDialogs;
+begin
+  MsgDlgIcons[TMsgDlgType.mtInformation] := TMsgDlgIcon.mdiInformation;
 end;
 {$ENDIF}
 

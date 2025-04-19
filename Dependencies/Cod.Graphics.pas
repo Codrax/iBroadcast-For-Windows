@@ -438,7 +438,7 @@ begin
   Text := Text.Replace(#$A, #13);
 
   // Get Words
-  Words := GetAllSeparatorItems(Text, [' ']);
+  Words := Text.Split([' ']);
   for I := 0 to High(Words)-1 do
     Words[I] := Words[I] + ' ';
 
@@ -928,63 +928,57 @@ begin
   // Get Rectangles
   Rects := RectangleLayouts(TSize.Create(Image.Width, Image.Height), Rect, Layout);
 
-  // Lock
-  Canvas.Lock;
-  try
-    if not ClipImage then
-      // Standard Draw
-      begin
-        for I := 0 to High( Rects ) do
-          Canvas.StretchDraw( Rects[I], Image, Opacity );
-      end
-    else
-      // Clip Image Drw
-      begin
-        for I := 0 to High(Rects) do
-          begin
-            Bitmap := TBitMap.Create(Rect.Width, Rect.Height);
-            Bitmap.PixelFormat := pf32bit;
-            Bitmap.Transparent := true;
+  if not ClipImage then
+    // Standard Draw
+    begin
+      for I := 0 to High( Rects ) do
+        Canvas.StretchDraw( Rects[I], Image, Opacity );
+    end
+  else
+    // Clip Image Drw
+    begin
+      for I := 0 to High(Rects) do
+        begin
+          Bitmap := TBitMap.Create(Rect.Width, Rect.Height);
+          Bitmap.PixelFormat := pf32bit;
+          Bitmap.Transparent := true;
 
-            const PIXEL_BYTE_SIZE = 4;
+          const PIXEL_BYTE_SIZE = 4;
 
-            // Fill image with
-            for var Y := 0 to Bitmap.Height - 1 do
-              FillMemory(Bitmap.ScanLine[Y], PIXEL_BYTE_SIZE * Bitmap.Width, 0);
+          // Fill image with
+          for var Y := 0 to Bitmap.Height - 1 do
+            FillMemory(Bitmap.ScanLine[Y], PIXEL_BYTE_SIZE * Bitmap.Width, 0);
 
-            Bitmap.Canvas.Lock;
-            try
-              FRect := Rects[I];
-              FRect.Offset( -Rect.Left, -Rect.Top );
+          Bitmap.Canvas.Lock;
+          try
+            FRect := Rects[I];
+            FRect.Offset( -Rect.Left, -Rect.Top );
 
-              Bitmap.Canvas.StretchDraw(FRect, Image, 255); // Full opacity for temp
+            Bitmap.Canvas.StretchDraw(FRect, Image, 255); // Full opacity for temp
 
-              // Image has no alpha channel, set A bytes to 255
-              if not Image.Transparent then begin
-                const RectZone = TRect.Intersect(Bitmap.Canvas.ClipRect, FRect);
+            // Image has no alpha channel, set A bytes to 255
+            if not Image.Transparent then begin
+              const RectZone = TRect.Intersect(Bitmap.Canvas.ClipRect, FRect);
 
-                for var Y := RectZone.Top to RectZone.Bottom-1 do begin
-                  // Line
-                  const Pos: PByte = Bitmap.ScanLine[Y];
+              for var Y := RectZone.Top to RectZone.Bottom-1 do begin
+                // Line
+                const Pos: PByte = Bitmap.ScanLine[Y];
 
-                  // Start left
-                  for var X := RectZone.Left to RectZone.Right-1 do
-                    Pos[X * PIXEL_BYTE_SIZE + 3] := 255;
-                end;
+                // Start left
+                for var X := RectZone.Left to RectZone.Right-1 do
+                  Pos[X * PIXEL_BYTE_SIZE + 3] := 255;
               end;
-
-              // Draw
-              //Canvas.StretchDraw(Rect, BitMap, Opacity)
-              Canvas.Draw(Rect.Left, Rect.Top, BitMap, Opacity);
-            finally
-              Bitmap.Canvas.Unlock;
-              BitMap.Free;
             end;
+
+            // Draw
+            //Canvas.StretchDraw(Rect, BitMap, Opacity)
+            Canvas.Draw(Rect.Left, Rect.Top, BitMap, Opacity);
+          finally
+            Bitmap.Canvas.Unlock;
+            BitMap.Free;
           end;
-      end;
-  finally
-    Canvas.Unlock;
-  end;
+        end;
+    end;
 end;
 
 procedure DrawFlowersOfLife(Canvas: TCanvas; Rect: TRect; FlowerSize: integer);

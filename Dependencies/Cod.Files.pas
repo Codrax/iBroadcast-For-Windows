@@ -19,7 +19,7 @@ unit Cod.Files;
 interface
 uses
   {$IFDEF MSWINDOWS}
-  Winapi.Windows, ShellAPI, Cod.Registry, Registry, ComObj,
+  Winapi.Windows, Winapi.ShellAPI, Cod.Registry, Win.Registry, Win.ComObj,
   {$ENDIF}
   System.SysUtils, System.Variants, System.Classes, IOUtils, Math,
   Cod.MesssageConst, Cod.ArrayHelpers;

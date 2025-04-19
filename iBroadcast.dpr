@@ -36,7 +36,15 @@ begin
   Application.Initialize;
 
   // Close if Other instance
-  TerminateIfOtherInstanceExists;
+  SetSemaphore(APP_USERMODELID); // use application app user model ID
+  InitializeInstance(true, false);
+
+  if HasOtherInstance then begin
+    SendOtherWindowMessageAuto(WM_RESTOREMAINWINDOW, 0, 0);
+    BringOtherWindowToTopAuto;
+
+    Halt( 1 );
+  end;
 
   {Application.CreateForm(TCreatePlaylist, CreatePlaylist);
   Application.Run;     }
@@ -84,6 +92,12 @@ begin
   Application.CreateForm(TUIForm, UIForm);
   Application.CreateForm(TMiniPlayer, MiniPlayer);
   Application.CreateForm(TInfoBox, InfoBox);
+
+  // Write instance data (use try, just to be on the safe side)
+  try
+    PutAppInfo( Application.MainForm.Handle );
+  except
+  end;
 
   // Log
   if EnableLog32 then
