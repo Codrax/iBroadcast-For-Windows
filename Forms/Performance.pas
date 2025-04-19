@@ -20,6 +20,12 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
+    const
+    PERF_MAX_VALUES = 300;
+    PERF_SEGMENT_TEXT = 30;
+
+    var
+    ValuesList: array[0..PERF_MAX_VALUES-1] of single;
   public
     { Public declarations }
     procedure AddValue;
@@ -29,10 +35,6 @@ type
 
 var
   PerfForm: TPerfForm;
-
-  MaxValues: integer = 40;
-
-  ValuesList: TArray<single>;
 
 implementation
 
@@ -48,21 +50,14 @@ end;
 
 procedure TPerfForm.AddValue;
 var
-  Index: integer;
   I: Integer;
 begin
-  Index := Length(ValuesList);
-  SetLength(ValuesList, Index + 1);
+  // Move all down
+  for I := 0 to PERF_MAX_VALUES-2 do
+    ValuesList[I] := ValuesList[I+1];
 
-  ValuesList[Index] := BASS_GetCPU;
-
-  if Length(ValuesList) > 30 then
-    begin
-      for I := 0 to High(ValuesList) -1 do
-        ValuesList[i] := ValuesList[i + 1];
-
-      SetLength(ValuesList, 30 );
-    end;
+  // Set
+  ValuesList[PERF_MAX_VALUES-1] := BASS_GetCPU;
 end;
 
 procedure TPerfForm.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -72,8 +67,12 @@ end;
 
 procedure TPerfForm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);
 begin
+  // Clear data
+  for var I := 0 to PERF_MAX_VALUES-1 do
+    ValuesList[I] := 0;
+
+  // Timer
   AddNew.Enabled := false;
-  SetLength(ValuesList, 0);
 end;
 
 procedure TPerfForm.FormCreate(Sender: TObject);
@@ -108,10 +107,6 @@ var
 begin
   with PaintBox1.Canvas do
     begin
-      // High
-      if High(ValuesList) <= 0 then
-        Exit;
-
       // Style
       Font.Assign(Self.Font);
       Brush.Style := bsClear;
@@ -158,13 +153,12 @@ begin
 
           LineTo( X, Y );
 
-          Font.Size := 8;
-          S := (trunc(ValuesList[I] * 1000)/1000).ToString;
+          if I mod PERF_SEGMENT_TEXT = 0 then begin
+            Font.Size := 8;
+            S := (trunc(ValuesList[I] * 1000)/1000).ToString;
 
-          if I mod 2 = 1 then
-            TextOut( X - TextWidth(S) div 2, DrawRect.Bottom + TextH, S)
-          else
-            TextOut( X - TextWidth(S) div 2, Y - TextHeight(S), S);
+            TextOut( X - TextWidth(S) div 2, DrawRect.Bottom + TextH, S);
+          end;
 
           MoveTo( X, Y );
         end;

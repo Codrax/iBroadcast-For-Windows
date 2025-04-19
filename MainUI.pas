@@ -798,6 +798,7 @@ type
 
     // Forms
     procedure MinimizeToMiniPlayer;
+    procedure RestoreMainWindow;
 
     // External Update
     procedure SetCurrentSongRating(AValue: integer);
@@ -6426,6 +6427,20 @@ begin
   Quick_Search.Text := '';
 end;
 
+procedure TUIForm.RestoreMainWindow;
+begin
+  // Close mini player
+  if MiniPlayer.Visible then
+    MiniPlayer.RestoreMainForm;
+
+  // Restore from tray
+  if HiddenToTray then
+    OpenFromTray;
+
+  // Bring to top
+  BringToTopAndFocusWindow(Handle);
+end;
+
 procedure TUIForm.SaveAs1Click(Sender: TObject);
 var
   Index: integer;
@@ -7693,8 +7708,7 @@ end;
 
 procedure TUIForm.TrayIcon1DblClick(Sender: TObject);
 begin
-  if HiddenToTray then
-    OpenFromTray;
+  RestoreMainWindow;
 end;
 
 procedure TUIForm.TrayToggle(Sender: TObject);
@@ -8157,16 +8171,7 @@ end;
 
 procedure TUIForm.WMRestoreMainWindow(var Msg: TMessage);
 begin
-  // Close mini player
-  if MiniPlayer.Visible then
-    MiniPlayer.RestoreMainForm;
-
-  // Restore from tray
-  if HiddenToTray then
-    OpenFromTray;
-
-  // Bring to top
-  BringToTopAndFocusWindow(Handle);
+  RestoreMainWindow;
 end;
 
 { TDrawableItem }
