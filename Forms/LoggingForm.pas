@@ -12,7 +12,6 @@ type
     CImage1: CImage;
     Label2: TLabel;
     Label1: TLabel;
-    Label3: TLabel;
     Log: TMemo;
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
   private

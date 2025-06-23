@@ -21,8 +21,8 @@ uses
   Cod.WindowsRT.MasterVolume, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
   IdHTTP, CreatePlaylistForm, Offline, Cod.StringUtils, iBroadcastUtils,
   PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar, Cod.Windows,
-  Cod.Version, Cod.ArrayHelpers, Cod.Components, RatingPopup,
-  CodeSources, SpectrumVis3D, Vcl.Buttons, LoggingForm;
+  Cod.Version, Cod.ArrayHelpers, Cod.Components, RatingPopup, Cod.GDI,
+  CodeSources, SpectrumVis3D, Vcl.Buttons, LoggingForm, Cod.CodrutSoftware.API.Update;
 
 const
   WM_CUSTOMAPPMESSAGE = WM_USER + 100;
@@ -80,6 +80,8 @@ type
     function Downloaded: boolean;
     function Active: boolean;
 
+    function HasSecondary: boolean;
+
     function IsDownloaded: TDownloadedKind;
 
     function ToggleDownloaded: boolean;
@@ -90,6 +92,7 @@ type
 
     (* When Clicked *)
     procedure Execute;
+    procedure ExecuteSecondary;
     procedure OpenInformation;
 
     (* UI *)
@@ -634,8 +637,8 @@ type
     // Draw Box
     procedure RecalibrateScroll;
     procedure DrawItemCanvas(Canvas: TCanvas; ARect: TRect; Title, Info: string;
-      Picture: TJpegImage; Active: boolean; Downloaded: TDownloadedKind);
-    procedure DrawWasClicked(Shift: TShiftState = []; Button: TMouseButton = mbLeft);
+      Picture: TJpegImage; HasPlayButton, Active, Hovered: boolean; Downloaded: TDownloadedKind);
+    procedure DrawWasClicked(Shift: TShiftState; Button: TMouseButton; ActiveZone: boolean);
     procedure SetDownloadIcon(Value: boolean; Source: TDataSource);
 
     // Drawing List
@@ -833,10 +836,9 @@ const
   APP_DESCRIPTION = 'Codrut'#39's iBroadcast for Windows';
   APP_USERMODELID = 'com.codrutsoft.ibroadcast';
 
-  VERSION: TVersion = (Major:1; Minor:10; Maintenance: 2);
+  VERSION: TVersion = (Major:1; Minor:10; Maintenance: 3);
 
   API_APPNAME = 'ibroadcast';
-  API_ENDPOINT = 'https://api.codrutsoft.com/';
 
   // UI
   ICON_FILL = #$E73B;
@@ -880,6 +882,9 @@ const
 
 var
   UIForm: TUIForm;
+
+  // System
+  VersionChecker: TStandardVersionCheckerUpdateUrl;
 
   // Player
   Player: TAudioPlayer;
@@ -955,6 +960,7 @@ var
   IndexPress,
   IndexHover,
   IndexHoverSort: integer;
+  HoverActiveZone: boolean;
 
   EnableVisualisations: boolean = true;
 
@@ -2330,11 +2336,13 @@ begin
 end;
 
 procedure TUIForm.DrawItemCanvas(Canvas: TCanvas; ARect: TRect; Title,
-  Info: string; Picture: TJpegImage; Active: boolean; Downloaded: TDownloadedKind);
+  Info: string; Picture: TJpegImage; HasPlayButton, Active, Hovered: boolean; Downloaded: TDownloadedKind);
 var
-  TempRect: TRect;
+  TempRect, SecondTempRect: TRect;
   Dist: integer;
   S: string;
+  Br: TGDIBrush;
+  Pn: TGDIPen;
 begin
   // Common
   with Canvas do
@@ -2404,6 +2412,55 @@ begin
 
             RoundRect( TempRect, CoverRadius, CoverRadius );
           end;
+
+        // Play direct button
+        if HasPlayButton and Hovered then begin
+          SecondTempRect := ARect;
+          SecondTempRect.Height := ARect.Width;
+
+          // Darken fade
+          Br := GetRGB(10, 10, 10, 75).MakeGDIBrush;
+          try
+            GDIRoundRect( SecondTempRect, CoverRadius, Br, nil);
+          finally
+            Br.Free;
+          end;
+
+          // Center
+          TempRect := SecondTempRect;
+          TempRect.Height := TempRect.Width;
+          TempRect.Inflate(-55, -55);
+
+          Br := GetRGB(200, 200, 200, 150).MakeGDIBrush;
+          Pn := GetRGB(200, 200, 200, 150).MakeGDIPen(3);
+          try
+            if HoverActiveZone then
+              GDICircle(TempRect, Br, Pn)
+            else
+              GDICircle(TempRect, nil, Pn);
+          finally
+            Br.Free;
+            Pn.Free;
+          end;
+
+          // Triangle
+          Pen.Color := TColors.White;
+          Pen.Style := psSolid;
+          Pen.Width := 3;
+          Brush.Style := bsClear;
+
+          Pn := GetRGB(255, 255, 255, 200).MakeGDIPen(3);
+          try
+            TempRect.Inflate(-round(TempRect.Width / 3.5), -round(TempRect.Width / 3.5));
+            GDIPolygon([
+              Point(TempRect.Left, TempRect.Top),
+              Point(TempRect.Right, TempRect.Top + TempRect.Height div 2), // Right tip
+              Point(TempRect.Left, TempRect.Bottom) // Bottom left
+            ], nil, Pn);
+          finally
+            Pn.Free;
+          end;
+        end;
 
         // Downloaded
         if Downloaded <> TDownloadedKind.None then
@@ -2522,15 +2579,34 @@ procedure TUIForm.DrawItemMouseMove(Sender: TObject; Shift: TShiftState; X,
   Y: Integer);
 var
   I: Integer;
+  APoint: TPoint;
 begin
+  const LastIndexHover = IndexHover;
+  const LastHoverActiveZone = HoverActiveZone;
+  APoint := Point(X, Y);
+
   // Get Press position
-    IndexHover := -1;
+  IndexHover := -1;
   IndexHoverSort := -1;
+  HoverActiveZone := false;
   for I := 0 to High(DrawItems) do
-    if DrawItems[I].Bounds.Contains( Point(X, Y) ) then
+    if DrawItems[I].Bounds.Contains( APoint ) then
       begin
         IndexHover := I;
         IndexHoverSort := GetSort( I );
+
+        // Active zone?
+        if DrawItems[I].HasSecondary then begin
+          var R: TRect;
+          R := DrawItems[I].Bounds;
+          if ViewStyle = TViewStyle.Cover then
+            R.Height := R.Width
+          else
+            R.Width := R.Height;
+          R.Inflate(-55, -55);
+          HoverActiveZone := R.Contains( APoint );
+        end;
+
         Break;
       end;
 
@@ -2545,6 +2621,10 @@ begin
     // Draw
     RedrawPaintBox;
   end;
+
+  // Draw
+  if (LastIndexHover <> IndexHover) or (LastHoverActiveZone = HoverActiveZone) then
+    RedrawPaintBox;
 
   // Cursor
   if IndexHoverSort <> -1 then
@@ -2568,7 +2648,7 @@ begin
 
   // Click
   if IndexHover <> -1 then
-    DrawWasClicked(Shift, Button);
+    DrawWasClicked(Shift, Button, HoverActiveZone);
 
   // Reset
   MouseIsPress := false;
@@ -2642,12 +2722,12 @@ begin
               Picture := DrawItems[Index].GetPicture;
 
 
-              if (Index = IndexHoverSort) and (Press10Stat <> 0) then
+              if (Index = IndexHoverSort) and (Press10Stat <> 0) and not HoverActiveZone then
                 ARect.Inflate(-Press10Stat, -trunc(ARect.Height/ ARect.Width * Press10Stat));
 
               // Draw
               DrawItemCanvas(TPaintBox(Sender).Canvas, ARect, Title, Info,
-                Picture, DrawItems[Index].Active, DrawItems[Index].IsDownloaded);
+                Picture,  DrawItems[Index].HasSecondary, DrawItems[Index].Active, Index = IndexHoverSort, DrawItems[Index].IsDownloaded);
             end;
                            
           // Move Line
@@ -2694,12 +2774,12 @@ begin
               Info := DrawItems[Index].InfoLong;
               Picture := DrawItems[Index].GetPicture;
 
-              if (Index = IndexHoverSort) and (Press10Stat <> 0) then
+              if (Index = IndexHoverSort) and (Press10Stat <> 0) and not HoverActiveZone then
                 ARect.Inflate(-Press10Stat, -Press10Stat);
 
               // Draw
               DrawItemCanvas(TPaintBox(Sender).Canvas, ARect, Title, Info,
-                Picture, DrawItems[Index].Active, DrawItems[Index].IsDownloaded);
+                Picture, DrawItems[Index].HasSecondary, DrawItems[Index].Active, Index = IndexHoverSort, DrawItems[Index].IsDownloaded);
             end;
 
           // Move Line
@@ -2737,48 +2817,50 @@ begin
   end;
 end;
 
-procedure TUIForm.DrawWasClicked(Shift: TShiftState; Button: TMouseButton);
+procedure TUIForm.DrawWasClicked(Shift: TShiftState; Button: TMouseButton; ActiveZone: boolean);
 var
   Index: integer;
 begin
   Index := GetSort(IndexHover);
 
   // Normal Click
-  if Button = mbLeft then
-    begin
-      with DrawItems[Index] do
-        begin
-          if ssCtrl in Shift then
-            OnlyQueue := true;
+  if Button = mbLeft then begin
+    with DrawItems[Index] do begin
+      if ssCtrl in Shift then
+        OnlyQueue := true;
 
-          if ssAlt in Shift then
-            OpenInformation
-          else
-            Execute;
-
-          OnlyQueue := false;
-        end;
-    end
-  else
-    // Right click
-    begin
-      PopupDrawIndex := Index;
-      PopupSource := DrawItems[Index].Source;
-
-      PopupDrawItem := DrawItems[Index];
-
-      SetDownloadIcon( DrawItems[Index].Downloaded, PopupSource );
-
-      case PopupSource of
-        TDataSource.Tracks: begin
-          Popup_Track.Tag := 0;
-          Popup_Track.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
-        end;
-        TDataSource.Albums: Popup_Album.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
-        TDataSource.Artists: Popup_Artist.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
-        TDataSource.Playlists: Popup_Playlist.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
+      // Run
+      if ActiveZone then
+        ExecuteSecondary
+      else begin
+        if ssAlt in Shift then
+          OpenInformation
+        else
+          Execute;
       end;
+
+      OnlyQueue := false;
     end;
+  end
+  else begin
+    // Right click
+    PopupDrawIndex := Index;
+    PopupSource := DrawItems[Index].Source;
+
+    PopupDrawItem := DrawItems[Index];
+
+    SetDownloadIcon( DrawItems[Index].Downloaded, PopupSource );
+
+    case PopupSource of
+      TDataSource.Tracks: begin
+        Popup_Track.Tag := 0;
+        Popup_Track.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
+      end;
+      TDataSource.Albums: Popup_Album.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
+      TDataSource.Artists: Popup_Artist.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
+      TDataSource.Playlists: Popup_Playlist.Popup( Mouse.CursorPos.X, Mouse.CursorPos.Y );
+    end;
+  end;
 end;
 
 procedure TUIForm.EdidThreadFinalised;
@@ -3346,43 +3428,34 @@ begin
 end;
 
 procedure TUIForm.GetVersionUpdateData;
-var
-  Local,
-  Server: TVersion;
-
-  Download: string;
 begin
-  // Get HTML
-  Local := Version;
-  try
-    Server.APILoad(API_APPNAME, VERSION, API_ENDPOINT);
-  except
+  // Fetch update
+  VersionChecker.Load;
+  if not VersionChecker.Loaded then begin
     Latest_Version.Caption := 'Latest version on server: Server Error';
-    exit;
+    Exit;
   end;
 
-  if Server.NewerThan(Local) then
-    begin
-      NewVersion := TNewVersion.Create(Self);
-      with NewVersion do
-        try
-          Version_Old.Caption := Local.ToString();
-          Version_New.Caption := Server.ToString();
+  // UI
+  Latest_Version.Caption := 'Latest version on server: ' + VersionChecker.ServerVersion.ToString;
 
-          if ShowModal = mrOk then
-            begin
-              // Open new
-              Download := Server.APIResponse.GetValue<string>('updateurl');
+  // Download UI
+  if VersionChecker.ServerVersion.NewerThan(VERSION) then begin
+    NewVersion := TNewVersion.Create(Self);
+    with NewVersion do
+      try
+        Version_Old.Caption := VERSION.ToString();
+        Version_New.Caption := VersionChecker.ServerVersion.ToString();
 
-              BeginUpdate(Download);
-            end;
-        finally
-          Free;
-        end;
-    end;
+        if ShowModal <> mrOk then
+          Exit;
 
-  // Update version
-  Latest_Version.Caption := 'Latest version on server: ' + Server.ToString;
+        // Start download
+        BeginUpdate( VersionChecker.UpdateUrl );
+      finally
+        Free;
+      end;
+  end;
 end;
 
 function TUIForm.HasOfflineBackup: boolean;
@@ -3502,14 +3575,14 @@ begin
 
               // Bounds
               DrawItems[I].Bounds := ARect;
-              if (I = IndexHoverSort) and (Press10Stat <> 0) then
+              if (I = IndexHoverSort) and (Press10Stat <> 0) and not HoverActiveZone then
                     ARect.Inflate(-Press10Stat, -trunc(ARect.Width / ARect.Height * Press10Stat));
 
               // Draw
               if (Y + CoverHeight > 0) and (Y < HomeDraw.Height) then
                 DrawItemCanvas(HomeDraw.Canvas, ARect, DrawItems[I].Title,
                   DrawItems[I].InfoShort, DrawItems[I].GetPicture,
-                  DrawItems[I].Active, DrawItems[I].IsDownloaded);
+                  DrawItems[I].HasSecondary, DrawItems[I].Active, I = IndexHoverSort, DrawItems[I].IsDownloaded);
 
               // Mext
               Inc(X, CoverWidth + CoverSpacing + ExtraSpacing);
@@ -4692,6 +4765,7 @@ var
   FontColor, ActiveFontColor: TColor;
 
   ItemToDraw: TDrawableItem;
+  Br: TGDIBrush;
 begin
   with QueueDraw.Canvas do
     begin
@@ -4850,7 +4924,12 @@ begin
                   A := (BRect.Width - A) div 2;
                   BRect.Inflate(-A, -A);
 
-                  GDICircle(BRect, GetRGB(255, 0, 0).MakeGDIBrush, nil);
+                  Br := GetRGB(255, 0, 0).MakeGDIBrush;
+                  try
+                    GDICircle(BRect, Br, nil);
+                  finally
+                    Br.Free;
+                  end;
 
                   TextRect(ARect, S, [tfSingleline, tfCenter, tfVerticalCenter]);
                 end;
@@ -6707,14 +6786,14 @@ begin
 
           // Bounds
           DrawItems[I].Bounds := ARect;
-          if (I = IndexHoverSort) and (Press10Stat <> 0) then
+          if (I = IndexHoverSort) and (Press10Stat <> 0) and not HoverActiveZone then
                 ARect.Inflate(-Press10Stat, -trunc(ARect.Width / ARect.Height * Press10Stat));
 
           // Draw
           if (Y + CoverHeight > 0) and (Y < AHeight) then
             DrawItemCanvas(SearchDraw.Canvas, ARect, DrawItems[I].Title,
             DrawItems[I].InfoShort, DrawItems[I].GetPicture,
-            DrawItems[I].Active, DrawItems[I].IsDownloaded);
+            DrawItems[I].HasSecondary, DrawItems[I].Active, I = IndexHoverSort, DrawItems[I].IsDownloaded);
 
           // Move Line
           Inc(X, CoverWidth + CoverSpacing + ExtraSpacing);
@@ -8239,7 +8318,7 @@ begin
             begin
               if DrawItems[SortingList[I]].Trashed then
                 Continue;
-              
+
               if DrawItems[SortingList[I]].Source <> TDataSource.Tracks then
                 Continue;
 
@@ -8274,7 +8353,59 @@ begin
       (* Navigate *)
       UIForm.NavigatePath('ViewPlaylist:' + Playlists[Index].ID);
     end;
+
+    else Exit;
   end;
+
+  // General Data
+  LastValueID := ItemID;
+  LastExecutedSource := Source;
+end;
+
+procedure TDrawableItem.ExecuteSecondary;
+var
+  I: integer;
+  ATracks: TArray<string>;
+begin
+  AddToLog('TDrawableItem[' + Index.ToString + '].ExecuteSecondary');
+
+  case Source of
+    TDataSource.Albums: begin
+      ATracks := Albums[Index].TracksID;
+    end;
+
+    TDataSource.Artists: begin
+      ATracks := Artists[Index].TracksID;
+    end;
+
+    TDataSource.Playlists: begin
+      ATracks := Playlists[Index].TracksID;
+    end;
+
+    else Exit;
+  end;
+
+  // Create new queue
+  UIForm.QueueClear;
+
+  // Draw
+  UIForm.QueueUpdated;
+
+  // Empty
+  if Length(ATracks) = 0 then
+    Exit;
+
+  // Add
+  for I := 0 to High(ATracks) do
+    begin
+      const Index = GetTrack(ATracks[I]);
+      if Index <> -1 then
+        PlayQueue.Add( Index );
+    end;
+
+  // Play
+  QueuePos := 0;
+  UIForm.QueuePlay;
 
   // General Data
   LastValueID := ItemID;
@@ -8339,6 +8470,11 @@ begin
     begin
       Result := Result + Information[I] + #13;
     end;
+end;
+
+function TDrawableItem.HasSecondary: boolean;
+begin
+  Result := Source in [TDataSource.Albums, TDataSource.Artists, TDataSource.Playlists];
 end;
 
 function TDrawableItem.Hidden: boolean;
@@ -8705,6 +8841,8 @@ begin
 end;
 
 initialization
+  VersionChecker := TStandardVersionCheckerUpdateUrl.Create(API_APPNAME, VERSION);
+
   // Register
   AppRegistration.AppUserModelID := APP_USERMODELID;
   AppRegistration.AppName := APP_NAME;
@@ -8722,5 +8860,6 @@ initialization
   MediaControls.EnablePlayer := false;
 
 finalization
+  VersionChecker.Free;
   MediaControls.Free;
 end.
