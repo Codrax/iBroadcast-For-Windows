@@ -9,16 +9,13 @@ uses
   Cod.Dialogs,
   MainUI in 'MainUI.pas' {UIForm},
   BroadcastAPI in 'BroadcastAPI.pas',
-  
   SpectrumVis3D in 'Utils\SpectrumVis3D.pas',
   iBroadcastUtils in 'Utils\iBroadcastUtils.pas',
-  
   DebugForm in 'Forms\DebugForm.pas' {DebugUI},
   VolumePopup in 'Forms\VolumePopup.pas' {VolumePop},
   Performance in 'Forms\Performance.pas' {PerfForm},
   MiniPlay in 'Forms\MiniPlay.pas' {MiniPlayer},
   InfoForm in 'Forms\InfoForm.pas' {InfoBox},
-  HelpForm in 'Forms\HelpForm.pas' {HelpUI},
   NewVersionForm in 'Forms\NewVersionForm.pas' {NewVersion},
   CreatePlaylistForm in 'Forms\CreatePlaylistForm.pas' {CreatePlaylist},
   Offline in 'Forms\Offline.pas' {OfflineForm},
@@ -92,7 +89,6 @@ begin
   Application.CreateForm(TUIForm, UIForm);
   Application.CreateForm(TMiniPlayer, MiniPlayer);
   Application.CreateForm(TInfoBox, InfoBox);
-
   // Write instance data (use try, just to be on the safe side)
   try
     PutAppInfo( Application.MainForm.Handle );

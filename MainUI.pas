@@ -208,18 +208,7 @@ type
     Page_Settings: TPanel;
     ScrollBox3: TScrollBox;
     Label24: TLabel;
-    Version_Label: TLabel;
-    CButton15: CButton;
-    Label28: TLabel;
-    Label25: TLabel;
     Setting_Graph: CCheckBox;
-    CImage12: CImage;
-    CImage13: CImage;
-    Label26: TLabel;
-    Label27: TLabel;
-    CButton8: CButton;
-    CButton14: CButton;
-    CButton16: CButton;
     MoreButtons: TPanel;
     Button_Performance: CButton;
     Button_MiniPlayer: CButton;
@@ -236,7 +225,6 @@ type
     SearchDraw: TPaintBox;
     Label33: TLabel;
     CButton1: CButton;
-    CButton18: CButton;
     LoginItems: TControlList;
     Label34: TLabel;
     Label35: TLabel;
@@ -368,10 +356,7 @@ type
     Label1: TLabel;
     Label2: TLabel;
     Artwork_Storage: TLabel;
-    CButton24: CButton;
-    Label11: TLabel;
     Settings_DisableAnimations: CCheckBox;
-    CButton26: CButton;
     Setting_StartWindows: CCheckBox;
     Setting_TrayClose: CCheckBox;
     Setting_QueueSaver: CCheckBox;
@@ -382,7 +367,6 @@ type
     Exit1: TMenuItem;
     ShuffleAll1: TMenuItem;
     N12: TMenuItem;
-    Latest_Version: TLabel;
     Panel14: TPanel;
     Queue_Label: TLabel;
     Button_ClearQueue: CButton;
@@ -429,7 +413,6 @@ type
     Setting_SongStreaming: CCheckBox;
     Button_Rating: CButton;
     Setting_Rating: CCheckBox;
-    CButton29: CButton;
     IdHTTP1: TIdHTTP;
     Panel11: TPanel;
     Song_Cover: CImage;
@@ -467,6 +450,28 @@ type
     CButton37: CButton;
     SaveMusicDialog: TSaveDialog;
     Christmas_Mode: CImage;
+    CButton38: CButton;
+    Page_About: TPanel;
+    ScrollBox1: TScrollBox;
+    Version_Label: TLabel;
+    Label28: TLabel;
+    Label25: TLabel;
+    CImage12: CImage;
+    CImage13: CImage;
+    Label26: TLabel;
+    Label27: TLabel;
+    Label11: TLabel;
+    Latest_Version: TLabel;
+    CButton15: CButton;
+    CButton8: CButton;
+    CButton14: CButton;
+    CButton16: CButton;
+    CButton18: CButton;
+    CButton24: CButton;
+    CButton26: CButton;
+    CButton29: CButton;
+    CButton39: CButton;
+    CButton40: CButton;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -572,7 +577,6 @@ type
     procedure Exit1Click(Sender: TObject);
     procedure TrayToggle(Sender: TObject);
     procedure Popup_TrayPopup(Sender: TObject);
-    procedure Latest_VersionClick(Sender: TObject);
     procedure QueueLoadWhenFinishedTimer(Sender: TObject);
     procedure CButton31Click(Sender: TObject);
     procedure PopupGeneralDelete(Sender: TObject);
@@ -612,6 +616,8 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure ArtistViewSel(Sender: TObject);
     procedure SaveAs1Click(Sender: TObject);
+    procedure CButton40Click(Sender: TObject);
+    procedure CButton39Click(Sender: TObject);
   private
     { Private declarations }
     // Vars
@@ -1071,7 +1077,7 @@ implementation
 
 uses
   // Forms
-  InfoForm, VolumePopup, HelpForm, MiniPlay, NewVersionForm;
+  InfoForm, VolumePopup, MiniPlay, NewVersionForm;
 
 procedure TUIForm.Action_NextExecute(Sender: TObject);
 begin
@@ -1731,12 +1737,7 @@ end;
 
 procedure TUIForm.CButton21Click(Sender: TObject);
 begin
-  HelpUI := THelpUI.Create(Application);
-  try
-    HelpUI.ShowModal;
-  finally
-    HelpUI.Free;
-  end;
+  ShellRun('https://docs.codrutsoft.com/apps/ibroadcast/', true);
 end;
 
 procedure TUIForm.CButton23Click(Sender: TObject);
@@ -1818,6 +1819,37 @@ procedure TUIForm.CButton34Click(Sender: TObject);
 begin
   if OpenDialog('Are you sure?', 'Are you sure you want to empty the trash? This action is irreversible.', ctQuestion, [mbYes, mbNo]) = mrYes then
     CompleteEmptyTrash;
+end;
+
+procedure TUIForm.CButton39Click(Sender: TObject);
+begin
+  ShellRun('https://www.codrutsoft.com/apps/ibroadcast/', true);
+end;
+
+procedure TUIForm.CButton40Click(Sender: TObject);
+begin
+  with TThread.CreateAnonymousThread(procedure
+    begin
+      // Visible UI Wait
+      TThread.Synchronize(nil, procedure
+        begin
+          TLabel(Sender).Enabled := false;
+          TLabel(Sender).Caption := 'Latest version on server: 🕑 Checking...';
+        end);
+      Sleep(750);
+
+      // Start
+      TThread.Synchronize(nil, procedure
+        begin
+          TLabel(Sender).Enabled := true;
+          // Check
+          StartCheckForUpdate;
+        end);
+    end) do
+      begin
+        FreeOnTerminate := true;
+        Start;
+      end;
 end;
 
 procedure TUIForm.ArtistViewSel(Sender: TObject);
@@ -2060,6 +2092,7 @@ begin
     9: NavigatePath( 'Account' );
     10: NavigatePath( 'Settings' );
     11: NavigatePath( 'Trash' );
+    12: NavigatePath( 'About' );
   end;
 end;
 
@@ -3857,32 +3890,6 @@ begin
     QueuePos * (QListHeight + QListSpacing) - QueueDraw.Height div 2,
     0
     );
-end;
-
-procedure TUIForm.Latest_VersionClick(Sender: TObject);
-begin
-  with TThread.CreateAnonymousThread(procedure
-    begin
-      // Visible UI Wait
-      TThread.Synchronize(nil, procedure
-        begin
-          TLabel(Sender).Enabled := false;
-          TLabel(Sender).Caption := 'Latest version on server: 🕑 Checking...';
-        end);
-      Sleep(750);
-
-      // Start
-      TThread.Synchronize(nil, procedure
-        begin
-          TLabel(Sender).Enabled := true;
-          // Check
-          StartCheckForUpdate;
-        end);
-    end) do
-      begin
-        FreeOnTerminate := true;
-        Start;
-      end;
 end;
 
 procedure TUIForm.LoaderStopAnimation;

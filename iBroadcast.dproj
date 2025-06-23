@@ -173,9 +173,6 @@
         <DCCReference Include="Forms\InfoForm.pas">
             <Form>InfoBox</Form>
         </DCCReference>
-        <DCCReference Include="Forms\HelpForm.pas">
-            <Form>HelpUI</Form>
-        </DCCReference>
         <DCCReference Include="Forms\NewVersionForm.pas">
             <Form>NewVersion</Form>
         </DCCReference>
@@ -337,6 +334,18 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
+                <DeployFile LocalName="Output\Win64\iBroadcast.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>iBroadcast.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Output\Win64\iBroadcast.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>iBroadcast.rsm</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
                 <DeployFile LocalName="Win32\Debug\iBroadcast.exe" Configuration="Debug" Class="ProjectOutput"/>
                 <DeployFile LocalName="Win32\Debug\iBroadcast.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win32">
@@ -346,12 +355,6 @@
                 </DeployFile>
                 <DeployFile LocalName="Win32\Release\iBroadcast.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
-                        <RemoteName>iBroadcast.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="Win64\Debug\iBroadcast.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win64">
                         <RemoteName>iBroadcast.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
