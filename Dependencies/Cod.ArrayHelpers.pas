@@ -1,11 +1,10 @@
 {***********************************************************}
 {                  Codruts Variabile Helpers                }
 {                                                           }
-{                        version 1.0                        }
-{                           ALPHA                           }
+{                        version 1.1                        }
 {                                                           }
 {              https://www.codrutsoft.com/                  }
-{             Copyright 2024 Codrut Software                }
+{             Copyright 2025 Codrut Software                }
 {    This unit is licensed for usage under a MIT license    }
 {                                                           }
 {***********************************************************}
@@ -96,8 +95,11 @@ type
     class procedure Delete(const Index: integer; var Values: TArray<T>);
     /// <summary> Delete element by type T from array. </summary>
     class procedure DeleteValue(const Value: T; var Values: TArray<T>);
+    /// <summary> Delete the last element of the array and return It's value. </summary>
+    class function Pop(var Values: TArray<T>): T;
+    /// <summary> Delete the first element of the array and return It's value. </summary>
+    class function Shift(var Values: TArray<T>): T;
     /// <summary> Set length to specifieed value. </summary>
-    ///
     class procedure SetLength(const Length: integer; var Values: TArray<T>);
     /// <summary> Get array length. </summary>
     class function Count(const Values: TArray<T>) : integer;
@@ -420,13 +422,19 @@ begin
   Values[Destination] := OriginalItem;
 end;
 
+class function TArrayUtils<T>.Pop(var Values: TArray<T>): T;
+begin
+  Result := Values[High(Values)];
+  System.SetLength(Values, High(Values));
+end;
+
 class procedure TArrayUtils<T>.DoQuickSort(var Values: TArray<T>;
   const Callback: TArrayDualCallback; Left, Right: Integer);
 var
   Lower, Upper: Integer;
   Pivot, Temp: T;
 begin
-  if Right - Left = 0 then
+  if (Right - Left = 0) or (Right = -1) or (Left = -1) then
     Exit;
 
   Lower := Left;
@@ -464,6 +472,12 @@ class procedure TArrayUtils<T>.SetLength(const Length: integer;
   var Values: TArray<T>);
 begin
   System.SetLength(Values, Length);
+end;
+
+class function TArrayUtils<T>.Shift(var Values: TArray<T>): T;
+begin
+  Result := Values[0];
+  Self.Delete(0, Values);
 end;
 
 class procedure TArrayUtils<T>.Shuffle(var Values: TArray<T>);

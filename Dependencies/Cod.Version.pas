@@ -8,12 +8,14 @@ interface
 
 type
   TVersion = record
+    var
     Major,
     Minor,
     Maintenance,
     Build: cardinal;
 
-    APIResponse: TJsonObject;
+    // CONST
+    class function Empty: TVersion; static;
 
     // Main
     constructor Create(AMajor, AMinor, AMaintenance: cardinal; ABuild: cardinal=0); overload;
@@ -22,24 +24,16 @@ type
 
     // Load
     procedure Parse(From: string);
-    procedure NetworkLoad(URL: string);
-    procedure HtmlLoad(URL: string);
-    procedure APILoad(AppName: string; Endpoint: string = 'https://api.codrutsoft.com/'); overload;
-    procedure APILoad(AppName: string; Current: TVersion; Endpoint: string = 'https://api.codrutsoft.com/'); overload;
-
-    // Utils
-    function GetDownloadLink(JSONValue: string = 'updateurl'): string;
 
     // Comparation
-    function Empty: boolean;
+    function IsEmpty: boolean;
     function CompareTo(Version: TVersion): TValueRelationship;
     function NewerThan(Version: TVersion): boolean;
     function OlderThan(Version: TVersion): boolean;
 
     // Conversion
     function ToString: string; overload;
-    function ToString(IncludeBuild: boolean): string; overload;
-    function ToString(Separator: char; IncludeBuild: boolean = false): string; overload;
+    function ToString(Separator: char): string; overload;
 
     // Operators
     class operator Equal(A, B: TVersion): Boolean;
@@ -64,22 +58,6 @@ end;
 
 { TVersion }
 
-procedure TVersion.NetworkLoad(URL: string);
-var
-  IdHttp: TIdHTTP;
-  HTML: string;
-begin
-  IdHttp := TIdHTTP.Create(nil);
-  try
-    HTML := IdHttp.Get(URL);
-
-    Parse(HTML);
-  finally
-    IdHttp.Free;
-  end;
-end;
-
-
 function TVersion.NewerThan(Version: TVersion): boolean;
 begin
   Result := CompareTo(Version) = GreaterThanValue;
@@ -93,58 +71,6 @@ end;
 function TVersion.OlderThan(Version: TVersion): boolean;
 begin
   Result := CompareTo(Version) = LessThanValue;
-end;
-
-procedure TVersion.APILoad(AppName: string; Current: TVersion; Endpoint: string);
-var
-  HTTP: TIdHTTP;
-  SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
-  Request: TJSONObject;
-  RequestStream: TStringStream;
-  Result: string;
-begin
-  // Create HTTP and SSLIOHandler components
-  HTTP := TIdHTTP.Create(nil);
-  SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
-  Request := TJSONObject.Create;
-
-  // Build Request
-  Request.AddPair('mode', 'getversion');
-  Request.AddPair('app', AppName);
-  if not Current.Empty then
-    Request.AddPair('client-version', Current.ToString(true));
-
-  // Request
-  RequestStream := TStringStream.Create(Request.ToJSON, TEncoding.UTF8);
-  try
-    // Set SSL/TLS options
-    SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
-    HTTP.IOHandler := SSLIOHandler;
-
-    // Set headers
-    HTTP.Request.ContentType := 'application/json';
-
-    // Send POST
-    Result := HTTP.Post(Endpoint, RequestStream);
-
-    // Parse
-    APIResponse := TJSONObject.ParseJSONValue( Result ) as TJSONObject;
-
-    // Parse response
-    if not APIResponse.GetValue<boolean>('result') then
-      raise Exception.Create( APIResponse.GetValue<string>('message') );
-    Parse(APIResponse.GetValue<string>('version'));
-  finally
-    // Free
-    HTTP.Free;
-    Request.Free;
-    RequestStream.Free;
-  end;
-end;
-
-procedure TVersion.APILoad(AppName, Endpoint: string);
-begin
-  APILoad(AppName, VERSION_EMPTY, EndPoint);
 end;
 
 procedure TVersion.Clear;
@@ -185,7 +111,7 @@ begin
   Build := ABuild;
 end;
 
-function TVersion.Empty: boolean;
+function TVersion.IsEmpty: boolean;
 begin
   Result := CompareTo(VERSION_EMPTY) = EqualsValue;
 end;
@@ -195,28 +121,9 @@ begin
   Result := A.CompareTo(B) = EqualsValue;
 end;
 
-function TVersion.GetDownloadLink(JSONValue: string): string;
+class function TVersion.Empty: TVersion;
 begin
-  if not APIResponse.TryGetValue<string>(JSONValue, Result) then
-    Result := '';
-end;
-
-procedure TVersion.HtmlLoad(URL: string);
-var
-  IdHttp: TIdHTTP;
-  HTML: string;
-begin
-  IdHttp := TIdHTTP.Create(nil);
-  try
-    IdHttp.Request.CacheControl := 'no-cache';
-    HTML := IdHttp.Get(URL);
-
-    HTML := Trim(HTML).Replace(#13, '').DeQuotedString;
-
-    Parse(HTML);
-  finally
-    IdHttp.Free;
-  end;
+  Result := VERSION_EMPTY;
 end;
 
 procedure TVersion.Parse(From: string);
@@ -264,20 +171,12 @@ end;
 
 function TVersion.ToString: string;
 begin
-  Result := ToString(false);
+  Result := ToString('.');
 end;
 
-function TVersion.ToString(IncludeBuild: boolean): string;
+function TVersion.ToString(Separator: char): string;
 begin
-  Result := ToString('.', IncludeBuild);
-end;
-
-function TVersion.ToString(Separator: char; IncludeBuild: boolean): string;
-begin
-  Result := Major.ToString + Separator + Minor.ToString + Separator + Maintenance.ToString;
-
-  if IncludeBuild then
-    Result := Result + Separator + Build.ToString;
+  Result := Major.ToString + Separator + Minor.ToString + Separator + Maintenance.ToString + Separator + Build.ToString;
 end;
 
 end.

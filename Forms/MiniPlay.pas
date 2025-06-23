@@ -85,12 +85,9 @@ var
   AnDirection: integer;
   AnPosition: integer;
 
-  TransparentIndex: integer;
+  TransparentIndex: integer=0;
 
   NoUpdateSeek: boolean;
-
-  // Experiment
-  ExperimentalTop: boolean;
 
 implementation
 
@@ -130,6 +127,7 @@ begin
   if NoUpdateSeek then
     Exit;
 
+  Mini_Seek.Max := UIForm.Player_Position.Max;
   Mini_Seek.Position := UIForm.Player_Position.Position;
 end;
 
@@ -205,6 +203,9 @@ begin
 
   if TransparentIndex > High(TransparentOptions) then
     TransparentIndex := 0;
+
+  // Save
+  SettingsManager.Put<integer>('Opacity', 'Miniplayer', TransparentIndex);
 
   AlphaBlendValue := TransparentOptions[TransparentIndex];
 end;
@@ -326,11 +327,14 @@ procedure TMiniPlayer.RestoreMainForm;
 begin
   Self.Hide;
 
-  if ExperimentalTop then
+  // Is main form? Restore old
+  if Self = Application.MainForm then
     begin
       Self.FormStyle := fsNormal;
       ChangeMainForm(UIForm);
     end;
+
+  // Show main form
   Application.MainForm.Show;
 end;
 

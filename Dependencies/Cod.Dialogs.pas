@@ -3,269 +3,269 @@ unit Cod.Dialogs;
 
 interface
 
-  uses
-    Cod.Files, Winapi.Windows, Vcl.Dialogs, Cod.Visual.Button, UITypes,
-    Types, Classes, Variants, Vcl.Graphics, Vcl.Forms, Vcl.StdCtrls,
-    Cod.Visual.StandardIcons, Vcl.Themes, Vcl.Styles, Vcl.Controls,
-    Cod.Components, Cod.ColorUtils, SysUtils, Vcl.ExtCtrls,
-    Vcl.TitleBarCtrls, Cod.SysUtils, Math, Cod.Math, Vcl.ComCtrls,
-    Cod.Windows;
+uses
+  Cod.Files, Winapi.Windows, Vcl.Dialogs, Cod.Visual.Button, UITypes,
+  Types, Classes, Variants, Vcl.Graphics, Vcl.Forms, Vcl.StdCtrls,
+  Cod.Visual.StandardIcons, Vcl.Themes, Vcl.Styles, Vcl.Controls,
+  Cod.Components, Cod.ColorUtils, SysUtils, Vcl.ExtCtrls,
+  Vcl.TitleBarCtrls, Cod.SysUtils, Math, Cod.Math, Vcl.ComCtrls,
+  Cod.Windows;
 
-  type
-    CMessageType = (ctInformation, ctError, ctCritical, ctQuestion, ctSucess, ctWarning, ctStar);
-    CInputBoxResult = (cidrCancel, cidrOk);
+type
+  CMessageType = (ctInformation, ctError, ctCritical, ctQuestion, ctSucess, ctWarning, ctStar);
+  CInputBoxResult = (cidrCancel, cidrOk);
 
-    CButtonHelper = class helper for CButton
-      procedure ApplyButtonSettings(LoadFromButton: CButton);
-    end;
+  CButtonHelper = class helper for CButton
+    procedure ApplyButtonSettings(LoadFromButton: CButton);
+  end;
 
-    CDialogBox = class
-      private
-        FTitle: string;
-        FText: string;
-        FTextFont: TFont;
-        FButtonDesign: CButton;
-        FFormColor: TColor;
-        FFooterColor: TColor;
-        FEnableFooter: boolean;
-        FToggleGlobalSync: boolean;
-        FAutoTextAdjust: boolean;
+  CDialogBox = class
+    private
+      FTitle: string;
+      FText: string;
+      FTextFont: TFont;
+      FButtonDesign: CButton;
+      FFormColor: TColor;
+      FFooterColor: TColor;
+      FEnableFooter: boolean;
+      FToggleGlobalSync: boolean;
+      FAutoTextAdjust: boolean;
 
-        FTitlebarHeight: integer;
-        FButtonOffset: integer;
-        FButtonHeight: integer;
+      FTitlebarHeight: integer;
+      FButtonOffset: integer;
+      FButtonHeight: integer;
 
-        // Settings
-        PromptCreation: boolean;
-        ExtraSpacingUnits: integer;
-        DialogUnits: TPoint;
-        HasButtons: boolean;
+      // Settings
+      PromptCreation: boolean;
+      ExtraSpacingUnits: integer;
+      DialogUnits: TPoint;
+      HasButtons: boolean;
 
-        // Inherited Creation
-        Form: TForm;
-        Prompt,
-        Footer: TLabel;
+      // Inherited Creation
+      Form: TForm;
+      Prompt,
+      Footer: TLabel;
 
-        // Settings
-        function ApplyTitleBarSettings(Form: TForm; FormColor: TColor; EnableButtons: boolean): integer;
+      // Settings
+      function ApplyTitleBarSettings(Form: TForm; FormColor: TColor; EnableButtons: boolean): integer;
 
-        // Utils
-        function GetTextWidth(Text: string; Font: TFont): integer;
-        function GetButonWidth(Text: string; Font: TFont): integer;
-        function CalculateButtonHeight: integer;
+      // Utils
+      function GetTextWidth(Text: string; Font: TFont): integer;
+      function GetButonWidth(Text: string; Font: TFont): integer;
+      function CalculateButtonHeight: integer;
 
-        function ButtonTypeToModal(AType: TMsgDlgBtn): integer;
-        function ButtonTypeToIcon(AType: TMsgDlgBtn): CButtonIcon;
+      function ButtonTypeToModal(AType: TMsgDlgBtn): integer;
+      function ButtonTypeToIcon(AType: TMsgDlgBtn): CButtonIcon;
 
-        procedure ResizeForm(NewWidth: integer = -1; NewHeight: integer = -1);
+      procedure ResizeForm(NewWidth: integer = -1; NewHeight: integer = -1);
 
-        procedure CreateButtons(Buttons: TMsgDlgButtons);
-        function FindButton(ModalResult: integer): CButton;
+      procedure CreateButtons(Buttons: TMsgDlgButtons);
+      function FindButton(ModalResult: integer): CButton;
 
-        function GetCharSize(Canvas: TCanvas): TPoint;
-        procedure SetFooterColor(const Value: TColor);
+      function GetCharSize(Canvas: TCanvas): TPoint;
+      procedure SetFooterColor(const Value: TColor);
 
-      public
-        // Public Settings
-        CustomFooterColor: boolean;
+    public
+      // Public Settings
+      CustomFooterColor: boolean;
 
-        constructor Create; virtual;
-        destructor Destroy; override;
+      constructor Create; virtual;
+      destructor Destroy; override;
 
-        // Settings
-        procedure SetButtonColor( AColor: TColor );
+      // Settings
+      procedure SetButtonColor( AColor: TColor );
 
-        // Execute
-        procedure ExecuteInherited; virtual;
-        function ModalExecution(FreeMem: boolean = true): integer;
+      // Execute
+      procedure ExecuteInherited; virtual;
+      function ModalExecution(FreeMem: boolean = true): integer;
 
-        procedure FreeForm;
+      procedure FreeForm;
 
-        property Title: string read FTitle write FTitle;
-        property Text: string read FText write FText;
-        property TextFont: TFont read FTextFont write FTextFont;
-        property AutoTextAdjust: boolean read FAutoTextAdjust write FAutoTextAdjust;
-        property ButtonDesign: CButton read FButtonDesign write FButtonDesign;
-        property FormColor: TColor read FFormColor write FFormColor;
-        property FooterColor: TColor read FFooterColor write SetFooterColor;
-        property GlobalSyncTogle: boolean read FToggleGlobalSync write FToggleGlobalSync;
-        property EnableFooter: boolean read FEnableFooter write FEnableFooter;
-    end;
+      property Title: string read FTitle write FTitle;
+      property Text: string read FText write FText;
+      property TextFont: TFont read FTextFont write FTextFont;
+      property AutoTextAdjust: boolean read FAutoTextAdjust write FAutoTextAdjust;
+      property ButtonDesign: CButton read FButtonDesign write FButtonDesign;
+      property FormColor: TColor read FFormColor write FFormColor;
+      property FooterColor: TColor read FFooterColor write SetFooterColor;
+      property GlobalSyncTogle: boolean read FToggleGlobalSync write FToggleGlobalSync;
+      property EnableFooter: boolean read FEnableFooter write FEnableFooter;
+  end;
 
-    CMessageBox = class(CDialogBox)
-      private
+  CMessageBox = class(CDialogBox)
+    private
 
 
-      public
-        constructor Create; override;
-        destructor Destroy; override;
+    public
+      constructor Create; override;
+      destructor Destroy; override;
 
-        procedure Execute; overload;
-    end;
+      procedure Execute; overload;
+  end;
 
-    CDialog = class(CDialogBox)
-      private
-        FKind: CMessageType;
-        FButtons: TMsgDlgButtons;
+  CDialog = class(CDialogBox)
+    private
+      FKind: CMessageType;
+      FButtons: TMsgDlgButtons;
 
-        ImageHeight: integer;
+      ImageHeight: integer;
 
-      public
-        constructor Create; override;
-        destructor Destroy; override;
+    public
+      constructor Create; override;
+      destructor Destroy; override;
 
-        function Execute: integer; overload;
+      function Execute: integer; overload;
 
-        property Kind: CMessageType read FKind write FKind;
-        property Buttons: TMsgDlgButtons read FButtons write FButtons;
-    end;
+      property Kind: CMessageType read FKind write FKind;
+      property Buttons: TMsgDlgButtons read FButtons write FButtons;
+  end;
 
-    CInputBox = class(CDialogBox)
-      private
-        FValue: string;
-        FCanCancel: boolean;
-        FNumbersOnly: boolean;
-        FPasswordChar: char;
+  CInputBox = class(CDialogBox)
+    private
+      FValue: string;
+      FCanCancel: boolean;
+      FNumbersOnly: boolean;
+      FPasswordChar: char;
 
-      public
-        DialogResult: CInputBoxResult;
+    public
+      DialogResult: CInputBoxResult;
 
-        constructor Create; override;
-        destructor Destroy; override;
+      constructor Create; override;
+      destructor Destroy; override;
 
-        function Execute: string; overload;
+      function Execute: string; overload;
 
-        property Value: string read FValue write FValue;
-        property CanCancel: boolean read FCanCancel write FCanCancel;
-        property PasswordChar: char read FPasswordChar write FPasswordChar;
-        property NumbersOnly: boolean read FNumbersOnly write FNumbersOnly;
-    end;
+      property Value: string read FValue write FValue;
+      property CanCancel: boolean read FCanCancel write FCanCancel;
+      property PasswordChar: char read FPasswordChar write FPasswordChar;
+      property NumbersOnly: boolean read FNumbersOnly write FNumbersOnly;
+  end;
 
-    CMemoBox = class(CDialogBox)
-      private
-        FValue: TStringList;
-        FCanCancel: boolean;
-        FBoxWidth, FBoxHeight: integer;
-    function GetAsText: string;
-    procedure SetAsText(const Value: string);
+  CMemoBox = class(CDialogBox)
+    private
+      FValue: TStringList;
+      FCanCancel: boolean;
+      FBoxWidth, FBoxHeight: integer;
+  function GetAsText: string;
+  procedure SetAsText(const Value: string);
 
-      public
-        DialogResult: CInputBoxResult;
+    public
+      DialogResult: CInputBoxResult;
 
-        constructor Create; override;
-        destructor Destroy; override;
+      constructor Create; override;
+      destructor Destroy; override;
 
-        function Execute: boolean; overload;
+      function Execute: boolean; overload;
 
-        property Text: string read GetAsText write SetAsText;
+      property Text: string read GetAsText write SetAsText;
 
-        property Value: TStringList read FValue write FValue;
-        property CanCancel: boolean read FCanCancel write FCanCancel;
-        property BoxWidth: integer read FBoxWidth write FBoxWidth;
-        property BoxHeight: integer read FBoxHeight write FBoxHeight;
-    end;
+      property Value: TStringList read FValue write FValue;
+      property CanCancel: boolean read FCanCancel write FCanCancel;
+      property BoxWidth: integer read FBoxWidth write FBoxWidth;
+      property BoxHeight: integer read FBoxHeight write FBoxHeight;
+  end;
 
-    CInputBoxDialog = class(CDialogBox)
-      private
-        FValues: TStringList;
-        FCanCancel: boolean;
-        FDropStyle: TComboBoxStyle;
+  CInputBoxDialog = class(CDialogBox)
+    private
+      FValues: TStringList;
+      FCanCancel: boolean;
+      FDropStyle: TComboBoxStyle;
 
-      public
-        DialogResult: CInputBoxResult;
+    public
+      DialogResult: CInputBoxResult;
 
-        SelectedIndex: integer;
-        SelectedText: string;
+      SelectedIndex: integer;
+      SelectedText: string;
 
-        constructor Create; override;
-        destructor Destroy; override;
+      constructor Create; override;
+      destructor Destroy; override;
 
-        function Execute: integer; overload;
+      function Execute: integer; overload;
 
-        property DropDownStyle: TComboBoxStyle read FDropStyle write FDropStyle;
+      property DropDownStyle: TComboBoxStyle read FDropStyle write FDropStyle;
 
-        property Values: TStringList read FValues write FValues;
-        property CanCancel: boolean read FCanCancel write FCanCancel;
-    end;
+      property Values: TStringList read FValues write FValues;
+      property CanCancel: boolean read FCanCancel write FCanCancel;
+  end;
 
-    CRadioDialog = class(CDialogBox)
-      private
-        FItems: TStringList;
-        FCanCancel: boolean;
-        FSelectFirst: boolean;
+  CRadioDialog = class(CDialogBox)
+    private
+      FItems: TStringList;
+      FCanCancel: boolean;
+      FSelectFirst: boolean;
 
-      public
-        DialogResult: CInputBoxResult;
+    public
+      DialogResult: CInputBoxResult;
 
-        SelectedIndex: integer;
-        SelectedText: string;
+      SelectedIndex: integer;
+      SelectedText: string;
 
-        constructor Create; override;
-        destructor Destroy; override;
+      constructor Create; override;
+      destructor Destroy; override;
 
-        function Execute: integer; overload;
+      function Execute: integer; overload;
 
-        property Items: TStringList read FItems write FItems;
-        property CanCancel: boolean read FCanCancel write FCanCancel;
-        property SelectFirst: boolean read FSelectFirst write FSelectFirst;
-    end;
+      property Items: TStringList read FItems write FItems;
+      property CanCancel: boolean read FCanCancel write FCanCancel;
+      property SelectFirst: boolean read FSelectFirst write FSelectFirst;
+  end;
 
 var
-  ButtonLabels: TArray<string> =
-                        [
-                        'Yes',        // Yes
-                        'No',         // No
-                        'Ok',         // Ok
-                        'Cancel',     // Cancel
-                        'Abort',      // Abort
-                        'Retry',      // Retry
-                        'Ignore',     // Ignore
-                        'All',        // All
-                        'Yes to All', // YesAll
-                        'No to All',  // NoAll
-                        'Help',       // Help
-                        'Close'       //Close
-                        ];
+ButtonLabels: TArray<string> =
+                      [
+                      'Yes',        // Yes
+                      'No',         // No
+                      'Ok',         // Ok
+                      'Cancel',     // Cancel
+                      'Abort',      // Abort
+                      'Retry',      // Retry
+                      'Ignore',     // Ignore
+                      'All',        // All
+                      'Yes to All', // YesAll
+                      'No to All',  // NoAll
+                      'Help',       // Help
+                      'Close'       //Close
+                      ];
 
 
-  function CodDialog(const Title, Text: string; Kind: CMessageType = ctInformation;
-                       Buttons: TMsgDlgButtons = [mbOk]; ButtonPreset:
-                       CButtonPreset = cbprCustom; FormColor: TColor = clWindow;
-                       AllowFooter: boolean = true; BtColor: TColor = -1;
-                       GlobalSyncToggle: boolean = false): integer;
+function CodDialog(const Title, Text: string; Kind: CMessageType = ctInformation;
+                     Buttons: TMsgDlgButtons = [mbOk]; ButtonPreset:
+                     CButtonPreset = cbprCustom; FormColor: TColor = clWindow;
+                     AllowFooter: boolean = true; BtColor: TColor = -1;
+                     GlobalSyncToggle: boolean = false): integer;
 
-  procedure CodMessage(const Title, Text: string; ButtonPreset:
-                        CButtonPreset = cbprCustom; FormColor: TColor = clWindow;
-                        AllowFooter: boolean = true; BtColor: TColor = -1;
-                        GlobalSyncToggle: boolean = false);
+procedure CodMessage(const Title, Text: string; ButtonPreset:
+                      CButtonPreset = cbprCustom; FormColor: TColor = clWindow;
+                      AllowFooter: boolean = true; BtColor: TColor = -1;
+                      GlobalSyncToggle: boolean = false);
 
-  procedure CMessage(Text: string = 'Hello World!');
+procedure CMessage(Text: string = 'Hello World!');
 
-  function CodInput(const Title, Text: string; Value: string = '';
-                      CanCancel: boolean = true; NumbersOnly:
-                      boolean = false; PasswordChar: char = #0;
-                      ButtonPreset: CButtonPreset = cbprCustom;
-                      FormColor: TColor = clWindow; AllowFooter: boolean = true;
-                      BtColor: TColor = -1;
-                      GlobalSyncToggle: boolean = false): string;
+function CodInput(const Title, Text: string; Value: string = '';
+                    CanCancel: boolean = true; NumbersOnly:
+                    boolean = false; PasswordChar: char = #0;
+                    ButtonPreset: CButtonPreset = cbprCustom;
+                    FormColor: TColor = clWindow; AllowFooter: boolean = true;
+                    BtColor: TColor = -1;
+                    GlobalSyncToggle: boolean = false): string;
 
-  function CodInputQuery(const Title, Text: string; var Value: string; const
-                      CanCancel: boolean = true; NumbersOnly:
-                      boolean = false; PasswordChar: char = #0;
-                      ButtonPreset: CButtonPreset = cbprCustom;
-                      FormColor: TColor = clWindow; AllowFooter: boolean = true;
-                      BtColor: TColor = -1;
-                      GlobalSyncToggle: boolean = false): boolean;
+function CodInputQuery(const Title, Text: string; var Value: string; const
+                    CanCancel: boolean = true; NumbersOnly:
+                    boolean = false; PasswordChar: char = #0;
+                    ButtonPreset: CButtonPreset = cbprCustom;
+                    FormColor: TColor = clWindow; AllowFooter: boolean = true;
+                    BtColor: TColor = -1;
+                    GlobalSyncToggle: boolean = false): boolean;
 
-  function CodDropDown(const Title, Text: string; Strings: TStringList; const
-                      CanCancel: boolean = true; ButtonPreset: CButtonPreset = cbprCustom;
-                      FormColor: TColor = clWindow; AllowFooter: boolean = true;
-                      BtColor: TColor = -1; GlobalSyncToggle: boolean = false): integer;
+function CodDropDown(const Title, Text: string; Strings: TStringList; const
+                    CanCancel: boolean = true; ButtonPreset: CButtonPreset = cbprCustom;
+                    FormColor: TColor = clWindow; AllowFooter: boolean = true;
+                    BtColor: TColor = -1; GlobalSyncToggle: boolean = false): integer;
 
-  function CodRadioDialog(const Title, Text: string; Strings: TStringList; const
-                      CanCancel: boolean = true; ButtonPreset: CButtonPreset = cbprCustom;
-                      FormColor: TColor = clWindow; AllowFooter: boolean = true;
-                      BtColor: TColor = -1; GlobalSyncToggle: boolean = false): integer;
+function CodRadioDialog(const Title, Text: string; Strings: TStringList; const
+                    CanCancel: boolean = true; ButtonPreset: CButtonPreset = cbprCustom;
+                    FormColor: TColor = clWindow; AllowFooter: boolean = true;
+                    BtColor: TColor = -1; GlobalSyncToggle: boolean = false): integer;
 
 implementation
 

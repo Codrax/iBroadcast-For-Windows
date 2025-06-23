@@ -11,7 +11,6 @@ uses
 
 type
   TDebugUI = class(TForm)
-    CImage1: CImage;
     Label2: TLabel;
     Label1: TLabel;
     Label3: TLabel;

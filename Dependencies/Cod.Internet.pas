@@ -21,8 +21,9 @@ interface
   {$IFDEF MSWINDOWS}
   Windows, Vcl.Graphics, Vcl.Imaging.jpeg, Vcl.Imaging.GIFImg, Vcl.Imaging.pngimage,
   URLMon, ActiveX, Variants, Winapi.IpTypes, Winapi.IpHlpApi, Win.ComObj,
+  Winapi.WinInet,
   {$ENDIF}
-  IOUtils, Cod.Files, Cod.StringUtils, Cod.MesssageConst;
+  IOUtils, Cod.Files, Cod.StringUtils, Cod.MesssageConst, JSON;
 
 type
   // Types
@@ -36,6 +37,7 @@ type
 
   // Net utils
   {$IFDEF MSWINDOWS}
+  function GetNetworkConnected: boolean;
   function GetAdapterDescription: string;
   function GetGatewayIP: string;
   function GetLocalIP: string;
@@ -54,6 +56,9 @@ type
   function GetInternetImage(ImageURL: string; downloadfallback: boolean = true): TGraphic; overload;
   procedure GetInternetImage(ImageURL: string; var Image: TGraphic; downloadfallback: boolean = true); overload;
   {$ENDIF}
+
+  // Indy Internet
+  function PostJSONRequest(URL: string; RequestJSON: string): string;
 
   // Devices
   function PingDevice(Destination: string): boolean;
@@ -78,6 +83,13 @@ begin
 end;
 
 {$IFDEF MSWINDOWS}
+function GetNetworkConnected: boolean;
+var
+  lpdwFlags: DWORD;
+begin
+  Result := InternetGetConnectedState(@lpdwFlags, 0);
+end;
+
 function GetAdapterDescription: string;
 var
   AdapterInfo: PIP_ADAPTER_INFO;
@@ -226,6 +238,38 @@ begin
   {$ENDIF}
 end;
 
+function PostJSONRequest(URL: string; RequestJSON: string): string;
+var
+  HTTP: TIdHTTP;
+  SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
+  Request: TJSONObject;
+  RequestStream: TStringStream;
+begin
+  // Create HTTP and SSLIOHandler components
+  HTTP := TIdHTTP.Create(nil);
+  SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
+  Request := TJSONObject.Create;
+
+  // Request
+  RequestStream := TStringStream.Create(RequestJSON, TEncoding.UTF8);
+  try
+    // Set SSL/TLS options
+    SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
+    HTTP.IOHandler := SSLIOHandler;
+
+    // Set headers
+    HTTP.Request.ContentType := 'application/json';
+
+    // Send POST
+    Result := HTTP.Post(URL, RequestStream);
+  finally
+    // Free
+    HTTP.Free;
+    Request.Free;
+    RequestStream.Free;
+  end;
+end;
+
 function PingDevice(Destination: string): boolean;
 var
   Icmp: TIdIcmpClient;
@@ -253,6 +297,8 @@ begin
   try
     // Attempt 1 - IDHTTP
     HTTP := TIdHTTP.Create(nil);
+    HTTP.HandleRedirects := true;
+
     SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
     SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
     HTTP.IOHandler := SSLIOHandler;
@@ -292,6 +338,8 @@ begin
 
   // Create HTTP
   HTTP := TIdHTTP.Create;
+  HTTP.HandleRedirects := true;
+
   SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
   SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
   HTTP.IOHandler := SSLIOHandler;
@@ -357,6 +405,8 @@ begin
   // Create stream
   MS := TMemoryStream.Create;
   HTTP := TIdHTTP.Create;
+  HTTP.HandleRedirects := true;
+
   SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
   SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
   HTTP.IOHandler := SSLIOHandler;

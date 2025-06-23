@@ -101,7 +101,60 @@ type
     function GetProcessID: TProcessID;
 
     // Children
+    function GetParentWindow: HWND;
     function GetChildWindows: TArray<HWND>;
+  end;
+
+
+  // Shortcut manager
+  TShellLinkFile = class
+  private
+    FShellLink: IShellLink;
+    FMaxPath: integer;
+
+    //
+    function GetPathS: string;
+    procedure SetPath(const Value: string);
+    function GetArguments: string;
+    function GetDescription: string;
+    function GetHotkey: word;
+    function GetIconLocation: string;
+    function GetShowCmd: integer;
+    function GetWorkingDirectory: string;
+    procedure SetArguments(const Value: string);
+    procedure SetDescription(const Value: string);
+    procedure SetHotkey(const Value: word);
+    procedure SetIconLocation(const Value: string);
+    procedure SetRelativePath(const Value: string);
+    procedure SetShowCmd(const Value: integer);
+    procedure SetWorkingDirectory(const Value: string);
+    function GetItemIDList: TItemIDList;
+    procedure SetItemIDList(const Value: TItemIDList);
+
+  public
+    property Path: string read GetPathS write SetPath;
+    property ItemIDList: TItemIDList read GetItemIDList write SetItemIDList;
+    property Description: string read GetDescription write SetDescription;
+    property WorkingDirectory: string read GetWorkingDirectory write SetWorkingDirectory;
+    property Arguments: string read GetArguments write SetArguments;
+    property Hotkey: word read GetHotkey write SetHotkey;
+    property ShowCmd: integer read GetShowCmd write SetShowCmd;
+    property IconLocation: string read GetIconLocation write SetIconLocation;
+    property RelativePath: string write SetRelativePath;
+
+    property MaxPath: integer read FMaxPath write FMaxPath default MAX_PATH;
+
+    // Extended prop
+    procedure GetIcon(out Path: string; out IconIndex: integer; MaxLength: integer = -1); // -1 to use the object's deafult
+    procedure SetIcon(Path: string; IconIndex: integer);
+
+    // Procs
+    procedure SaveToFile(FilePath: string);
+    procedure LoadFromFile(FilePath: string);
+
+    // Constructors
+    constructor Create;
+    destructor Destroy; override;
   end;
 
 const
@@ -686,7 +739,8 @@ end;
 
 function GetIconStrIcon(IconString: string; Icon: TIcon): boolean; overload;
 var
-  IconIndex: word;
+  IconIndex: integer;
+  lpIcon: word;
   FilePath: string;
 begin
   Result := false;
@@ -695,9 +749,13 @@ begin
   ExtractIconDataEx(IconString, FilePath, IconIndex);
   if not TFile.Exists(FilePath) then
     Exit;
+  if IconIndex < 0 then
+    lpIcon := 0 // resource index -- not supported atm.
+  else
+    lpIcon := IconIndex;
 
   // Get TIcon
-  Icon.Handle := ExtractAssociatedIcon(HInstance, PChar(FilePath), IconIndex);
+  Icon.Handle := ExtractAssociatedIcon(HInstance, PChar(FilePath), lpIcon);
   Icon.Transparent := true;
 
   // Success
@@ -707,26 +765,14 @@ end;
 function GetIconStrIcon(IconString: string; PngImage: TPngImage): boolean;
 var
   Icon: TIcon;
-  IconIndex: word;
 begin
-  Result := false;
-
-  // Load
-  ExtractIconDataEx(IconString, IconString, IconIndex);
-  if not TFile.Exists(IconString) then
-    Exit;
-
   // Get TIcon
   Icon := TIcon.Create;
   try
-    Icon.Handle := ExtractAssociatedIcon(HInstance, PChar(IconString), IconIndex);
-    Icon.Transparent := true;
+    Result := GetIconStrIcon(IconString, Icon);
 
     // Convert to PNG
     ConvertToPNG(Icon, PngImage);
-
-    // Success
-    Result := true;
   finally
     Icon.Free;
   end;
@@ -1166,13 +1212,13 @@ begin
 
   with SLink do begin
     SetLength(S, MAX_PATH);
-    
+
     var X: TWin32FindDataW;
     SLink.GetPath(@S[1], MAX_PATH, X, 0);
     T := Trim(S);
     T := T.Substring(0, T.IndexOf(#0));
     Target := T;
-    
+
     SLink.GetDescription(@S[1], MAX_PATH);
     T := Trim(S);
     T := T.Substring(0, T.IndexOf(#0));
@@ -1254,6 +1300,11 @@ end;
 function THWNDHelper.GetClientRect: TRect;
 begin
   Winapi.Windows.GetClientRect(Self, Result);
+end;
+
+function THWNDHelper.GetParentWindow: HWND;
+begin
+  Result := GetWindowLong(Self, GWL_HWNDPARENT);
 end;
 
 function THWNDHelper.GetProcessID: TProcessID;
@@ -1372,6 +1423,155 @@ end;
 function TProcessHandleHelper.Terminate(AExitCode: integer): boolean;
 begin
   Result := Winapi.Windows.TerminateProcess( Self, AExitCode );
+end;
+
+{ TShellLinkFile }
+
+constructor TShellLinkFile.Create;
+begin
+  FShellLink := CreateComObject(CLSID_ShellLink) as IShellLink;
+  FMaxPath := MAX_PATH;
+end;
+
+destructor TShellLinkFile.Destroy;
+begin
+  // interfaces, not needed to be freed
+  inherited;
+end;
+
+function TShellLinkFile.GetPathS: string;
+var
+  X: TWin32FindDataW;
+begin
+  SetLength(Result, FMaxPath);
+  FShellLink.GetPath(@Result[1], FMaxPath, X, 0);
+  Result := WideCharToString(@Result[1]);
+end;
+
+procedure TShellLinkFile.LoadFromFile(FilePath: string);
+begin
+  (FShellLink as IPersistFile).Load(PWChar(WideString(FilePath)), STGM_READ);
+end;
+
+procedure TShellLinkFile.SaveToFile(FilePath: string);
+begin
+  (FShellLink as IPersistFile).Save(PWChar(WideString(FilePath)), FALSE);
+end;
+
+procedure TShellLinkFile.SetArguments(const Value: string);
+begin
+  FShellLink.SetArguments(PChar(Value));
+end;
+
+procedure TShellLinkFile.SetDescription(const Value: string);
+begin
+  FShellLink.SetDescription(PChar(Value));
+end;
+
+procedure TShellLinkFile.SetHotkey(const Value: word);
+begin
+  FShellLink.SetHotkey(Value);
+end;
+
+procedure TShellLinkFile.SetIcon(Path: string; IconIndex: integer);
+begin
+  FShellLink.SetIconLocation(PChar(Path), IconIndex);
+end;
+
+procedure TShellLinkFile.SetIconLocation(const Value: string);
+var
+  Path: string;
+  IconIndex: integer;
+begin
+  ExtractIconData(Value, Path, IconIndex);
+  FShellLink.SetIconLocation(PChar(Path), IconIndex);
+end;
+
+procedure TShellLinkFile.SetItemIDList(const Value: TItemIDList);
+begin
+  FShellLink.SetIDList(@Value);
+end;
+
+procedure TShellLinkFile.SetPath(const Value: string);
+begin
+  FShellLink.SetPath(PChar(Value));
+end;
+
+function TShellLinkFile.GetArguments: string;
+begin
+  SetLength(Result, FMaxPath);
+  FShellLink.GetArguments(@Result[1], FMaxPath);
+  Result := WideCharToString(@Result[1]);
+end;
+
+function TShellLinkFile.GetDescription: string;
+begin
+  SetLength(Result, FMaxPath);
+  FShellLink.GetDescription(@Result[1], FMaxPath);
+  Result := WideCharToString(@Result[1]);
+end;
+
+function TShellLinkFile.GetHotkey: word;
+begin
+  Result := 0;
+  FShellLink.GetHotkey(Result);
+end;
+
+procedure TShellLinkFile.GetIcon(out Path: string; out IconIndex: integer; MaxLength: integer);
+begin
+  if MaxLength = -1 then
+    MaxLength := FMaxPath;
+
+  SetLength(Path, MaxLength);
+  FShellLink.GetIconLocation(@Path[1], MaxLength, IconIndex);
+  Path := WideCharToString(@Path[1]);
+end;
+
+function TShellLinkFile.GetIconLocation: string;
+var
+  IconIndex: integer;
+begin
+  SetLength(Result, FMaxPath);
+  FShellLink.GetIconLocation(@Result[1], FMaxPath, IconIndex);
+  Result := WideCharToString(@Result[1]);
+  if Result <> '' then
+    Result := Format('%S, %D', [Result, IconIndex]);
+end;
+
+function TShellLinkFile.GetItemIDList: TItemIDList;
+var
+  W: PItemIDList;
+begin
+  FShellLink.GetIDList(W);
+  Result := W^;
+end;
+
+function TShellLinkFile.GetShowCmd: integer;
+begin
+  Result := 0;
+  FShellLink.GetShowCmd(Result);
+end;
+
+function TShellLinkFile.GetWorkingDirectory: string;
+begin
+  SetLength(Result, FMaxPath);
+  FShellLink.GetWorkingDirectory(@Result[1], FMaxPath);
+  Result := WideCharToString(@Result[1]);
+end;
+
+procedure TShellLinkFile.SetRelativePath(const Value: string);
+begin
+  FShellLink.SetRelativePath(PChar(Value), 0);
+end;
+
+procedure TShellLinkFile.SetShowCmd(const Value: integer);
+begin
+  FShellLink.SetShowCmd(Value);
+end;
+
+procedure TShellLinkFile.SetWorkingDirectory(const Value: string);
+begin
+  FShellLink.SetWorkingDirectory(PChar(Value));
 end;
 
 end.

@@ -99,7 +99,8 @@ interface
       procedure GDIText(Text: string; Rectangle: TRect; AlignH: TLayout = TLayout.Beginning; AlignV: TLayout = TLayout.Beginning; Angle: integer = 0);
       procedure GDITint(Rectangle: TRect; Color: TColor; Opacity: byte = 75);
       procedure GDIRectangle(Rectangle: TRect; Brush: TGDIBrush; Pen: TGDIPen);
-      procedure GDIRoundRect(RoundRect: TRoundRect; Brush: TGDIBrush; Pen: TGDIPen);
+      procedure GDIRoundRect(Rectangle: TRect; Roundness: integer; Brush: TGDIBrush; Pen: TGDIPen); overload;
+      procedure GDIRoundRect(RoundRect: TRoundRect; Brush: TGDIBrush; Pen: TGDIPen); overload;
       procedure GDICircle(Rectangle: TRect; Brush: TGDIBrush; Pen: TGDIPen);
       procedure GDIPolygon(Points: TArray<TPoint>; Brush: TGDIBrush; Pen: TGDIPen);
       procedure GDILine(Line: TLine; Pen: TGDIPen);
@@ -301,6 +302,12 @@ end;
 procedure TCanvasHelper.GDIRoundedLine(Line: TLine; Pen: TGDIPen);
 begin
   DrawRoundedLine(Self, Line, Pen);
+end;
+
+procedure TCanvasHelper.GDIRoundRect(Rectangle: TRect; Roundness: integer;
+  Brush: TGDIBrush; Pen: TGDIPen);
+begin
+  GDIRoundRect(TRoundRect.Create(Rectangle, Roundness), Brush, Pen);
 end;
 
 procedure TCanvasHelper.GDIRoundRect(RoundRect: TRoundRect; Brush: TGDIBrush; Pen: TGDIPen);

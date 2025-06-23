@@ -58,9 +58,7 @@ begin
         AllowDebug := true;
 
       if Param = '-offline' then
-        begin
-          OverrideOffline := true;
-        end;
+        OverrideOffline := true;
 
       if Param = '-tray' then
         begin

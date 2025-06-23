@@ -253,7 +253,7 @@ interface
 
   // User
   function LoginUser: boolean;
-  procedure LogOff;
+  function LogOffUser: boolean;
 
   function IsAuthenthicated: boolean;
 
@@ -486,10 +486,12 @@ var
   OnUpdateType: TDataTypeUpdate;
 
   // Artwork Store
-  ArtworkStore: boolean = true;
+  ArtworkStore: boolean=true;
   MediaStoreLocation: string;
 
   // Server Login Output
+  USER_STATUS_LOGGEDIN:boolean=false;
+
   TOKEN: string;
   USER_ID: integer;
   APPLICATION_ID: string = '1078';
@@ -582,6 +584,7 @@ begin
     SResult.AnaliseFrom(JSONValue);
 
     Result := SResult.Success;
+    USER_STATUS_LOGGEDIN:=SResult.Success;
 
     // Success
     if SResult.Success then
@@ -597,19 +600,20 @@ begin
         begin
           //raise Exception.Create(SResult.ServerMessage);
         end;
-
   finally
     JSONValue.Free;
   end;
 end;
 
-procedure LogOff;
+function LogOffUser: boolean;
 var
   Request: string;
   SResult: ResultType;
 
   JSONValue: TJSONValue;
 begin
+  USER_STATUS_LOGGEDIN := false;
+
   // Prepare request string
   Request := Format(REQUEST_LOGOFF, [USER_ID, TOKEN]);
 
@@ -618,7 +622,7 @@ begin
   try
     SResult.AnaliseFrom(JSONValue);
 
-    ReturnToLogin;
+    Result := SResult.Success;
   finally
     JSONValue.Free;
   end;
@@ -1853,7 +1857,7 @@ end;
 
 procedure ResultType.TerminateSession;
 begin
-  LogOff;
+  LogOffUser;
   ReturnToLogin;
 
   // Terminate Parent Function

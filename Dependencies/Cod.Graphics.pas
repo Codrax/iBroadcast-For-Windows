@@ -92,6 +92,19 @@ procedure GradHorizontal(Canvas:TCanvas; Rect:TRect; FromColor, ToColor:TColor);
 procedure GradVertical(Canvas:TCanvas; Rect:TRect; FromColor, ToColor:TColor);
 function CanvasToBitmap(Canvas: TCanvas): TBitMap;
 function RemoveColor(imgsrc: TBitMap; color: TColor): TBitMap;
+procedure InitializeBitmapBits(Image: TBitMap; Value: byte); // all bits, including alpha channel
+procedure InitializeBitmapRGB(Image: TBitMap; Value: byte);
+procedure InitializeBitmapAlpha(Image: TBitMap; Value: byte);
+///  <summary>
+///  Initialize the bitmap with the values for each pixel. If the image does not support an
+///  alpha channel, It's ignored.
+///  </summary>
+procedure InitializeBitmapCombined(Image: TBitMap; R: byte; G: byte; B: byte; Alpha: byte=255);
+///  <summary>
+///  The entire alpha channel is equal to that value
+///  </summary>
+function GetBitmapAlphaValue(Image: TBitMap; Value: byte): boolean;
+function GetBitmapRGBValue(Image: TBitMap; Value: byte): boolean;
 
 { Drawing }
 function DrawModeToImageLayout(DrawMode: TDrawMode): TRectLayout;
@@ -138,6 +151,11 @@ procedure ConvertToPNG(Source: TGraphic; Dest: TPngImage);
 procedure CreatePNG(Color, Mask: TBitmap; Dest: TPngImage; InverseMask: Boolean = False);
 procedure CreatePNGMasked(Bitmap: TBitmap; Mask: TColor; Dest: TPngImage);
 procedure SlicePNG(JoinedPNG: TPngImage; Columns, Rows: Integer; out SlicedPNGs: TObjectList);
+
+{ Thread utils }
+function ConvertIconToBitMap(Icon: TIcon): TBitmap;
+function ConvertBitMapToPNG(Source: TBitMap): TPNGImage;
+function ConvertIconToPNG(SourceIcon: TIcon): TPNGImage;
 
 implementation
 
@@ -865,6 +883,190 @@ begin
   end;
 end;
 
+procedure InitializeBitmapBits(Image: TBitMap; Value: byte);
+const
+  RGB_SIZE = 3;
+  RGBA_SIZE = 4;
+var
+  Y, X: integer;
+  SrcPtr: PByte;
+begin
+  case Image.PixelFormat of
+    pf24bit: begin
+      for Y := 0 to Image.Height-1 do begin
+        SrcPtr := Image.ScanLine[Y];
+        for X := 0 to Image.Width-1 do begin
+          SrcPtr[X*RGB_SIZE] := Value;
+          SrcPtr[X*RGB_SIZE+1] := Value;
+          SrcPtr[X*RGB_SIZE+2] := Value;
+        end;
+      end;
+    end;
+    pf32bit: begin
+      for Y := 0 to Image.Height-1 do begin
+        SrcPtr := Image.ScanLine[Y];
+        for X := 0 to Image.Width-1 do begin
+          SrcPtr[X*RGBA_SIZE] := Value;
+          SrcPtr[X*RGBA_SIZE+1] := Value;
+          SrcPtr[X*RGBA_SIZE+2] := Value;
+          SrcPtr[X*RGBA_SIZE+3] := Value;
+        end;
+      end;
+    end;
+    
+    else raise Exception.Create('Unsupported pixel format.');
+  end;
+end;
+
+procedure InitializeBitmapRGB(Image: TBitMap; Value: byte);
+const
+  RGB_SIZE = 3;
+  RGBA_SIZE = 4;
+var
+  Y, X: integer;
+  SrcPtr: PByte;
+begin
+  case Image.PixelFormat of
+    pf24bit: begin
+      for Y := 0 to Image.Height-1 do begin
+        SrcPtr := Image.ScanLine[Y];
+        for X := 0 to Image.Width-1 do begin
+          SrcPtr[X*RGB_SIZE] := Value;
+          SrcPtr[X*RGB_SIZE+1] := Value;
+          SrcPtr[X*RGB_SIZE+2] := Value;
+        end;
+      end;
+    end;
+    pf32bit: begin
+      for Y := 0 to Image.Height-1 do begin
+        SrcPtr := Image.ScanLine[Y];
+        for X := 0 to Image.Width-1 do begin
+          SrcPtr[X*RGBA_SIZE] := Value;
+          SrcPtr[X*RGBA_SIZE+1] := Value;
+          SrcPtr[X*RGBA_SIZE+2] := Value;
+          // SrcPtr[X*RGBA_SIZE+3] := 0;
+        end;
+      end;
+    end;
+    
+    else raise Exception.Create('Unsupported pixel format.');
+  end;
+end;
+
+procedure InitializeBitmapAlpha(Image: TBitMap; Value: byte);
+const
+  RGB_SIZE = 3;
+  RGBA_SIZE = 4;
+var
+  Y, X: integer;
+  SrcPtr: PByte;
+begin
+  case Image.PixelFormat of
+    pf32bit: begin
+      for Y := 0 to Image.Height-1 do begin
+        SrcPtr := Image.ScanLine[Y];
+        for X := 0 to Image.Width-1 do
+          SrcPtr[X*RGBA_SIZE+3] := Value;
+      end;
+    end;
+
+    else raise Exception.Create('Unsupported pixel format.');
+  end;
+end;
+
+procedure InitializeBitmapCombined(Image: TBitMap; R: byte; G: byte; B: byte; Alpha: byte);
+const
+  RGB_SIZE = 3;
+  RGBA_SIZE = 4;
+var
+  Y, X: integer;
+  SrcPtr: PByte;
+begin
+  case Image.PixelFormat of
+    pf24bit: begin
+      for Y := 0 to Image.Height-1 do begin
+        SrcPtr := Image.ScanLine[Y];
+        for X := 0 to Image.Width-1 do begin
+          SrcPtr[X*RGB_SIZE] := B;
+          SrcPtr[X*RGB_SIZE+1] := G;
+          SrcPtr[X*RGB_SIZE+2] := R;
+        end;
+      end;
+    end;
+    pf32bit: begin
+      for Y := 0 to Image.Height-1 do begin
+        SrcPtr := Image.ScanLine[Y];
+        for X := 0 to Image.Width-1 do begin
+          SrcPtr[X*RGBA_SIZE] := B;
+          SrcPtr[X*RGBA_SIZE+1] := G;
+          SrcPtr[X*RGBA_SIZE+2] := R;
+          SrcPtr[X*RGBA_SIZE+3] := Alpha;
+        end;
+      end;
+    end;
+
+    else raise Exception.Create('Unsupported pixel format.');
+  end;
+end;
+
+function GetBitmapAlphaValue(Image: TBitMap; Value: byte): boolean;
+const
+  RGB_SIZE = 3;
+  RGBA_SIZE = 4;
+var
+  Y, X: integer;
+  SrcPtr: PByte;
+begin
+  Result := false;
+  case Image.PixelFormat of
+    pf32bit: begin
+      for Y := 0 to Image.Height-1 do begin
+        SrcPtr := Image.ScanLine[Y];
+        for X := 0 to Image.Width-1 do
+          if SrcPtr[X*RGBA_SIZE+3] <> Value then
+            Exit;
+      end;
+    end;
+
+    else raise Exception.Create('Unsupported pixel format.');
+  end;
+
+  Result := true;
+end;
+
+function GetBitmapRGBValue(Image: TBitMap; Value: byte): boolean;
+const
+  RGB_SIZE = 3;
+  RGBA_SIZE = 4;
+var
+  Y, X: integer;
+  SrcPtr: PByte;
+begin
+  Result := false;
+  case Image.PixelFormat of
+    pf24bit: begin
+      for Y := 0 to Image.Height-1 do begin
+        SrcPtr := Image.ScanLine[Y];
+        for X := 0 to Image.Width-1 do
+          if (SrcPtr[X*RGB_SIZE] <> Value) or (SrcPtr[X*RGB_SIZE+1] <> Value) or (SrcPtr[X*RGB_SIZE+2] <> Value) then
+            Exit;
+      end;
+    end;
+    pf32bit: begin
+      for Y := 0 to Image.Height-1 do begin
+        SrcPtr := Image.ScanLine[Y];
+        for X := 0 to Image.Width-1 do
+          if (SrcPtr[X*RGBA_SIZE] <> Value) or (SrcPtr[X*RGBA_SIZE+1] <> Value) or (SrcPtr[X*RGBA_SIZE+2] <> Value) then
+            Exit;
+      end;
+    end;
+
+    else raise Exception.Create('Unsupported pixel format.');
+  end;
+
+  Result := true;
+end;
+
 procedure DrawImageInRect(Canvas: TCanvas; Rect: TRect; Image: TGraphic;
   DrawMode: TDrawMode; ImageMargin: integer; ClipImage: boolean; Opacity: byte);
 var
@@ -1159,16 +1361,21 @@ begin
   else
     {Graphic := TGraphic.Create;}Graphic := TBitMap.Create;
 
-  // Create memory stream
-  MS := TMemoryStream.Create;
+  try
+    // Create memory stream
+    MS := TMemoryStream.Create;
+    try
+      MS.LoadFromFile(filename);
 
-  MS.LoadFromFile(filename);
-
-  // Load into image
-  Ms.Seek(0,soFromBeginning);
-  Graphic.LoadFromStream(MS);
-
-  MS.free;
+      // Load into image
+      Ms.Seek(0,soFromBeginning);
+      Graphic.LoadFromStream(MS);
+    finally
+      MS.free;
+    end;
+  except
+    Graphic.Free;
+  end;
 end;
 
 function ResizeGraphic(AGraphic: TGraphic; AWidth, AHeight: integer): TBitMap;
@@ -1677,6 +1884,142 @@ begin
         Bitmap.Free;
       end;
     end;
+  end;
+end;
+
+function ConvertBitMapToPNG(Source: TBitMap): TPNGImage;
+const
+  RGB_SIZE = 3;
+  RGBA_SIZE = 4;
+var
+  Y, X: integer;
+  SrcPtr,
+  DestPtr,
+  Cursor: PByte;
+  AlphPtr: PByteArray;
+begin
+  case Source.PixelFormat of
+    pf24bit: begin
+      Result := TPNGImage.CreateBlank(COLOR_RGB, RGBA_SIZE * 2{bs}, Source.Width, Source.Height);
+
+      for Y := 0 to Source.Height-1 do begin
+        SrcPtr := Source.ScanLine[Y];
+        DestPtr := Result.ScanLine[Y];
+
+        // Read
+        Cursor := SrcPtr;
+        for X := 0 to Source.Width-1 do begin
+          // Read alpha
+          Move(Cursor^, DestPtr^, RGB_SIZE);
+
+          // Move
+          Inc(Cursor, RGB_SIZE);
+          Inc(DestPtr, RGB_SIZE); // this is always 3!! The Alpha Channel is separate
+        end;
+      end;
+    end;
+    pf32bit: if Source.SupportsPartialTransparency then begin
+      Result := TPNGImage.CreateBlank(COLOR_RGBALPHA, RGBA_SIZE * 2{bs}, Source.Width, Source.Height);
+
+      for Y := 0 to Source.Height-1 do begin
+        SrcPtr := Source.ScanLine[Y];
+        DestPtr := Result.ScanLine[Y];
+        AlphPtr := Result.AlphaScanline[Y];
+
+        // Read
+        Cursor := SrcPtr;
+        for X := 0 to Source.Width-1 do begin
+          // Read alpha
+          Move(Cursor^, DestPtr^, RGB_SIZE);
+
+          // Set
+          AlphPtr[X] := Cursor[3];
+
+          // Move
+          Inc(Cursor, RGBA_SIZE);
+          Inc(DestPtr, RGB_SIZE); // this is always 3!! The Alpha Channel is separate
+        end;
+      end;
+    end else begin
+      Result := TPNGImage.CreateBlank(COLOR_RGB, RGBA_SIZE * 2{bs}, Source.Width, Source.Height);
+
+      for Y := 0 to Source.Height-1 do begin
+        SrcPtr := Source.ScanLine[Y];
+        DestPtr := Result.ScanLine[Y];
+
+        // Read
+        Cursor := SrcPtr;
+        for X := 0 to Source.Width-1 do begin
+          // Read alpha
+          Move(Cursor^, DestPtr^, RGB_SIZE);
+
+          // Move
+          Inc(Cursor, RGBA_SIZE);
+          Inc(DestPtr, RGB_SIZE); // this is always 3!! The Alpha Channel is separate
+        end;
+      end;
+    end
+
+    else raise Exception.Create('Unsupported pixel format.');
+  end;
+end;
+
+function ConvertIconToBitMap(Icon: TIcon): TBitmap;
+var
+  TmpBmp: TBitmap;
+begin
+  Result := TBitmap.Create;
+  TmpBmp := TBitmap.Create;
+  try
+    TmpBmp.SetSize(Icon.Width, Icon.Height);
+    TmpBmp.PixelFormat := pf32bit;
+    TmpBmp.TransparentMode := tmAuto;
+    TmpBmp.AlphaFormat := afPremultiplied;
+
+    // Initialize
+    InitializeBitmapBits(TmpBmp, 0);
+
+    // Must be on main thread
+    TmpBmp.Canvas.Lock;
+    try
+      TmpBmp.Canvas.Draw(0, 0, Icon, 255);
+    finally
+      TmpBmp.Canvas.Unlock;
+    end;
+
+    // Alpha channel is broken :((
+    if GetBitmapAlphaValue(TmpBmp, 0) then begin
+      const RGBA_SIZE = 4;
+      var Y, X: integer;
+      var SrcPtr: PByte;
+      // Attempt to manually replace any non 0 0 0 pixel with a solid alpha
+      for Y := 0 to TmpBmp.Height-1 do begin
+        SrcPtr := TmpBmp.ScanLine[Y];
+        for X := 0 to TmpBmp.Width-1 do
+          if (SrcPtr[X*RGBA_SIZE] <> 0) or (SrcPtr[X*RGBA_SIZE+1] <> 0) or (SrcPtr[X*RGBA_SIZE+2] <> 0) then
+            SrcPtr[X*RGBA_SIZE+3] := 255;
+      end;
+    end;
+
+    // Copy to result
+    Result.Assign(TmpBmp);
+    Result.PixelFormat := TmpBmp.PixelFormat;
+  finally
+    TmpBmp.Free;
+  end;
+end;
+
+function ConvertIconToPNG(SourceIcon: TIcon): TPNGImage;
+var
+  TempBitmap: TBitmap;
+begin
+  Assert(Assigned(SourceIcon));
+
+  TempBitmap := ConvertIconToBitMap(SourceIcon);
+  try
+    Result := ConvertBitMapToPNG(TempBitmap);
+  finally
+    TempBitmap.Free;
   end;
 end;
 

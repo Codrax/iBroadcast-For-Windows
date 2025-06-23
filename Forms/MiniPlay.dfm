@@ -466,7 +466,7 @@ object MiniPlayer: TMiniPlayer
       ParentFont = False
       Layout = tlBottom
       OnMouseDown = MoveMoveDown
-      ExplicitWidth = 46
+      ExplicitWidth = 45
     end
     object Mini_NextSong: TLabel
       AlignWithMargins = True
@@ -543,6 +543,7 @@ object MiniPlayer: TMiniPlayer
       Max = 100
       Min = 0
       Position = 0
+      ExplicitLeft = 20
     end
     object Mini_Shuffle: CButton
       AlignWithMargins = True
@@ -797,5 +798,7 @@ object MiniPlayer: TMiniPlayer
     StartValue = 50
     EndValue = 0
     CurrentValue = 0
+    Left = 64
+    Top = 16
   end
 end

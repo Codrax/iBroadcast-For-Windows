@@ -1,14 +1,11 @@
 ﻿{***********************************************************}
-{                  Codruts System Utilities                 }
+{                   Codruts System Utilities                }
 {                                                           }
-{                        version 0.6                        }
-{                           BETA                            }
-{                                                           }
+{                        version 0.7                        }
 {                                                           }
 {                                                           }
-{                                                           }
-{                                                           }
-{                   -- WORK IN PROGRESS --                  }
+{              Developed by Petculescu Codrut               }
+{            Copyright (c) 2025 Codrut Software.            }
 {***********************************************************}
 
 {$WARN SYMBOL_PLATFORM OFF}
@@ -22,6 +19,9 @@ interface
   Cod.Registry, Cod.ColorUtils, Vcl.Imaging.pngimage, Vcl.Dialogs,
   Vcl.Graphics, Winapi.Windows, Vcl.Controls, Vcl.Themes, Vcl.Forms,
   Winapi.Messages,
+  {$ENDIF}
+  {$IFNDEF CONSOLE}
+  Vcl.Menus,
   {$ENDIF}
   System.SysUtils, System.Classes, Types, IOUtils, UITypes,
   Variants, System.TypInfo, Cod.MesssageConst, IniFiles;
@@ -50,8 +50,12 @@ interface
   procedure CenterFormOnScreen(form: TForm);
   procedure ChangeMainForm(NewForm: TForm);
   function MouseAboveForm(form: TForm): boolean;
-  procedure FormPositionSettings(Form: TForm; FileName: string; Load: boolean;
-    Closing: boolean = true);
+  procedure OpenPopupUnderControl(Popup: TPopupMenu; Control: TControl);
+  {$IFDEF MSWINDOWS}
+  function GetHoveredControl: TControl; // works for any form
+  {$ENDIF}
+  procedure SaveFormPositions(Form: TForm; FilePath: string);
+  procedure LoadFormPositions(Form: TForm; FilePath: string);
   procedure PrepareCustomTitleBar(var TitleBar: TForm; const Background: TColor; Foreground: TColor);
   procedure OpenFormSystemMenu(Form: TForm);
   procedure SetFormAllowClose(Form: TForm; Allow: boolean);
@@ -75,9 +79,8 @@ interface
   function HasParameter(Value: string): boolean; overload;
   ///  <summary> Get value of the following param of the requested value </summary>
   function GetParameterValue(Value: string): string; overload;
-  {$IFDEF POSIX}
   ///  <summary>
-  ///    Check for a single char Unix parameter, return index position
+  ///    Check for a single char parameter, return index position
   ///  </summary>
   function FindParameter(Value: char): integer; overload;
   ///  <summary> Check for a single char Unix parameter </summary>
@@ -92,7 +95,6 @@ interface
   function HasParameter(Value: string; AltChar: char): boolean; overload;
   ///  <summary> Gets the unix parameter, than returns the value </summary>
   function GetParameterValue(Value: string; AltChar: char): string; overload;
-  {$ENDIF}
 
   { Objects }
   procedure CopyObject(ObjFrom, ObjTo: TObject);
@@ -107,7 +109,9 @@ interface
   { Procedures }
   /// Usage:
   ///  HookMethod(@TClass.ProcInitialFunc, @TClass.ProcNewFunc);
+  {$IFDEF MSWINDOWS}
   procedure HookMethod(OldProc, NewProc: Pointer);
+  {$ENDIF}
 
   { File Associations }
   {$IFDEF MSWINDOWS}
@@ -150,9 +154,12 @@ interface
   {$ENDIF}
 
   { Paths }
-  procedure ExtractIconData(AFilePath: string; var Path: string; out IconIndex: word);
+  ///  <summary>
+  ///  From icon paths, of the format "C:\file.exe, 2" it extracts the path and icon index
+  ///  </summary>
+  procedure ExtractIconData(AFilePath: string; var Path: string; out IconIndex: integer);
   // Same as above, but with checks for if a file contains ","
-  procedure ExtractIconDataEx(AFilePath: string; var Path: string; out IconIndex: word);
+  procedure ExtractIconDataEx(AFilePath: string; var Path: string; out IconIndex: integer);
 
   { File }
   {$IFDEF MSWINDOWS}
@@ -173,9 +180,7 @@ interface
 
 const
   PARAM_PREFIX = {$IFDEF MSWINDOWS}'-'{$ELSE}'--'{$ENDIF};
-  {$IFDEF POSIX}
   PARAM_PREFIX_CHAR = '-';
-  {$ENDIF}
 
 implementation
 
@@ -214,80 +219,147 @@ begin
       Result := true;
 end;
 
-procedure FormPositionSettings(Form: TForm; FileName: string;
-  Load, Closing: boolean);
-const
-  SECT_DAT = 'Positions';
+procedure OpenPopupUnderControl(Popup: TPopupMenu; Control: TControl);
 var
-  Ini: TIniFile;
-
-  // Previous
-  PrevState: TWindowState;
-  PrevValue: byte;
-  PrevEn: boolean;
+  P: TPoint;
 begin
-  with Form do
-    begin
-      if Load and not TFile.Exists(FileName) then
-        begin
-          Left := (Screen.Width - Width) div 2;
-          Top := (Screen.Height - Height) div 2;
-        end;
+  P := Point(0, Control.Height);
+  P := Control.ClientToScreen(P);
+  Popup.Popup(P.X, P.Y);
+end;
 
-      Ini := TIniFile.Create(FileName);
-      with Ini do
-        try
-          if Load then
-            begin
-              WindowState := TWindowState.wsNormal;
-              if Form.Position <> poDesigned then
-                Form.Position := poDesigned; // ensure designed
+{$IFDEF MSWINDOWS}
+function GetHoveredControl: TControl;
+var
+  P: TPoint;
+  Handle: HWND;
+begin
+  GetCursorPos(P);
+  Handle := WindowFromPoint(P);
+  Result := FindControl(Handle);
 
-              Left := ReadInteger(SECT_DAT, 'Left', Left);
-              Top := ReadInteger(SECT_DAT, 'Top', Top);
-              Width := ReadInteger(SECT_DAT, 'Width', Width);
-              Height := ReadInteger(SECT_DAT, 'Height', Height);
+  //
+  if (Result <> nil) and (not Result.InheritsFrom(TControl)) then
+    Result := nil;
+end;
+{$ENDIF}
 
-              WindowState := TWindowState(ReadInteger(SECT_DAT, 'State', integer(WindowState)));
-              if WindowState = wsMinimized then
-                WindowState := wsNormal;
-            end
-          else
-            begin
-              PrevEn := false;
-              PrevValue := 255;
+procedure SaveFormPositions(Form: TForm; FilePath: string);
+var
+  Category: string;
+  WindowRect: TRect;
+  {$IFDEF MSWINDOWS}
+  P: TWindowPlacement;
+  {$ENDIF}
+begin
+  if Form = nil then
+    Exit;
 
-              WriteInteger(SECT_DAT, 'State', integer(WindowState));
-              if WindowState = wsMinimized then
-                begin
-                  PrevEn := AlphaBlend;
-                  PrevValue := AlphaBlendValue;
+  // Name
+  Category := Form.Name;
 
-                  AlphaBlend := true;
-                  AlphaBlendValue := 0;
-                end;
-              PrevState := WindowState;
-              WindowState := TWindowState.wsNormal;
+  with TIniFile.Create(FilePath) do
+    try
+      WindowRect := Form.BoundsRect;
+      var RestoreData: boolean; RestoreData := false;
 
-              WriteInteger(SECT_DAT, 'Left', Left);
-              WriteInteger(SECT_DAT, 'Top', Top);
-              WriteInteger(SECT_DAT, 'Width', Width);
-              WriteInteger(SECT_DAT, 'Height', Height);
-
-              // Revert
-              if not Closing then
-                begin
-                  WindowState := PrevState;
-                  if WindowState = wsMinimized then
-                    begin
-                      AlphaBlend := PrevEn;
-                      AlphaBlendValue := PrevValue;
-                    end;
-                end;
+      {$IFDEF MSWINDOWS}
+      // Window is snapped by user (via Windows snapping)
+      if Form.HandleAllocated and IsWindow(Form.Handle) and GetWindowPlacement(Form.Handle, P) then
+        if (Form.WindowState <> wsNormal)
+          or ((P.rcNormalPosition.Left <> WindowRect.Left) and (P.rcNormalPosition.Right <> WindowRect.Right)) or
+            ((P.rcNormalPosition.Top <> WindowRect.Top) and (P.rcNormalPosition.Bottom <> WindowRect.Bottom)) then begin
+              // Get restore pos
+              WindowRect := P.rcNormalPosition;
+              RestoreData := true;
             end;
-        finally
-          Free;
+      {$ENDIF}
+
+      WriteInteger(Category, 'State', integer(Form.WindowState));
+      WriteInteger(Category, 'Left', WindowRect.Left);
+      WriteInteger(Category, 'Top', WindowRect.Top);
+      WriteInteger(Category, 'Width', WindowRect.Width);
+      WriteInteger(Category, 'Height', WindowRect.Height);
+      WriteFloat(Category, 'Scale', Form.ScaleFactor);
+      WriteBool(Category, 'Restore data', RestoreData);
+    finally
+      Free;
+    end;
+end;
+
+procedure LoadFormPositions(Form: TForm; FilePath: string);
+var
+  Category: string;
+  WindowRect: TRect;
+  {$IFDEF MSWINDOWS}
+  P: TWindowPlacement;
+  {$ENDIF}
+begin
+  if Form = nil then
+    Exit;
+
+  // Default - center in screen
+  if not TFile.Exists(FilePath) then
+    Exit; // use the default Form.Position setting
+
+  // Name
+  Category := Form.Name;
+
+  with TIniFile.Create(FilePath) do
+    try
+      // Force poDesigned for form without triggering SetPosition()
+      if (Form.Position <> poDesigned) then
+        (PCardinal(@(Form.Position)))^ := Cardinal(poDesigned);
+
+      // Load scales
+      const ScaleMultiplier = Form.ScaleFactor / ReadFloat(Category, 'Scale', 1);
+
+      // Get rect
+      WindowRect := TRect.Create(
+        Point(round(ReadInteger(Category, 'Left', Form.Left)*ScaleMultiplier), round(ReadInteger(Category, 'Top', Form.Top)*ScaleMultiplier)),
+        round(ReadInteger(Category, 'Width', Form.Width)*ScaleMultiplier), round(ReadInteger(Category, 'Height', Form.Height)*ScaleMultiplier));
+      const WindowState = TWindowState(ReadInteger(Category, 'State', integer(Form.WindowState)));
+
+      // Fix bounds
+      const Client = Screen.WorkAreaRect;
+      if WindowRect.Left < Client.Left then
+        WindowRect.Offset( Client.Left - WindowRect.Left, 0 );
+      if WindowRect.Right > Client.Right then
+        WindowRect.Offset( Client.Right - WindowRect.Right, 0 );
+      if WindowRect.Top < Client.Top then
+        WindowRect.Offset( 0, Client.Top - WindowRect.Top );
+      if WindowRect.Bottom > Client.Bottom then
+        WindowRect.Offset( 0, Client.Bottom - WindowRect.Bottom );
+
+      // Align
+      case WindowState of
+        TWindowState.wsMaximized: begin
+          const RestoreData = ReadBool(Category, 'Restore data', false);
+
+          {$IFDEF MSWINDOWS}
+          // If window was snapped, re-load the previous snap restore values
+          if RestoreData and Form.HandleAllocated and IsWindow(Form.Handle) and GetWindowPlacement(Form.Handle, P) then begin
+            P.showCmd := SW_SHOWMAXIMIZED;
+            P.rcNormalPosition := WindowRect;
+            SetWindowPlacement(Form.Handle, P);
+          end else begin
+            if RestoreData then
+              Form.SetBounds(WindowRect.Left, WindowRect.Top, WindowRect.Width, WindowRect.Height); // this backup mode is Windows Only
+          {$ENDIF}
+            Form.WindowState := TWindowState.wsMaximized;
+          {$IFDEF MSWINDOWS}
+          end;
+          {$ENDIF}
         end;
+
+        TWindowState.wsMinimized,
+        TWindowState.wsNormal: begin
+          Form.WindowState := TWindowState.wsNormal;
+          Form.SetBounds(WindowRect.Left, WindowRect.Top, WindowRect.Width, WindowRect.Height);
+        end;
+      end;
+    finally
+      Free;
     end;
 end;
 
@@ -396,6 +468,7 @@ begin
     raise Exception.Create(Message);
 end;
 
+{$IFDEF MSWINDOWS}
 procedure HookMethod(OldProc, NewProc: Pointer);
 const
   JMP_REL32 = $E9;
@@ -416,6 +489,7 @@ begin
   // Restore memory protection
   VirtualProtect(OldProc, 5, dwOldProtect, @dwOldProtect);
 end;
+{$ENDIF}
 
 {$IFDEF MSWINDOWS}
 procedure RegisterFileType(FileExt, FileTypeDescription,
@@ -984,7 +1058,6 @@ begin
   Result := GetParameter(Index+1);
 end;
 
-{$IFDEF POSIX}
 function FindParameter(Value: char): integer;
 var
   S: string;
@@ -995,7 +1068,7 @@ begin
       S := GetParameter(I);
       if (Length(S) < Length(PARAM_PREFIX_CHAR)+1)
         or (Copy(S, 1, Length(PARAM_PREFIX_CHAR)) <> PARAM_PREFIX_CHAR)
-        or (Copy(S, 1, Length(PARAM_PREFIX)) = PARAM_PREFIX) then
+        {$IFNDEF MSWINDOWS}or (Copy(S, 1, Length(PARAM_PREFIX)) = PARAM_PREFIX){$ENDIF} then
         Continue;
 
       // Remove prefix
@@ -1036,7 +1109,6 @@ begin
   const Index = FindParameter( Value, AltChar );
   Result := GetParameter(Index+1);
 end;
-{$ENDIF}
 
 procedure CopyObject(ObjFrom, ObjTo: TObject);
   var
@@ -1298,7 +1370,7 @@ begin
 end;
 {$ENDIF}
 
-procedure ExtractIconData(AFilePath: string; var Path: string; out IconIndex: word);
+procedure ExtractIconData(AFilePath: string; var Path: string; out IconIndex: integer);
 var
   Directory: string;
   FileName: string;
@@ -1326,7 +1398,7 @@ begin
   Path := Directory + FileName.Substring(0, Index); // I is the position, so no need for -1
 end;
 
-procedure ExtractIconDataEx(AFilePath: string; var Path: string; out IconIndex: word);
+procedure ExtractIconDataEx(AFilePath: string; var Path: string; out IconIndex: integer);
 begin
   // Load
   if TFile.Exists(AFilePath) then begin

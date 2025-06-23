@@ -1,14 +1,11 @@
 {***********************************************************}
-{                    Codruts Win Register                   }
+{                  Codruts Windows Registry                 }
 {                                                           }
-{                         version 1.1                       }
-{                           RELEASE                         }
-{                                                           }
+{                        version 1.0                        }
 {                                                           }
 {                                                           }
-{                                                           }
-{                                                           }
-{                   -- WORK IN PROGRESS --                  }
+{              Developed by Petculescu Codrut               }
+{            Copyright (c) 2025 Codrut Software.            }
 {***********************************************************}
 
 

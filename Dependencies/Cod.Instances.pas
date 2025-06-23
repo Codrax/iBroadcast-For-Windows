@@ -1,5 +1,7 @@
 unit Cod.Instances;
 
+{$SCOPEDENUMS ON}
+
 /// EASY MODE:
 ///  Initialize the instance with InitializeInstance() as you desire
 ///  If the instance exists and HasAppInfo() is true, you can use
@@ -51,7 +53,8 @@ procedure PutAppInfo(hwnd: HWND); overload;
 function GetAppInfo: TAppSharedInfo;
 
 (* Automatic tasks *)
-procedure InstanceAuto(Mode: TAutoInstanceMode; AExitCode: integer = integer.MinValue);
+procedure InstanceAuto(Mode: TAutoInstanceMode); overload;
+procedure InstanceAuto(Mode: TAutoInstanceMode; AExitCode: integer; SetExitCode: boolean); overload;
 
 procedure BringOtherWindowToTopAuto;
 procedure SendOtherWindowMessageAuto(Msg: UINT; wParam: WPARAM; lParam: LPARAM);
@@ -213,13 +216,18 @@ begin
   Result := SharedAppInfo^;
 end;
 
-procedure InstanceAuto(Mode: TAutoInstanceMode; AExitCode: integer);
+procedure InstanceAuto(Mode: TAutoInstanceMode);
+begin
+  InstanceAuto(Mode, 0, false);
+end;
+
+procedure InstanceAuto(Mode: TAutoInstanceMode; AExitCode: integer; SetExitCode: boolean);
 procedure DoHalt;
 begin
-  if AExitCode = integer.MaxValue then
-    Halt
+  if SetExitCode then
+    Halt( AExitCode )
   else
-    Halt( AExitCode );
+    Halt;
 end;
 begin
   InitializeInstance(Mode <> TAutoInstanceMode.TerminateIfOtherExist);
@@ -228,8 +236,8 @@ begin
 
   // Handle case of otuer window
   case Mode of
-    TerminateIfOtherExist: DoHalt;
-    TerminateAndFocusOther: begin
+    TAutoInstanceMode.TerminateIfOtherExist: DoHalt;
+    TAutoInstanceMode.TerminateAndFocusOther: begin
       BringOtherWindowToTopAuto;
       DoHalt;
     end;

@@ -1,6 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <BorlandProject>
-  <Transactions>
-    <Transaction>2025/06/23 13:59:29.386,F:\Development\Repositories\iBroadcast-For-Windows\Forms\HelpForm.pas=</Transaction>
+	<Transactions>
+    <Transaction>2025/06/23 13:59:29.000.386,F:\Development\Repositories\iBroadcast-For-Windows\Forms\HelpForm.pas=</Transaction>
+    <Transaction>2025/06/23 14:07:46.000.227,=F:\Development\Repositories\iBroadcast-For-Windows\Unit1.pas</Transaction>
+    <Transaction>2025/06/23 14:08:02.000.415,F:\Development\Repositories\iBroadcast-For-Windows\Frames\SettingsFrame.pas=F:\Development\Repositories\iBroadcast-For-Windows\Unit1.pas</Transaction>
+    <Transaction>2025/06/23 14:08:02.000.415,F:\Development\Repositories\iBroadcast-For-Windows\Frames\SettingsFrame.dfm=F:\Development\Repositories\iBroadcast-For-Windows\Unit1.dfm</Transaction>
+    <Transaction>2025/06/23 14:08:38.000.589,F:\Development\Repositories\iBroadcast-For-Windows\Frames\SettingsFrameUI.dfm=F:\Development\Repositories\iBroadcast-For-Windows\Frames\SettingsFrame.dfm</Transaction>
+    <Transaction>2025/06/23 14:08:38.000.589,F:\Development\Repositories\iBroadcast-For-Windows\Frames\SettingsFrameUI.pas=F:\Development\Repositories\iBroadcast-For-Windows\Frames\SettingsFrame.pas</Transaction>
+    <Transaction>2025/06/23 15:15:15.000.029,=F:\Development\Repositories\iBroadcast-For-Windows\Unit1.pas</Transaction>
+    <Transaction>2025/06/23 15:15:22.000.318,F:\Development\Repositories\iBroadcast-For-Windows\Frames\LoginFrameUI.dfm=F:\Development\Repositories\iBroadcast-For-Windows\Unit1.dfm</Transaction>
+    <Transaction>2025/06/23 15:15:22.000.318,F:\Development\Repositories\iBroadcast-For-Windows\Frames\LoginFrameUI.pas=F:\Development\Repositories\iBroadcast-For-Windows\Unit1.pas</Transaction>
+    <Transaction>2025/06/23 16:21:31.000.031,=F:\Development\Repositories\iBroadcast-For-Windows\Unit1.pas</Transaction>
+    <Transaction>2025/06/23 16:22:03.000.324,F:\Development\Repositories\iBroadcast-For-Windows\Frames\LoginFrameUI.pas=</Transaction>
+    <Transaction>2025/06/23 16:22:45.000.780,F:\Development\Repositories\iBroadcast-For-Windows\Unit1.pas=F:\Development\Repositories\iBroadcast-For-Windows\Frames\SettingsFrameUI.pas</Transaction>
+    <Transaction>2025/06/23 16:22:45.000.780,F:\Development\Repositories\iBroadcast-For-Windows\Unit1.dfm=F:\Development\Repositories\iBroadcast-For-Windows\Frames\SettingsFrameUI.dfm</Transaction>
+    <Transaction>2025/06/23 16:30:49.000.768,F:\Development\Repositories\iBroadcast-For-Windows\Frames\SettingsFrameUI.pas=</Transaction>
   </Transactions>
 </BorlandProject>

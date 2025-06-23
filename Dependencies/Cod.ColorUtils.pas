@@ -1,14 +1,11 @@
 {***********************************************************}
-{                  Codruts Color Utilities                  }
+{                  Codruts System Utilities                 }
 {                                                           }
-{                        version 0.2                        }
-{                           ALPHA                           }
-{                                                           }
+{                        version 1.0                        }
 {                                                           }
 {                                                           }
-{                                                           }
-{                                                           }
-{                   -- WORK IN PROGRESS --                  }
+{              Developed by Petculescu Codrut               }
+{            Copyright (c) 2025 Codrut Software.            }
 {***********************************************************}
 
 unit Cod.ColorUtils;

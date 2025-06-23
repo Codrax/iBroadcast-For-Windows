@@ -9,7 +9,6 @@ uses
 
 type
   TLogging = class(TForm)
-    CImage1: CImage;
     Label2: TLabel;
     Label1: TLabel;
     Log: TMemo;
