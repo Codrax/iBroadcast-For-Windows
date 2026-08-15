@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Cod.Types, Vcl.TitleBarCtrls, Vcl.ExtCtrls, Cod.SysUtils, Bass,
-  Cod.Math, Cod.StringUtils;
+  Cod.Math, Cod.StringUtils, Cod.Forms;
 
 type
   TPerfForm = class(TForm)

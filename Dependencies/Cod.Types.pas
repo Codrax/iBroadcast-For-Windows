@@ -23,9 +23,9 @@ uses
 type
   // Cardinals
   TCorners = (TopLeft, TopRight, BottomLeft, BottomRight);
-
   TLayout = (Beginning, Center, Ending);
 
+  // Files
   TFileType = (Unknown,
     Text, // Default
     BMP, // Bitmap
@@ -60,20 +60,21 @@ type
     TCases = TArray<TCase>;
 
     // Make
-    class function Option(Value: T; Call: TProc): TCase; overload;
-    class function Option(Values: TArray<T>; Call: TProc): TCase; overload;
+    class function Option(Value: T; Call: TProc): TCase; overload; static;
+    class function Option(Values: TArray<T>; Call: TProc): TCase; overload; static;
 
     // Switch
-    class procedure Switch(Value: T; Cases: TArray<TCase>); overload;
-    class procedure Switch(Value: T; Cases: TArray<TCase>; Default: TProc); overload;
+    class procedure Switch(Value: T; Cases: TArray<TCase>); overload; static;
+    class procedure Switch(Value: T; Cases: TArray<TCase>; Default: TProc); overload; static;
   end;
 
   // Type helper for any
-  TType<T> = class(TObject)
+  TType<T> = record
   public
-    class function IfElse(Condition: boolean; IfTrue: T; IfFalse: T): T;
-    class procedure Switch(var A, B: T);
-    class function Compare(const A, B: T): TValueRelationship;
+    class function IfElse(Condition: boolean; IfTrue: T; IfFalse: T): T; static;
+    class procedure Switch(var A, B: T); static;
+    class function Compare(const A, B: T): TValueRelationship; static;
+    class function SetGet(out Variabile: T; SetTo: T): T; static;
   end;
 
   // Const
@@ -276,6 +277,9 @@ function MakeLine(X1, Y1, X2, Y2: integer): TLine; overload;
 function PointOnLine(X, Y, x1, y1, x2, y2, d: Integer): Boolean;
 
 { Rectangles }
+///  <summary>Translate a rectangle that is positioned in a bigger client rectangle (parent rect)
+///  to a new rectangle. Or: Translate CHILD positions from PARENT1 to PARENT2. </summary>
+function TranslateRect(const Rect, Client, Dest: TRect): TRect;
 function GetValidRect(Point1, Point2: TPoint): TRect; overload;
 function GetValidRect(Points: TArray<TPoint>): TRect; overload;
 function GetValidRect(Points: TArray<TPointF>): TRectF; overload;
@@ -287,9 +291,13 @@ procedure ContainRectInRect(var ARect: TRect; const ParentRect: TRect);
 ///  Morph rectangle or point from a value to the destination rectangle
 ///  based on the percent provided. The percent is from 0.00 to 1.00
 ///  NOTE: Rectangles must be normalised!
+/// <summary>Animate from the source to the destination TRect using a percentage.</summary>
 function MorphToRect(Source: TRect; Destination: TRect; Percent: single): TRect; overload;
+/// <summary>Animate from the source to the destination TRectF using a percentage.</summary>
 function MorphToRect(Source: TPoint; Destination: TRect; Percent: single): TRect; overload;
+/// <summary>Get the rectangle layouts of a element in a parent rectangle using specified layout settings.</summary>
 function RectangleLayouts(const Element: TSize; Parent: TRect; Layout: TRectLayout): TArray<TRect>; overload;
+/// <summary>Get the rectangle layouts of a element in a parent rectangle using specified layout settings.</summary>
 function RectangleLayouts(const Element: TRect; Parent: TRect; Layout: TRectLayout): TArray<TRect>; overload;
 
 { Matrix }
@@ -304,6 +312,9 @@ function RotatePointAroundPoint(APoint: TPointF; ACenter: TPointF; ARotateDegree
 function RotatePointAroundPointRad(APoint: TPoint; ACenter: TPoint; ARotateRadians: real; ACustomRadius: real = -1): TPoint;  overload;
 function RotatePointAroundPoint(APoint: TPoint; ACenter: TPoint; ARotateDegrees: real; ACustomRadius: real = -1): TPoint;  overload;
 function PointAngle(APoint: TPoint; ACenter: TPoint; offset: integer = 0): integer;
+
+{ Color }
+
 
 // Conversion Functions
 function StringToBoolean(str: string): Boolean;
@@ -375,6 +386,21 @@ begin
     Result := true
   else
     Result := false;
+end;
+
+function TranslateRect(const Rect, Client, Dest: TRect): TRect;
+var
+  OffsetX, OffsetY: Integer;
+begin
+  // Calculate the offset between the top-left corners of Client and Dest
+  OffsetX := Dest.Left - Client.Left;
+  OffsetY := Dest.Top - Client.Top;
+
+  // Apply the offset to the coordinates of Rect
+  Result.Left := Rect.Left + OffsetX;
+  Result.Top := Rect.Top + OffsetY;
+  Result.Right := Rect.Right + OffsetX;
+  Result.Bottom := Rect.Bottom + OffsetY;
 end;
 
 function GetValidRect(Point1, Point2: TPoint): TRect;
@@ -1531,6 +1557,12 @@ begin
     Result := IfTrue
   else
     Result := IfFalse;
+end;
+
+class function TType<T>.SetGet(out Variabile: T; SetTo: T): T;
+begin
+  Variabile := SetTo;
+  Exit(SetTo);
 end;
 
 class procedure TType<T>.Switch(var A, B: T);

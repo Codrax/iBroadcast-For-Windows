@@ -38,6 +38,10 @@ type
     // Operators
     class operator Equal(A, B: TVersion): Boolean;
     class operator NotEqual(A, B: TVersion): Boolean;
+    class operator GreaterThan(a: TVersion; b: TVersion): Boolean;
+    class operator GreaterThanOrEqual(a: TVersion; b: TVersion): Boolean;
+    class operator LessThan(a: TVersion; b: TVersion): Boolean;
+    class operator LessThanOrEqual(a: TVersion; b: TVersion): Boolean;
   end;
 
   function MakeVersion(Major, Minor, Maintenance: cardinal; Build: cardinal = 0): TVersion;
@@ -116,9 +120,29 @@ begin
   Result := CompareTo(VERSION_EMPTY) = EqualsValue;
 end;
 
+class operator TVersion.LessThan(a, b: TVersion): Boolean;
+begin
+  Result := a.CompareTo(b) = LessThanValue;
+end;
+
+class operator TVersion.LessThanOrEqual(a, b: TVersion): Boolean;
+begin
+  Result := a.CompareTo(b) <= EqualsValue;
+end;
+
 class operator TVersion.Equal(A, B: TVersion): Boolean;
 begin
   Result := A.CompareTo(B) = EqualsValue;
+end;
+
+class operator TVersion.GreaterThan(a, b: TVersion): Boolean;
+begin
+  Result := a.CompareTo(b) = GreaterThanValue;
+end;
+
+class operator TVersion.GreaterThanOrEqual(a, b: TVersion): Boolean;
+begin
+  Result := a.CompareTo(b) >= EqualsValue;
 end;
 
 class function TVersion.Empty: TVersion;

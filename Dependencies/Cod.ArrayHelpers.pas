@@ -31,10 +31,10 @@ type
     // Callback types
     type
     TArrayEachCallback = reference to procedure(var Element: T);
-    TArrayEachCallbackConst = reference to procedure(Element: T);
-    TArrayDualCallback = reference to function(A, B: T): TValueRelationship;
-    TArrayIndexCallback = reference to function(Index: integer): T;
-    TArrayFindItemCallback = reference to function(Element: T): boolean;
+    TArrayEachCallbackConst = reference to procedure(const Element: T);
+    TArrayDualCallback = reference to function(const A, B: T): TValueRelationship;
+    TArrayIndexCallback = reference to function(const Index: integer): T;
+    TArrayFindItemCallback = reference to function(const Element: T): boolean;
 
     /// <summary> Verify if the array contains element x. </summary>
     class function Build(const Length: integer; Callback: TArrayIndexCallback): TArray<T>;
@@ -53,8 +53,14 @@ type
     /// <summary> Create a copy of the array. </summary>
     class procedure CopyTo(const Source: TArray<T>; var Destination: TArray<T>);
 
-    /// <summary> Get the index if element x. </summary>
+    /// <summary> Get the index if element x searching top-bottom. </summary>
     class function GetIndex(const x: T; const Values: TArray<T>): integer; overload;
+    /// <summary> Get the index if element x searching top-bottom. </summary>
+    class function GetIndex(const x: T; const Values: TArray<T>; StartingValue: integer): integer; overload;
+    /// <summary> Get the index if element x searching bottom-top. </summary>
+    class function GetIndexDownTo(const x: T; const Values: TArray<T>): integer; overload;
+    /// <summary> Get the index if element x searching bottom-top. </summary>
+    class function GetIndexDownTo(const x: T; const Values: TArray<T>; StartingValue: integer): integer; overload;
     /// <summary> Get the index if element with a callback to see if the item was found. </summary>
     class function GetIndex(const Values: TArray<T>; Callback: TArrayFindItemCallback): integer; overload;
     /// <summary> Go trough all elements of an array and get their value. </summary>
@@ -84,17 +90,33 @@ type
     class procedure AddValues(const Values: TArray<T>; var Destination: TArray<T>);
     /// <summary> Add value to the end of the array if It;s not in the array allready. </summary>
     class function AddValueUnique(const Value: T; var Values: TArray<T>) : integer; overload;
-    /// <summary> Concat secondary array to primary array </summary>
+    /// <summary> Add value to the end of the array if It;s not in the array allready. </summary>
+    class procedure AddValuesUnique(const Values: TArray<T>; var Destination: TArray<T>); overload;
+    /// <summary> Concat secondary array to primary array. </summary>
     class function Concat(const Primary, Secondary: TArray<T>) : TArray<T>;
+    /// <summary> Subtract from the primary array the values in the secondary array. </summary>
+    class function Subtract(const Primary, Secondary: TArray<T>) : TArray<T>;
     /// <summary> Insert empty value at the specified index into the array. </summary>
     class procedure Insert(const Index: integer; var Values: TArray<T>); overload;
     /// <summary> Insert value at the specified index into the array. </summary>
     class procedure Insert(const Index: integer; const Value: T; var Values: TArray<T>); overload;
 
     /// <summary> Delete element by index from array. </summary>
-    class procedure Delete(const Index: integer; var Values: TArray<T>);
+    class procedure Delete(const Index: integer; var Values: TArray<T>); overload;
     /// <summary> Delete element by type T from array. </summary>
-    class procedure DeleteValue(const Value: T; var Values: TArray<T>);
+    class procedure Delete(var Values: TArray<T>; Callback: TArrayFindItemCallback); overload;
+    /// <summary> Delete element by type T from array. </summary>
+    class function DeleteValue(const Value: T; var Values: TArray<T>): boolean;
+    /// <summary> Delete element by type T from array. </summary>
+    class procedure DeleteValues(const Values: TArray<T>; var Destination: TArray<T>);
+    /// <summary> Delete all by type T of the provided value from array. </summary>
+    class procedure DeleteAllMatchingValues(const Value: T; var Values: TArray<T>);
+
+    /// <summary> Replace element of type T with a new one in the array. </summary>
+    class function ReplaceValue(const Value, NewValue: T; var Values: TArray<T>): boolean;
+    /// <summary> Replace all element of type T with the provided value with the new one in the array. </summary>
+    class procedure ReplaceAllMatchingValues(const Value, NewValue: T; var Values: TArray<T>);
+
     /// <summary> Delete the last element of the array and return It's value. </summary>
     class function Pop(var Values: TArray<T>): T;
     /// <summary> Delete the first element of the array and return It's value. </summary>
@@ -105,6 +127,8 @@ type
     class function Count(const Values: TArray<T>) : integer;
 
     (* Known algorithms *)
+    /// <summary> Generics.Collections Sort, </summary>
+    class procedure DoGenericsCollect(var Values: TArray<T>; const Callback: TArrayDualCallback);
     /// <summary> Quick sort algorithm, </summary>
     class procedure DoQuickSort(var Values: TArray<T>; const Callback: TArrayDualCallback; Left, Right: Integer);
     /// <summary> Quick sort algorithm, </summary>
@@ -196,6 +220,14 @@ begin
     Destination[StartIndex+I-LowPoint] := Values[I];
 end;
 
+class procedure TArrayUtils<T>.AddValuesUnique(const Values: TArray<T>;
+  var Destination: TArray<T>);
+begin
+  for var I := 0 to High(Values) do
+    if not Contains(Values[I], Destination) then
+      AddValue(Values[I], Destination);
+end;
+
 class function TArrayUtils<T>.AddValueUnique(const Value: T;
   var Values: TArray<T>): integer;
 begin
@@ -215,8 +247,7 @@ end;
 class function TArrayUtils<T>.Concat(const Primary,
   Secondary: TArray<T>): TArray<T>;
 begin
-  Result := Primary;
-
+  Result := Copy(Primary);
   AddValues(Secondary, Result);
 end;
 
@@ -224,7 +255,7 @@ class function TArrayUtils<T>.Contains(const Values: TArray<T>;
   Callback: TArrayFindItemCallback): boolean;
 begin
   Result := false;
-  for var I := 0 to High(Values) do
+  for var I := Low(Values) to High(Values) do
     if Callback( Values[I] ) then
       Exit(true);
 end;
@@ -233,7 +264,7 @@ class function TArrayUtils<T>.ContainsAny(const Search,
   Values: TArray<T>): boolean;
 begin
   Result := false;
-  for var I := 0 to High(Values) do
+  for var I := Low(Values) to High(Values) do
     if Contains( Values[I], Search ) then
       Exit(true);
 end;
@@ -280,12 +311,40 @@ begin
   System.SetLength(Values, Length(Values)-1);
 end;
 
-class procedure TArrayUtils<T>.DeleteValue(const Value: T;
+class procedure TArrayUtils<T>.Delete(var Values: TArray<T>;
+  Callback: TArrayFindItemCallback);
+begin
+  for var I := High(Values) downto Low(Values) do
+    if Callback(Values[I]) then
+      Delete(I, Values);
+end;
+
+class procedure TArrayUtils<T>.DeleteAllMatchingValues(const Value: T;
   var Values: TArray<T>);
+var
+  Index: integer;
+begin
+  Index := GetIndexDownTo(Value, Values);
+  while Index <> -1 do begin
+    Delete(Index, Values);
+    Index := GetIndexDownTo(Value, Values, Index-1);
+  end;
+end;
+
+class function TArrayUtils<T>.DeleteValue(const Value: T;
+  var Values: TArray<T>): boolean;
 begin
   const Index = GetIndex(Value, Values);
-  if Index <> -1 then
+  Result := Index <> -1;
+  if Result then
     Delete(Index, Values);
+end;
+
+class procedure TArrayUtils<T>.DeleteValues(const Values: TArray<T>;
+  var Destination: TArray<T>);
+begin
+  for var I := Low(Values) to High(Values) do
+    DeleteValue(Values[I], Destination);
 end;
 
 class function TArrayUtils<T>.CheckEquality(const First, Second: TArray<T>): boolean;
@@ -322,6 +381,14 @@ begin
   end;
 end;
 
+class procedure TArrayUtils<T>.DoGenericsCollect(var Values: TArray<T>;
+  const Callback: TArrayDualCallback);
+begin
+  TArray.Sort<T>(Values, TComparer<T>.Construct(function(const A, B: T): Integer begin
+    Result := Callback(A, B);
+  end));
+end;
+
 class procedure TArrayUtils<T>.Flip(var Values: TArray<T>);
 var
   AHigh: integer;
@@ -349,9 +416,63 @@ class function TArrayUtils<T>.GetIndex(const Values: TArray<T>;
   Callback: TArrayFindItemCallback): integer;
 begin
   Result := -1;
-  for var I := 0 to High(Values) do
+  for var I := Low(Values) to High(Values) do
     if Callback( Values[I] ) then
       Exit(I);
+end;
+
+class function TArrayUtils<T>.GetIndex(const x: T; const Values: TArray<T>;
+  StartingValue: integer): integer;
+var
+  I: Integer;
+  y: T;
+  lComparer: IEqualityComparer<T>;
+begin
+  lComparer := TEqualityComparer<T>.Default;
+  for I := StartingValue to High(Values) do
+    begin
+      y := Values[I];
+
+      if lComparer.Equals(x, y) then
+        Exit(I);
+    end;
+    Exit(-1);
+end;
+
+class function TArrayUtils<T>.GetIndexDownTo(const x: T;
+  const Values: TArray<T>; StartingValue: integer): integer;
+var
+  I: Integer;
+  y: T;
+  lComparer: IEqualityComparer<T>;
+begin
+  lComparer := TEqualityComparer<T>.Default;
+  for I := StartingValue downto Low(Values) do
+    begin
+      y := Values[I];
+
+      if lComparer.Equals(x, y) then
+        Exit(I);
+    end;
+    Exit(-1);
+end;
+
+class function TArrayUtils<T>.GetIndexDownTo(const x: T;
+  const Values: TArray<T>): integer;
+var
+  I: Integer;
+  y: T;
+  lComparer: IEqualityComparer<T>;
+begin
+  lComparer := TEqualityComparer<T>.Default;
+  for I := High(Values) downto Low(Values) do
+    begin
+      y := Values[I];
+
+      if lComparer.Equals(x, y) then
+        Exit(I);
+    end;
+    Exit(-1);
 end;
 
 class procedure TArrayUtils<T>.ForEach(const Values: TArray<T>;
@@ -428,6 +549,27 @@ begin
   System.SetLength(Values, High(Values));
 end;
 
+class procedure TArrayUtils<T>.ReplaceAllMatchingValues(const Value,
+  NewValue: T; var Values: TArray<T>);
+var
+  Index: integer;
+begin
+  Index := GetIndexDownTo(Value, Values);
+  while Index <> -1 do begin
+    Values[Index] := NewValue;
+    Index := GetIndexDownTo(Value, Values, Index-1);
+  end;
+end;
+
+class function TArrayUtils<T>.ReplaceValue(const Value, NewValue: T;
+  var Values: TArray<T>): boolean;
+begin
+  const Index = GetIndex(Value, Values);
+  Result := Index <> -1;
+  if Result then
+    Values[Index] := NewValue;
+end;
+
 class procedure TArrayUtils<T>.DoQuickSort(var Values: TArray<T>;
   const Callback: TArrayDualCallback; Left, Right: Integer);
 var
@@ -492,15 +634,22 @@ var
 begin
   lComparer := TComparer<T>.Default;
 
-  Sort(Values, function(A, B: T): TValueRelationship begin
+  Sort(Values, function(const A, B: T): TValueRelationship begin
     Result := lComparer.Compare(A, B);
   end);
+end;
+
+class function TArrayUtils<T>.Subtract(const Primary,
+  Secondary: TArray<T>): TArray<T>;
+begin
+  Result := Copy(Primary);
+  DeleteValues(Secondary, Result);
 end;
 
 class procedure TArrayUtils<T>.Sort(var Values: TArray<T>;
   const Callback: TArrayDualCallback);
 begin
-  DoQuickSort(Values, Callback, 0, Length(Values) - 1);
+  DoQuickSort(Values, Callback, 0, Length(Values)-1);
 end;
 
 class procedure TArrayUtils<T>.Switch(var Values: TArray<T>; const Source,

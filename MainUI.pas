@@ -11,7 +11,7 @@ uses
   Vcl.ActnList, System.Actions, Vcl.PlatformDefaultStyleActnCtrls, Vcl.ExtCtrls,
   Vcl.WinXCtrls, Cod.Visual.Button, Cod.Visual.Image, Vcl.StdCtrls,
   Vcl.Imaging.pngimage, DebugForm, Cod.Visual.Slider, Cod.WindowsRT.MediaControls,
-  Cod.ColorUtils, Cod.Graphics, Cod.VarHelpers, Cod.Types,
+  Cod.Graphics, Cod.Helpers, Cod.Helpers.Vcl, Cod.Types,
   Cod.Visual.StandardIcons, Imaging.jpeg, Threading, Cod.Dialogs,
   Vcl.Imaging.GIFImg, Cod.Visual.Panels, IOUtils, Cod.Internet,
   Cod.Audio, UITypes, Types, Math, Performance,  Cod.WindowsRT.AppRegistration,
@@ -23,7 +23,7 @@ uses
   PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar, Cod.Windows,
   Cod.Version, Cod.ArrayHelpers, Cod.Components, RatingPopup, Cod.GDI,
   CodeSources, SpectrumVis3D, Vcl.Buttons, LoggingForm, Cod.CodrutSoftware.API.Update,
-  Cod.IniSettings, IdSSLOpenSSL;
+  Cod.IniSettings, IdSSLOpenSSL, Cod.Forms;
 
 const
   WM_CUSTOMAPPMESSAGE = WM_USER + 100;
@@ -2468,7 +2468,7 @@ begin
           SecondTempRect.Height := ARect.Width;
 
           // Darken fade
-          Br := GetRGB(10, 10, 10, 75).MakeGDIBrush;
+          Br := TAlphaColor.Create(10, 10, 10, 75).MakeGDIBrush;
           try
             GDIRoundRect( SecondTempRect, CoverRadius, Br, nil);
           finally
@@ -2480,8 +2480,8 @@ begin
           TempRect.Height := TempRect.Width;
           TempRect.Inflate(-55, -55);
 
-          Br := GetRGB(200, 200, 200, 150).MakeGDIBrush;
-          Pn := GetRGB(200, 200, 200, 150).MakeGDIPen(3);
+          Br := TAlphaColor.Create(200, 200, 200, 150).MakeGDIBrush;
+          Pn := TAlphaColor.Create(200, 200, 200, 150).MakeGDIPen(3);
           try
             if HoverActiveZone then
               GDICircle(TempRect, Br, Pn)
@@ -2498,7 +2498,7 @@ begin
           Pen.Width := 3;
           Brush.Style := bsClear;
 
-          Pn := GetRGB(255, 255, 255, 200).MakeGDIPen(3);
+          Pn := TAlphaColor.Create(255, 255, 255, 200).MakeGDIPen(3);
           try
             TempRect.Inflate(-round(TempRect.Width / 3.5), -round(TempRect.Width / 3.5));
             GDIPolygon([
@@ -3148,8 +3148,8 @@ begin
 
   AddToLog('Getting system colors');
   // System Draw Colors
-  ItemColor := ChangeColorSat($002C0C14, 20);
-  ItemActiveColor := ColorBlend( ChangeColorSat($002C0C14, 20), clHighlight, 60 );
+  ItemColor := TColor($002C0C14).ChangeSaturation(20);
+  ItemActiveColor := ChangeColorSat($002C0C14, 20).Blend(clHighlight, 60);
   TextColor := Self.Font.Color;
 
   AddToLog('Loading Settings');
@@ -4802,9 +4802,9 @@ begin
       // Colors
       BackColor := Queue_Extend.Color;
       ItemColor := ChangeColorSat( BackColor, 20 );
-      ActiveItemColor := ColorBlend(ItemColor, clHighlight, 80);
+      ActiveItemColor := ItemColor.Blend(clHighlight, 80);
       FontColor := FN_COLOR;
-      ActiveFontColor := ColorBlend(FontColor, clHighlight, 80);
+      ActiveFontColor := FontColor.Blend(clHighlight, 80);
 
       // Prepare
       Y := -QueueScroll.Position + TopDraw;
@@ -4904,7 +4904,7 @@ begin
                   A := (BRect.Width - A) div 2;
                   BRect.Inflate(-A, -A);
 
-                  Br := GetRGB(255, 0, 0).MakeGDIBrush;
+                  Br := TAlphaColor.Create(255, 0, 0).MakeGDIBrush;
                   try
                     GDICircle(BRect, Br, nil);
                   finally
@@ -5163,7 +5163,7 @@ begin
       // Diabled
       if not Menu.Enabled then
         begin
-          ABackground := ColorToGrayScale(BG_COLOR);
+          ABackground := BG_COLOR.ColorGrayscale();
           AForeground := clGray;
         end;
 

@@ -3223,13 +3223,13 @@ object CreatePlaylist: TCreatePlaylist
       Colors.Leave = 16250866
       Colors.Enter = 15658729
       Colors.Down = 15066593
-      Colors.Checked = 1265132
+      Colors.Checked = 13190833
       Colors.CheckIndicator = clWhite
       Colors.TransparentCenter = True
       ColorsBorder.Leave = 9013638
       ColorsBorder.Enter = 9013638
       ColorsBorder.Down = 12434873
-      ColorsBorder.Checked = 1265132
+      ColorsBorder.Checked = 13190833
       Checked = False
       State = cbUnchecked
     end

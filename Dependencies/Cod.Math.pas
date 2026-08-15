@@ -18,7 +18,7 @@ interface
   {$ENDIF}
   System.SysUtils, System.Classes, Math, Cod.ArrayHelpers,
   System.Types, System.Generics.Collections,
-  Cod.StringUtils, Cod.Types;
+  Cod.StringUtils, Cod.Types, Cod.Math.Equations;
 
   // This function gets a string and automaticly calculates any
   // indics such as =time =eq = cell
@@ -502,7 +502,6 @@ begin
           if PType <> 0 then
             Break;
         end;
-
 
       // Solve parantheses
       if S < E then

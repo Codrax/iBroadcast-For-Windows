@@ -21,7 +21,7 @@ interface
     TRegistryMode = (Unloaded, Windows32, Windows64, Automatic);
     TRegistryNeed = (None, Read, Write, Complete);
 
-    // Moved Helper from Cod.VarHelpers for FMX compatability
+    // Moved here from Cod.Helpers for FMX compatability
     TRegHelper = class helper for TRegistry
       procedure RenameKey(const OldName, NewName: string);
       function CloneKey(const KeyName: string): string;

@@ -65,6 +65,9 @@ function StrCount(SubString: string; MainString: string; Flags: TStringFindFlags
 function StrPos(SubString: string; MainString: string; index: integer = 1; offset: integer = 0; Flags: TStringFindFlags = []): integer;
 function InString(SubString, MainString: string; Flags: TStringFindFlags = []): boolean;
 
+// String Char Utils
+function StrIsMadeOf(MainString: string; Characters: TSysCharSet): boolean;
+
 // Search Utilities
 function ClearStringSymbols(MainString: string): string;
 /// <summary> Return the first string which is not Empty. </summary>
@@ -74,20 +77,22 @@ function StringNullLess(First, Second: string): string; overload;
 
 // String comparison
 function DamerauLevenshteinDistance(const Str1, Str2: String): Integer;
-function StringSimilarityRatio(const Str1, Str2: String; IgnoreCase: Boolean): Double; // 0-1
+function StringSimilarityRatio(const Str1, Str2: String; IgnoreCase: Boolean=false): Double; // 0-1
 
 // String List
 procedure InsertStListInStList(insertindex: integer; SubStrList: TStringList; var ParentStringList: TStringList);
 function StringToStringList(str: string; Separator: string = #13): TStringList;
 function StringToArray(str: string; Separator: string = #13): TArray<string>;
-function StringListToString(stringlist: TStringList; Separator: string = #13): string;
-function StringListToArray(stringlist: TStrings): TArray<string>;
-procedure ArrayToStringList(AArray: TArray<string>; StringList: TStringList);
+function StringListToString(const StringList: TStringList; Separator: string = #13): string;
+function StringListToArray(const StringList: TStrings): TArray<string>;
+procedure ArrayToStringList(AArray: TArray<string>; const StringList: TStringList);
 function ArrayToString(AArray: TArray<string>; Separator: string = #13): string;
 
 const
   allchars = ['0'..'9', 'a'..'z', 'A'..'Z', '~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '=', '+', '[', ']', '{', '}', ';', ':', '"', '\', '|', '<', '>', ',', '.', '/', '?', #39, '`', ' '];
   nrchars = ['0'..'9'];
+  letter_lowerchars = ['a'..'z'];
+  letter_upperchars = ['A'..'Z'];
   letterchars = ['a'..'z', 'A'..'Z'];
   symbolchars : TArray<String> = ['~', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '-', '=', '+', '[', ']', '{', '}', ';', ':', '"', '\', '|', '<', '>', ',', '.', '/', '?', #39, '`'];
   superspr : TArray<String> = ['⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹','⁺','⁻','⁼','⁽','⁾', '⁄','ᵃ', 'ᵇ', 'ᶜ', 'ᵈ', 'ᵉ', 'ᶠ', 'ᵍ', 'ʰ', 'ⁱ', 'ʲ', 'ᵏ', 'ˡ', 'ᵐ', 'ⁿ', 'ᵒ', 'ᵖ', 'q', 'ʳ', 'ˢ', 'ᵗ', 'ᵘ', 'ᵛ', 'ʷ', 'ˣ', 'ʸ', 'ᶻ', 'ᴬ', 'ᴮ', 'C', 'ᴰ', 'ᴱ', 'F', 'ᴳ', 'ᴴ', 'ᴵ', 'ᴶ', 'ᴷ', 'ᴸ', 'ᴹ', 'ᴺ', 'ᴼ', 'ᴾ', 'Q', 'ᴿ', 'S', 'ᵀ', 'ᵁ', 'ⱽ', 'ᵂ', 'X', 'Y', 'Z'];
@@ -507,6 +512,14 @@ begin
     end;
 end;
 
+function StrIsMadeOf(MainString: string; Characters: TSysCharSet): boolean;
+begin
+  for var C in MainString do
+    if not CharInSet(C, Characters) then
+      Exit(false);
+  Exit(true);
+end;
+
 function ClearStringSymbols(MainString: string): string;
 var
   I: Integer;
@@ -719,20 +732,20 @@ begin
 
 end;
 
-function StringListToString(stringlist: TStringList; Separator: string): string;
+function StringListToString(const StringList: TStringList; Separator: string): string;
 var
   I: Integer;
 begin
-  for I := 0 to stringlist.Count - 1 do
+  for I := 0 to StringList.Count - 1 do
     begin
-      Result := Result + stringlist[I];
+      Result := Result + StringList[I];
 
-      if I < stringlist.Count - 1 then
+      if I < StringList.Count - 1 then
         Result := Result + Separator;
     end;
 end;
 
-function StringListToArray(stringlist: TStrings): TArray<string>;
+function StringListToArray(const StringList: TStrings): TArray<string>;
 var
   I: Integer;
 begin
@@ -741,7 +754,7 @@ begin
     Result[I] := StringList[I];
 end;
 
-procedure ArrayToStringList(AArray: TArray<string>; StringList: TStringList);
+procedure ArrayToStringList(AArray: TArray<string>; const StringList: TStringList);
 var
   I: Integer;
 begin

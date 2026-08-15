@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.TitleBarCtrls, Vcl.ExtCtrls,
   Vcl.StdCtrls, Cod.Visual.Button, Cod.SysUtils, Cod.Visual.CheckBox,
   BroadcastAPI, Offline, Vcl.Imaging.pngimage, Cod.Visual.Image,
-  iBroadcastUtils;
+  iBroadcastUtils, Cod.Forms;
 
 type
   TCreatePlaylist = class(TForm)

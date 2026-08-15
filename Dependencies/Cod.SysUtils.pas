@@ -13,170 +13,177 @@
 unit Cod.SysUtils;
 
 interface
-  uses
+uses
   {$IFDEF MSWINDOWS}
   Win.Registry, Winapi.ShellApi, Winapi.ActiveX, Win.ComObj, Winapi.shlobj,
-  Cod.Registry, Cod.ColorUtils, Vcl.Imaging.pngimage, Vcl.Dialogs,
+  Cod.Registry, Vcl.Imaging.pngimage, Vcl.Dialogs,
   Vcl.Graphics, Winapi.Windows, Vcl.Controls, Vcl.Themes, Vcl.Forms,
-  Winapi.Messages,
+  Winapi.Messages, Cod.Windows,
   {$ENDIF}
   {$IFNDEF CONSOLE}
-  Vcl.Menus,
+    {$IFDEF MSWINDOWS}
+    Vcl.Menus,
+    {$ENDIF}
   {$ENDIF}
   System.SysUtils, System.Classes, Types, IOUtils, UITypes,
   Variants, System.TypInfo, Cod.MesssageConst, IniFiles;
 
-  type
-    TMethodAccess = procedure of object;
+type
+  TMethodAccess = procedure of object;
 
-    { If the number of attributes if ever changed, it is required to update the
-    write atttributes procedure with the new number in mind!! }
-    TFileVersionInfo = record
-      fCompanyName,
-      fFileDescription,
-      fFileVersion,
-      fInternalName,
-      fLegalCopyRight,
-      fLegalTradeMark,
-      fOriginalFileName,
-      fProductName,
-      fProductVersion,
-      fComments: string;
-    end;
+  { If the number of attributes if ever changed, it is required to update the
+  write atttributes procedure with the new number in mind!! }
+  TFileVersionInfo = record
+    fCompanyName,
+    fFileDescription,
+    fFileVersion,
+    fInternalName,
+    fLegalCopyRight,
+    fLegalTradeMark,
+    fOriginalFileName,
+    fProductName,
+    fProductVersion,
+    fComments: string;
+  end;
 
-  { Forms }
-  {$IFNDEF CONSOLE}
-  procedure CenterFormInForm(form, primaryform: TForm; alsoopen: boolean = false);
-  procedure CenterFormOnScreen(form: TForm);
-  procedure ChangeMainForm(NewForm: TForm);
-  function MouseAboveForm(form: TForm): boolean;
-  procedure OpenPopupUnderControl(Popup: TPopupMenu; Control: TControl);
-  {$IFDEF MSWINDOWS}
-  function GetHoveredControl: TControl; // works for any form
-  {$ENDIF}
-  procedure SaveFormPositions(Form: TForm; FilePath: string);
-  procedure LoadFormPositions(Form: TForm; FilePath: string);
-  procedure PrepareCustomTitleBar(var TitleBar: TForm; const Background: TColor; Foreground: TColor);
-  procedure OpenFormSystemMenu(Form: TForm);
-  procedure SetFormAllowClose(Form: TForm; Allow: boolean);
-  {$ENDIF}
+{ Forms }
+{$IFNDEF CONSOLE}
+{$IFDEF MSWINDOWS}
+function IsWindowSnapped(Form: TForm): boolean; overload;
+function IsWindowSnapped(Form: TForm; var BoundsRect: TRect): boolean; overload;
+{$ENDIF}
+procedure OpenPopupUnderControl(Popup: TPopupMenu; Control: TControl);
+procedure DeleteFormPositions(Form: TForm; FilePath: string);
+procedure SaveFormPositions(Form: TForm; FilePath: string);
+procedure LoadFormPositions(Form: TForm; FilePath: string);
+{$ENDIF}
 
-  { Exceptions }
-  procedure AssertCon(Condition: boolean; Message: string);
+{ Exceptions }
+procedure AssertCon(Condition: boolean; Message: string);
 
-  { Application }
-  ///  <summary> Get parameter by index </summary>
-  function GetParameter(Index: integer): string; overload; // get parameter by index
-  ///  <summary> Get all parameters as string </summary>
-  function GetParameters: string;
-  ///  <summary>
-  ///    Check for a Parameter, takes parameter as "value" without shell prefix, return index position
-  ///  </summary>
-  function FindParameter(Value: string): integer; overload;
-  ///  <summary>
-  ///    Check for a Parameter, takes parameter as "value" without shell prefix
-  ///  </summary>
-  function HasParameter(Value: string): boolean; overload;
-  ///  <summary> Get value of the following param of the requested value </summary>
-  function GetParameterValue(Value: string): string; overload;
-  ///  <summary>
-  ///    Check for a single char parameter, return index position
-  ///  </summary>
-  function FindParameter(Value: char): integer; overload;
-  ///  <summary> Check for a single char Unix parameter </summary>
-  function HasParameter(Value: char): boolean; overload;
-  ///  <summary> Get single char Unix parameter value </summary>
-  function GetParameterValue(Value: char): string; overload;
-  ///  <summary>
-  ///    Check for a Unix Parameter alternative, either string or singlechar, return index position
-  ///  </summary>
-  function FindParameter(Value: string; AltChar: char): integer; overload;
-  ///  <summary> Check for a Unix Parameter alternative, either string or singlechar </summary>
-  function HasParameter(Value: string; AltChar: char): boolean; overload;
-  ///  <summary> Gets the unix parameter, than returns the value </summary>
-  function GetParameterValue(Value: string; AltChar: char): string; overload;
+{ Application }
+///  <summary> Get parameter by index </summary>
+function GetParameter(Index: integer): string; overload; // get parameter by index
+///  <summary> Get all parameters as string </summary>
+function GetParameters: string;
+///  <summary>
+///    Check for a Parameter, takes parameter as "value" without shell prefix, return index position
+///  </summary>
+function FindParameter(Value: string): integer; overload;
+///  <summary>
+///    Check for a Parameter, takes parameter as "value" without shell prefix
+///  </summary>
+function HasParameter(Value: string): boolean; overload;
+///  <summary> Get value of the following param of the requested value </summary>
+function GetParameterValue(Value: string): string; overload;
+///  <summary>
+///    Check for a single char parameter, return index position
+///  </summary>
+function FindParameter(Value: char): integer; overload;
+///  <summary> Check for a single char Unix parameter </summary>
+function HasParameter(Value: char): boolean; overload;
+///  <summary> Get single char Unix parameter value </summary>
+function GetParameterValue(Value: char): string; overload;
+///  <summary>
+///    Check for a Unix Parameter alternative, either string or singlechar, return index position
+///  </summary>
+function FindParameter(Value: string; AltChar: char): integer; overload;
+///  <summary> Check for a Unix Parameter alternative, either string or singlechar </summary>
+function HasParameter(Value: string; AltChar: char): boolean; overload;
+///  <summary> Gets the unix parameter, than returns the value </summary>
+function GetParameterValue(Value: string; AltChar: char): string; overload;
 
-  { Objects }
-  procedure CopyObject(ObjFrom, ObjTo: TObject);
-  procedure ResetPropertyValues(const AObject: TObject);
-  procedure SetProperty(const AObject: TObject; PropertyName, NewValue: string); overload;
-  procedure SetProperty(const AObject: TObject; PropertyName: string; NewValue: integer); overload;
-  procedure SetProperty(const AObject: TObject; PropertyName: string; NewValue: boolean); overload;
-  procedure SetStringProperty(const AObject: TObject; PropertyName, NewValue: string);
-  procedure SetIntegerProperty(const AObject: TObject; PropertyName: string; NewValue: integer);
-  procedure SetBooleanProperty(const AObject: TObject; PropertyName: string; NewValue: boolean);
+{ Process }
+function GetCommandLine: string;
+function GetExecutableDirectory: string;
+procedure EradicateSelfExecutable;
 
-  { Procedures }
-  /// Usage:
-  ///  HookMethod(@TClass.ProcInitialFunc, @TClass.ProcNewFunc);
-  {$IFDEF MSWINDOWS}
-  procedure HookMethod(OldProc, NewProc: Pointer);
-  {$ENDIF}
+{ Objects }
+procedure CopyObject(ObjFrom, ObjTo: TObject);
+procedure ResetPropertyValues(const AObject: TObject);
+procedure SetProperty(const AObject: TObject; PropertyName, NewValue: string); overload;
+procedure SetProperty(const AObject: TObject; PropertyName: string; NewValue: integer); overload;
+procedure SetProperty(const AObject: TObject; PropertyName: string; NewValue: boolean); overload;
+procedure SetStringProperty(const AObject: TObject; PropertyName, NewValue: string);
+procedure SetIntegerProperty(const AObject: TObject; PropertyName: string; NewValue: integer);
+procedure SetBooleanProperty(const AObject: TObject; PropertyName: string; NewValue: boolean);
 
-  { File Associations }
-  {$IFDEF MSWINDOWS}
-  procedure RegisterFileType( FileExt: String; FileTypeDescription: String;
-    ICONResourceFileFullPath: String; ApplicationFullPath: String;
-    OnlyForCurrentUser: boolean = true);
-  procedure UnregisterFileType(FileExt: String; OnlyForCurrentUser: boolean = true);
-  function FileTypeExists(FileExt: String; OnlyForCurrentUser: boolean = true): boolean;
-  function GetFileTypeAssociation(FileExt: String; var ADesc, AIcon: string;
-    OnlyForCurrentUser: boolean = true): string;
-  {$ENDIF}
+{ Procedures }
+/// Usage:
+///  HookMethod(@TClass.ProcInitialFunc, @TClass.ProcNewFunc);
+{$IFDEF MSWINDOWS}
+procedure HookMethod(OldProc, NewProc: Pointer);
+{$ENDIF}
 
-  {$IFDEF MSWINDOWS}
-  function GetGenericFileType( AExtension: string ): string;
-  function GetGenericIconIndex( AExtension: string ): integer;
-  function GetShellFileIcon(const AExtension: string; ALargeIcon: Boolean = true): TIcon;
-  function GetGenericFileIcon( AExtension: string; ALargeIcon: boolean = true ): TIcon;
-  {$ENDIF}
+{ File Associations }
+{$IFDEF MSWINDOWS}
+procedure RegisterFileType( FileExt: String; FileTypeDescription: String;
+  ICONResourceFileFullPath: String; ApplicationFullPath: String;
+  OnlyForCurrentUser: boolean = true);
+procedure UnregisterFileType(FileExt: String; OnlyForCurrentUser: boolean = true);
+function FileTypeExists(FileExt: String; OnlyForCurrentUser: boolean = true): boolean;
+function GetFileTypeAssociation(FileExt: String; var ADesc, AIcon: string;
+  OnlyForCurrentUser: boolean = true): string;
+{$ENDIF}
 
-  { Shell }
-  {$IFDEF MSWINDOWS}
-  procedure ShellRun(Command: string; Show: boolean; Parameters: string = ''; Administrator: boolean = false; Directory: string = '');
-  procedure PowerShellRun(Command: string; ShowConsole: boolean; Administrator: boolean = false; Directory: string = '');
-  function PowerShellGetOutput(Command: string; ShowConsole: boolean; WaitFor: boolean = false; WantOutput: boolean = true): TStringList;
-  procedure WaitForProgramExecution(CommandLine: string);
-  function ExecAndWait(const CommandLine: string) : Boolean;
-  {$ENDIF}
-  ///  <summary>
-  ///  Split command into parameter array as in the UNIX string literal standard.
-  ///  </summary>
-  function ParameterSplitting(Command: string): TArray<string>;
+{$IFDEF MSWINDOWS}
+function GetGenericFileType( AExtension: string ): string;
+function GetGenericIconIndex( AExtension: string ): integer;
+function GetShellFileIcon(const AExtension: string; ALargeIcon: Boolean = true): TIcon;
+function GetGenericFileIcon( AExtension: string; ALargeIcon: boolean = true ): TIcon;
+{$ENDIF}
 
-  {$IFNDEF CONSOLE}
-  function GetFormMonitorIndex(Form: TForm): integer;
-  {$ENDIF}
+{ Shell }
+{$IFDEF MSWINDOWS}
+function GetFullExecutablePath(const ExeName: string): string; // search the path for the module name
+procedure ShellRun(Command: string; Show: boolean; Parameters: string = ''; Administrator: boolean = false; Directory: string = '');
+procedure ShellExecuteFromExplorer(const FileName: string;
+  const Parameters: string = ''; const Directory: string = '';
+  const Operation: string = ''; ShowCmd: Integer = SW_SHOWNORMAL);
 
-  { Dialogs }
-  {$IFDEF MSWINDOWS}
-  procedure FixDelphiXDialogs;
-  {$ENDIF}
+procedure PowerShellRun(Command: string; ShowConsole: boolean; Administrator: boolean = false; Directory: string = '');
+function PowerShellGetOutput(Command: string; ShowConsole: boolean; WaitFor: boolean = false; WantOutput: boolean = true): TStringList;
+procedure WaitForProgramExecution(CommandLine: string);
+function ExecAndWait(const CommandLine: string) : Boolean;
+{$ENDIF}
+///  <summary>
+///  Split command into parameter array as in the UNIX string literal standard.
+///  </summary>
+function ParameterSplitting(Command: string): TArray<string>;
 
-  { Paths }
-  ///  <summary>
-  ///  From icon paths, of the format "C:\file.exe, 2" it extracts the path and icon index
-  ///  </summary>
-  procedure ExtractIconData(AFilePath: string; var Path: string; out IconIndex: integer);
-  // Same as above, but with checks for if a file contains ","
-  procedure ExtractIconDataEx(AFilePath: string; var Path: string; out IconIndex: integer);
+{$IFNDEF CONSOLE}
+function GetFormMonitorIndex(Form: TForm): integer;
+{$ENDIF}
 
-  { File }
-  {$IFDEF MSWINDOWS}
-  function GetAllFileProperties(filename: string; allowempty: boolean = true): TStringList;
-  function GetFileProperty(FileName, PropertyName: string): string;
-  //External
-  function GetAllFileVersionInfo(FileName: string): TFileVersionInfo;
-  function GetFileOwner(const AFileName : string) : string;
-  {$ENDIF}
+{ Dialogs }
+{$IFDEF MSWINDOWS}
+procedure FixDelphiXDialogs;
+{$ENDIF}
 
-  { Misc }
-  {$IFDEF MSWINDOWS}
-  ///  <summary>
-  ///    Check if the UI components are running in the IDE form
-  ///  </summary>
-  function IsInIDE: boolean;
-  {$ENDIF}
+{ Paths }
+///  <summary>
+///  From icon paths, of the format "C:\file.exe, 2" it extracts the path and icon index
+///  </summary>
+procedure ExtractIconData(AFilePath: string; var Path: string; out IconIndex: integer);
+// Same as above, but with checks for if a file contains ","
+procedure ExtractIconDataEx(AFilePath: string; var Path: string; out IconIndex: integer);
+
+{ File }
+{$IFDEF MSWINDOWS}
+function GetAllFileProperties(filename: string; allowempty: boolean = true): TStringList;
+function GetFileProperty(FileName, PropertyName: string): string;
+//External
+function GetAllFileVersionInfo(FileName: string): TFileVersionInfo;
+function GetFileOwner(const AFileName : string) : string;
+{$ENDIF}
+
+{ Misc }
+{$IFDEF MSWINDOWS}
+///  <summary>
+///    Check if the UI components are running in the IDE form
+///  </summary>
+function IsInIDE: boolean;
+{$ENDIF}
 
 const
   PARAM_PREFIX = {$IFDEF MSWINDOWS}'-'{$ELSE}'--'{$ENDIF};
@@ -185,39 +192,40 @@ const
 implementation
 
 {$IFNDEF CONSOLE}
-procedure CenterFormInForm(form, primaryform: TForm; alsoopen: boolean);
-begin
-  if form.Position <> poDesigned then
-    form.Position := poDesigned;
-
-  form.Left := primaryform.Left + primaryform.Width div 2 -form.Width div 2;
-  form.Top := primaryform.Top + primaryform.Height div 2 -form.Height div 2;
-
-  if alsoopen then
-    form.Show;
-end;
-
-procedure CenterFormOnScreen(form: TForm);
-begin
-  form.Left := Screen.Width div 2 - form.Width div 2;
-  form.Top := Screen.Height div 2 - form.Height div 2;
-end;
-
-procedure ChangeMainForm(NewForm: TForm);
-begin
-  Pointer((@Application.MainForm)^) := NewForm;
-end;
-
-function MouseAboveForm(form: TForm): boolean;
+{$IFDEF MSWINDOWS}
+function IsWindowSnapped(Form: TForm): boolean;
+var
+  P: TWindowPlacement;
+  BoundsRect: TRect;
 begin
   Result := false;
 
-  if (mouse.CursorPos.X > form.Left)
-    and (mouse.CursorPos.Y > form.Top)
-    and (mouse.CursorPos.X < form.Left + form.Width)
-    and (mouse.CursorPos.Y < form.Top + form.Height) then
-      Result := true;
+  // Get rect
+  GetWindowRect(Form.Handle, BoundsRect); // Windows Api is more reliable thant Form.Bounds
+
+  // Compare normals
+  if Form.HandleAllocated and IsWindow(Form.Handle) and GetWindowPlacement(Form.Handle, P) then
+    Result := (Form.WindowState <> wsNormal)
+      or ((P.rcNormalPosition.Left <> BoundsRect.Left) and (P.rcNormalPosition.Right <> BoundsRect.Right)) or
+        ((P.rcNormalPosition.Top <> BoundsRect.Top) and (P.rcNormalPosition.Bottom <> BoundsRect.Bottom));
 end;
+
+function IsWindowSnapped(Form: TForm; var BoundsRect: TRect): boolean;
+var
+  P: TWindowPlacement;
+begin
+  Result := false;
+
+  // Get rect
+  GetWindowRect(Form.Handle, BoundsRect); // Windows Api is more reliable thant Form.Bounds
+
+  // Compare normals
+  if Form.HandleAllocated and IsWindow(Form.Handle) and GetWindowPlacement(Form.Handle, P) then
+    Result := (Form.WindowState <> wsNormal)
+      or ((P.rcNormalPosition.Left <> BoundsRect.Left) and (P.rcNormalPosition.Right <> BoundsRect.Right)) or
+        ((P.rcNormalPosition.Top <> BoundsRect.Top) and (P.rcNormalPosition.Bottom <> BoundsRect.Bottom));
+end;
+{$ENDIF}
 
 procedure OpenPopupUnderControl(Popup: TPopupMenu; Control: TControl);
 var
@@ -228,29 +236,34 @@ begin
   Popup.Popup(P.X, P.Y);
 end;
 
-{$IFDEF MSWINDOWS}
-function GetHoveredControl: TControl;
+procedure DeleteFormPositions(Form: TForm; FilePath: string);
 var
-  P: TPoint;
-  Handle: HWND;
+  Category: string;
 begin
-  GetCursorPos(P);
-  Handle := WindowFromPoint(P);
-  Result := FindControl(Handle);
+  if Form = nil then
+    Exit;
 
-  //
-  if (Result <> nil) and (not Result.InheritsFrom(TControl)) then
-    Result := nil;
+  // Name
+  Category := Form.Name;
+
+  with TIniFile.Create(FilePath) do
+    try
+      DeleteKey(Category, 'State');
+      DeleteKey(Category, 'Left');
+      DeleteKey(Category, 'Top');
+      DeleteKey(Category, 'Width');
+      DeleteKey(Category, 'Height');
+      DeleteKey(Category, 'Scale');
+      DeleteKey(Category, 'Restore data');
+    finally
+      Free;
+    end;
 end;
-{$ENDIF}
 
 procedure SaveFormPositions(Form: TForm; FilePath: string);
 var
   Category: string;
   WindowRect: TRect;
-  {$IFDEF MSWINDOWS}
-  P: TWindowPlacement;
-  {$ENDIF}
 begin
   if Form = nil then
     Exit;
@@ -265,14 +278,8 @@ begin
 
       {$IFDEF MSWINDOWS}
       // Window is snapped by user (via Windows snapping)
-      if Form.HandleAllocated and IsWindow(Form.Handle) and GetWindowPlacement(Form.Handle, P) then
-        if (Form.WindowState <> wsNormal)
-          or ((P.rcNormalPosition.Left <> WindowRect.Left) and (P.rcNormalPosition.Right <> WindowRect.Right)) or
-            ((P.rcNormalPosition.Top <> WindowRect.Top) and (P.rcNormalPosition.Bottom <> WindowRect.Bottom)) then begin
-              // Get restore pos
-              WindowRect := P.rcNormalPosition;
-              RestoreData := true;
-            end;
+      if IsWindowSnapped(Form) then // is set: WindowRect := P.rcNormalPosition;
+        RestoreData := true;
       {$ENDIF}
 
       WriteInteger(Category, 'State', integer(Form.WindowState));
@@ -361,104 +368,6 @@ begin
     finally
       Free;
     end;
-end;
-
-procedure PrepareCustomTitleBar(var TitleBar: TForm; const Background: TColor; Foreground: TColor);
-var
-  CB, CF, SCB, SCF: integer;
-begin
-  if GetColorSat(BackGround) < 100 then
-    CB := 30
-  else
-    CB := -30;
-
-  if GetColorSat(Foreground) < 100 then
-    CF := 30
-  else
-    CF := -30;
-
-  SCF := CF div 2;
-  SCB := CF div 2;
-
-  with TitleBar.CustomTitleBar do
-    begin
-      BackgroundColor := BackGround;
-      InactiveBackgroundColor := ChangeColorSat(BackGround, CB);
-      ButtonBackgroundColor := BackGround;
-      ButtonHoverBackgroundColor := ChangeColorSat(BackGround, SCB);
-      ButtonInactiveBackgroundColor := ChangeColorSat(BackGround, CB);
-      ButtonPressedBackgroundColor := ChangeColorSat(BackGround, CB);
-
-      ForegroundColor := Foreground;
-      ButtonForegroundColor := Foreground;
-      ButtonHoverForegroundColor := ChangeColorSat(ForeGround, SCF);
-      InactiveForegroundColor := ChangeColorSat(Foreground, CF);
-      ButtonInactiveForegroundColor := ChangeColorSat(Foreground, CF);
-      ButtonPressedForegroundColor := ChangeColorSat(Foreground, CF);
-    end;
-end;
-
-procedure OpenFormSystemMenu(Form: TForm);
-var
-  Handle: HMENU;
-  MousePos: TPoint;
-  cmd: integer;
-function EnableBool(Value: boolean): UINT;
-begin
-  if Value then
-    Result := MF_BYCOMMAND or MF_ENABLED
-  else
-    Result := MF_BYCOMMAND or MF_GRAYED;
-end;
-begin
-  MousePos := Mouse.CursorPos;
-
-  // Get the handle to the system menu
-  Handle := GetSystemMenu(Form.Handle, False);
-
-  // Enable / disable the items
-  EnableMenuItem(Handle, SC_RESTORE,
-    EnableBool((Form.WindowState = TWindowState.wsMaximized) and (biMaximize in Form.BorderIcons))
-    );
-  EnableMenuItem(Handle, SC_MOVE, EnableBool(Form.WindowState <> TWindowState.wsMaximized));
-  EnableMenuItem(Handle, SC_SIZE,
-    EnableBool((Form.WindowState <> TWindowState.wsMaximized) and (Form.BorderStyle in [bsSizeable, bsSizeToolWin]))
-    );
-
-  EnableMenuItem(Handle, SC_MAXIMIZE,
-    EnableBool((Form.WindowState <> TWindowState.wsMaximized) and (biMaximize in Form.BorderIcons) and (Form.BorderStyle in [bsSizeable, bsSingle]))
-  );
-  EnableMenuItem(Handle, SC_MINIMIZE,
-    EnableBool((Form.WindowState <> TWindowState.wsMinimized) and (biMinimize in Form.BorderIcons) and (Form.BorderStyle in [bsSizeable, bsSingle, bsDialog]))
-  );
-
-  // Get CMD
-  cmd := Integer(
-    TrackPopupMenu(Handle, TPM_RETURNCMD or TPM_LEFTALIGN or TPM_TOPALIGN, MousePos.X, MousePos.Y, 0,
-      Form.Handle, nil)
-    );
-
-  // If a valid command is selected, send it to the system for default processing
-  if cmd <> 0 then
-    SendMessage(Form.Handle, WM_SYSCOMMAND, cmd, 0);
-end;
-
-procedure SetFormAllowClose(Form: TForm; Allow: boolean);
-var
-  Handle: HMENU;
-function EnableBool(Value: boolean): UINT;
-begin
-  if Value then
-    Result := MF_BYCOMMAND or MF_ENABLED
-  else
-    Result := MF_BYCOMMAND or MF_GRAYED;
-end;
-begin
-  // Get the handle to the system menu
-  Handle := GetSystemMenu(Form.Handle, False);
-
-  // Set
-  EnableMenuItem(Handle, SC_CLOSE, EnableBool(Allow) );
 end;
 {$ENDIF}
 
@@ -703,7 +612,31 @@ end;
 {$ENDIF}
 
 {$IFDEF MSWINDOWS}
-procedure ShellRun(Command: string; Show: boolean; Parameters: string; Administrator: boolean; Directory: string);
+function GetFullExecutablePath(const ExeName: string): string;
+begin
+  if FileExists(ExeName) then
+    Exit(ExeName);
+
+  var PathEnv := GetEnvironmentVariable('PATH');
+  for var Dir in PathEnv.Split([';']) do begin
+    if FileExists(IncludeTrailingPathDelimiter(Dir) + ExeName) then
+      Exit(IncludeTrailingPathDelimiter(Dir) + ExeName);
+    if FileExists(IncludeTrailingPathDelimiter(Dir) + ExeName + '.exe') then
+      Exit(IncludeTrailingPathDelimiter(Dir) + ExeName  + '.exe');
+  end;
+
+  // fallback: Windows folder
+  var WinDir := GetEnvironmentVariable('WINDIR');
+  if FileExists(IncludeTrailingPathDelimiter(WinDir) + ExeName) then
+    Exit(IncludeTrailingPathDelimiter(WinDir) + ExeName);
+  if FileExists(IncludeTrailingPathDelimiter(WinDir) + ExeName + '.exe') then
+    Exit(IncludeTrailingPathDelimiter(WinDir) + ExeName + '.exe');
+
+  Result := ExeName; // do not change
+end;
+
+procedure ShellRun(Command: string; Show: boolean; Parameters: string;
+  Administrator: boolean; Directory: string);
 var
   OperationType: string;
   Parameter: integer;
@@ -720,6 +653,26 @@ begin
 
   ShellExecute(0, PChar(OperationType), PChar(Command), PChar(Parameters), PChar(Directory), Parameter);
 end;
+
+procedure ShellExecuteFromExplorer(const FileName: string;
+  const Parameters: string = ''; const Directory: string = '';
+  const Operation: string = ''; ShowCmd: Integer = SW_SHOWNORMAL);
+var
+  ShellDispatch: OLEVariant;
+begin        CoInitialize(nil);
+  // Get the running Explorer instance
+  ShellDispatch := GetActiveOleObject('Shell.Application');
+
+  // Call ShellExecute through Explorer
+  ShellDispatch.ShellExecute(
+    FileName,
+    Parameters,
+    Directory,
+    Operation,
+    ShowCmd
+  );
+end;
+
 
 procedure PowerShellRun(Command: string; ShowConsole: boolean; Administrator: boolean; Directory: string);
 var
@@ -1109,6 +1062,51 @@ begin
   const Index = FindParameter( Value, AltChar );
   Result := GetParameter(Index+1);
 end;
+
+function GetCommandLine: string;
+{$IFNDEF MSWINDOWS}
+var
+  I: Integer;
+  S: string;
+{$ENDIF}
+begin
+  {$IFDEF MSWINDOWS}
+  Result := Winapi.Windows.GetCommandLine;
+  {$ELSE}
+  Result := '';
+  for I := 0 to ParamCount do
+  begin
+    S := ParamStr(I);
+    if S.Contains(' ') or S.Contains('"') then
+      S := '"' + StringReplace(S, '"', '\"', [rfReplaceAll]) + '"';
+    Result := Result + S + ' ';
+  end;
+  Result := TrimRight(Result);
+  {$ENDIF}
+end;
+
+function GetExecutableDirectory: string;
+begin
+  Result := ExtractFileDir(ParamStr(0));
+end;
+
+procedure EradicateSelfExecutable;
+{$IFDEF MSWINDOWS}
+var
+  ExePath, Cmd: string;
+begin
+  ExePath := ParamStr(0);
+  // /f = force, /q = quiet
+  Cmd := Format('/c ping -n 3 127.0.0.1 > nul && del /f /q "%s"', [ExePath]);
+  ShellExecute(0, 'open', 'cmd.exe', PChar(Cmd), nil, SW_HIDE);
+  Halt;
+end;
+{$ELSE}
+begin
+  TFile.Delete(ParamStr(0)); // risky if running; not 100% guaranteed to work
+  Halt;
+end;
+{$ENDIF}
 
 procedure CopyObject(ObjFrom, ObjTo: TObject);
   var

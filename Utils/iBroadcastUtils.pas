@@ -3,7 +3,7 @@ unit iBroadcastUtils;
 interface
 uses
   Types, SysUtils, Cod.Dialogs, Windows, Vcl.Dialogs, Classes, Variants,
-  Graphics;
+  Graphics, UITypes;
 
   // Dialogs
   function OpenDialog(Title, Text: string; AType: CMessageType = ctInformation; Buttons: TMsgDlgButtons = [mbOk]): integer;
@@ -14,8 +14,8 @@ uses
   procedure RidOfSimbols(var DataStr: string);
 
 const
-  BG_COLOR = $002C0C11;
-  FN_COLOR = clWhite;
+  BG_COLOR: TColor = $002C0C11;
+  FN_COLOR: TColor = TColors.White;
 
 var
   // App Config

@@ -13,187 +13,79 @@
 
 {$SCOPEDENUMS ON}
 
-unit Cod.VarHelpers;
+unit Cod.Helpers.Vcl;
 
 interface
-  uses
+uses
   System.SysUtils, System.Classes, IdHTTP, System.IniFiles,
   {$IFDEF MSWINDOWS}
   Winapi.Windows,
   {$ENDIF}
   VCL.Graphics, Winapi.ActiveX, Winapi.URLMon, IOUtils, System.Generics.Collections,
-  Cod.ColorUtils, System.Generics.Defaults, Vcl.Imaging.pngimage,
-  WinApi.GdipObj, WinApi.GdipApi, Win.Registry, Cod.GDI, Cod.Types,
-  DateUtils, Cod.Registry, UITypes, Vcl.Menus, Types, Vcl.Forms, Vcl.Controls;
+  System.Generics.Defaults, Vcl.Imaging.pngimage, Vcl.Dialogs, Cod.Helpers,
+  WinApi.GdipObj, WinApi.GdipApi, Win.Registry, Cod.GDI, Cod.Types, Vcl.Themes,
+  DateUtils, Cod.Registry, UITypes, Vcl.Menus, Types, Vcl.Forms, Vcl.Controls,
+  Vcl.StdCtrls;
 
-  type
-    // Color Helper
-    TColorHelper = record helper for TColor
-    public
-      function ToString: string; overload; inline;
-      function ToInteger: integer; overload; inline;
-      function ToRGB: CRGB; overload; inline;
-    end;
+type
 
-    // TRect Helper
-    TRectHelper = record helper for TRect
-    public
-      function GetBottomLeft: TPoint; inline;
-      function GetTopRight: TPoint; inline;
-      function Normalised: boolean; inline;
-    end;
+  // Popup Menu Helper
+  TPopupMenuHelper = class helper for TPopupMenu
+  public
+    procedure Popup(P: TPoint); overload; inline;
+    procedure PopupAtMouseCursor; overload; inline;
+  end;
 
-    // TPoint Helper
-    TPointHelper = record helper for TPoint
-    public
-      function ToString: string;
-      constructor FromString(S: string);
-    end;
+  // List Box Helper
+  TListBoxHelper = class helper for TListBox
+  public
+    function GetSelectedItems: TArray<integer>; overload; inline;
+    function GetSelectedItemCount: integer; overload; inline;
+  end;
 
-    // Popup Menu Helper
-    TPopupMenuHelper = class helper for TPopupMenu
-    public
-      procedure Popup(P: TPoint); overload; inline;
-      procedure PopupAtMouseCursor; overload; inline;
-    end;
+  // Common Dialog Helper
+  TCommonDialogHelper = class helper for TCommonDialog
+  public
+    function ExecuteNoStyle: boolean;
+  end;
 
-    // TDateTime Helper
-    TDateTimeHelper = record helper for TDateTime
-    public
-      function ToString: string; overload; inline;
-      function ToInteger: integer; overload; inline;
+  // Canvas
+  TCanvasHelper = class helper for TCanvas
+    procedure DrawHighQuality(ARect: TRect; Bitmap: TBitmap; Opacity: Byte = 255; HighQuality: Boolean = False); overload;
+    procedure DrawHighQuality(ARect: TRect; Graphic: TGraphic; Opacity: Byte = 255; HighQuality: Boolean = False); overload;
 
-      function Day: integer;
-      function Month: integer;
-      function Year: integer;
+    procedure StretchDraw(DestRect, SrcRect: TRect; Bitmap: TBitmap; Opacity: Byte); overload;
+    procedure StretchDraw(Rect: TRect; Graphic: TGraphic; AOpacity: Byte); overload;
 
-      function Hour: integer;
-      function Minute: integer;
-      function Second: integer;
-      function Millisecond: integer;
-    end;
+    procedure MoveTo(P: TPoint); overload;
+    procedure LineTo(P: TPoint); overload;
 
-    // TFont
-    TAdvFont = type string;
+    procedure Line(P1, P2: TPoint);
 
-    TAdvFontHelper = record helper for TAdvFont
-      function ToString: string;
-      procedure FromString(AString: string);
-    end;
+    procedure CopyRect(const Dest: TRect; Canvas: TCanvas; const Source: TRect; Opacity: Byte); overload;
 
-    // Canvas
-    TCanvasHelper = class helper for TCanvas
-      procedure DrawHighQuality(ARect: TRect; Bitmap: TBitmap; Opacity: Byte = 255; HighQuality: Boolean = False); overload;
-      procedure DrawHighQuality(ARect: TRect; Graphic: TGraphic; Opacity: Byte = 255; HighQuality: Boolean = False); overload;
+    procedure GDIText(Text: string; Rectangle: TRect; AlignH: TLayout = TLayout.Beginning; AlignV: TLayout = TLayout.Beginning; Angle: integer = 0);
+    procedure GDITint(Rectangle: TRect; Color: TColor; Opacity: byte = 75);
+    procedure GDIRectangle(Rectangle: TRect; Brush: TGDIBrush; Pen: TGDIPen);
+    procedure GDIRoundRect(Rectangle: TRect; Roundness: integer; Brush: TGDIBrush; Pen: TGDIPen); overload;
+    procedure GDIRoundRect(RoundRect: TRoundRect; Brush: TGDIBrush; Pen: TGDIPen); overload;
+    procedure GDICircle(Rectangle: TRect; Brush: TGDIBrush; Pen: TGDIPen);
+    procedure GDIPolygon(Points: TArray<TPoint>; Brush: TGDIBrush; Pen: TGDIPen);
+    procedure GDILine(Line: TLine; Pen: TGDIPen);
+    procedure GDIRoundedLine(Line: TLine; Pen: TGDIPen);
+    procedure GDIRoundedCornerLine(Points: TPointsF; Pen: TGDIPen; Radius: single); overload;
+    procedure GDIGraphic(Graphic: TGraphic; Rect: TRect); overload;
+    procedure GDIGraphic(Graphic: TGraphic; Rect: TRect; Angle: integer); overload;
+    procedure GDIGraphicRound(Graphic: TGraphic; Rect: TRect; Round: real);
+  end;
 
-      procedure StretchDraw(DestRect, SrcRect: TRect; Bitmap: TBitmap; Opacity: Byte); overload;
-      procedure StretchDraw(Rect: TRect; Graphic: TGraphic; AOpacity: Byte); overload;
-
-      procedure MoveTo(P: TPoint); overload;
-      procedure LineTo(P: TPoint); overload;
-
-      procedure Line(P1, P2: TPoint);
-
-      procedure CopyRect(const Dest: TRect; Canvas: TCanvas; const Source: TRect; Opacity: Byte); overload;
-
-      procedure GDIText(Text: string; Rectangle: TRect; AlignH: TLayout = TLayout.Beginning; AlignV: TLayout = TLayout.Beginning; Angle: integer = 0);
-      procedure GDITint(Rectangle: TRect; Color: TColor; Opacity: byte = 75);
-      procedure GDIRectangle(Rectangle: TRect; Brush: TGDIBrush; Pen: TGDIPen);
-      procedure GDIRoundRect(Rectangle: TRect; Roundness: integer; Brush: TGDIBrush; Pen: TGDIPen); overload;
-      procedure GDIRoundRect(RoundRect: TRoundRect; Brush: TGDIBrush; Pen: TGDIPen); overload;
-      procedure GDICircle(Rectangle: TRect; Brush: TGDIBrush; Pen: TGDIPen);
-      procedure GDIPolygon(Points: TArray<TPoint>; Brush: TGDIBrush; Pen: TGDIPen);
-      procedure GDILine(Line: TLine; Pen: TGDIPen);
-      procedure GDIRoundedLine(Line: TLine; Pen: TGDIPen);
-      procedure GDIRoundedCornerLine(Points: TPointsF; Pen: TGDIPen; Radius: single); overload;
-      procedure GDIGraphic(Graphic: TGraphic; Rect: TRect); overload;
-      procedure GDIGraphic(Graphic: TGraphic; Rect: TRect; Angle: integer); overload;
-      procedure GDIGraphicRound(Graphic: TGraphic; Rect: TRect; Round: real);
-    end;
-
-    // TIniFile
-    TIniFileHelper = class helper for TIniFile
-    public
-      function ReadString(const Section, Ident, Default: string; StringSize: integer=2047): string; overload;
-    end;
-
-    // Registry
-    TRegHelper = Cod.Registry.TRegHelper;
+  // TIniFile
+  TIniFileHelper = class helper for TIniFile
+  public
+    function ReadString(const Section, Ident, Default: string; StringSize: integer=2047): string; overload;
+  end;
 
 implementation
-
-// Color
-function TColorHelper.ToString: string;
-begin
-  Result := colortostring( Self );
-end;
-
-function TColorHelper.ToInteger: integer;
-begin
-  Result := ColorToRgb( Self );
-end;
-
-function TColorHelper.ToRGB: CRGB;
-begin
-  Result := GetRGB( Self );
-end;
-
-// Date Time
-function TDateTimeHelper.ToString: string;
-begin
-  Result := DateTimeToStr( Self );
-end;
-
-function TDateTimeHelper.ToInteger: integer;
-begin
-  Result := DateTimeToUnix(Self);
-end;
-
-function TDateTimeHelper.Day: integer;
-begin
-  Result := DayOf( Self );
-end;
-
-function TDateTimeHelper.Month: integer;
-begin
-  Result := MonthOf( Self );
-end;
-
-function TDateTimeHelper.Year: integer;
-begin
-  Result := YearOf( Self );
-end;
-
-function TDateTimeHelper.Hour: integer;
-begin
-  Result := HourOf( Self );
-end;
-
-function TDateTimeHelper.Minute: integer;
-begin
-  Result := MinuteOf( Self );
-end;
-
-function TDateTimeHelper.Second: integer;
-begin
-  Result := SecondOf( Self );
-end;
-
-function TDateTimeHelper.Millisecond: integer;
-begin
-  Result := MillisecondOf( Self );
-end;
-
-// TFont
-function TAdvFontHelper.ToString: string;
-begin
-
-end;
-
-procedure TAdvFontHelper.FromString(AString: string);
-begin
-  //TFont(Self).
-end;
 
 { TCanvasHelper }
 procedure TCanvasHelper.DrawHighQuality(ARect: TRect; Bitmap: TBitmap; Opacity: Byte = 255; HighQuality: Boolean = False);
@@ -260,7 +152,7 @@ begin
     AFormat.SetLineAlignment(StringAlignment(integer(AlignV)));
 
     // Draw
-    DrawText(Self, Text, Rectangle, AFont, AFormat, GetRGB(Font.Color).MakeGDIBrush, Angle);
+    DrawText(Self, Text, Rectangle, AFont, AFormat, Font.Color.MakeGDIBrush, Angle);
   finally
     AFont.Free;
     AFormat.Free;
@@ -345,23 +237,6 @@ begin
   DrawGraphicRound(Self, Graphic, Rect, Round);
 end;
 
-{ TRectHelper }
-
-function TRectHelper.GetBottomLeft: TPoint;
-begin
-  Result := Point(Left, Bottom);
-end;
-
-function TRectHelper.GetTopRight: TPoint;
-begin
-  Result := Point(Right, Top);
-end;
-
-function TRectHelper.Normalised: boolean;
-begin
-  Result := (Top <= Bottom) and (Left <= Right);
-end;
-
 { TPopupMenuHelper }
 
 procedure TPopupMenuHelper.Popup(P: TPoint);
@@ -372,20 +247,6 @@ end;
 procedure TPopupMenuHelper.PopupAtMouseCursor;
 begin
   Popup( Mouse.CursorPos );
-end;
-
-{ TPointHelper }
-
-constructor TPointHelper.FromString(S: string);
-begin
-  const I = S.Split([','], 2);
-  X := I[0].ToInteger;
-  Y := I[1].ToInteger;
-end;
-
-function TPointHelper.ToString: string;
-begin
-  Result := Format('%D,%D', [X, Y]);
 end;
 
 { TIniFileHelper }
@@ -405,6 +266,33 @@ begin
   finally
     FreeMem(Buffer, BufSize);
   end;
+end;
+
+{ TListBoxHelper }
+
+function TListBoxHelper.GetSelectedItemCount: integer;
+begin
+  Result := 0;
+  for var I := 0 to Items.Count-1 do
+    if Selected[I] then
+      Inc(Result);
+end;
+
+function TListBoxHelper.GetSelectedItems: TArray<integer>;
+begin
+  Result := [];
+  for var I := 0 to Items.Count-1 do
+    if Selected[I] then
+      Result := Result + [I];
+end;
+
+{ TCommonDialogHelper }
+
+function TCommonDialogHelper.ExecuteNoStyle: boolean;
+begin
+  TStyleManager.SystemHooks := TStyleManager.SystemHooks - [shDialogs];
+  Result := Self.Execute;
+  TStyleManager.SystemHooks := TStyleManager.SystemHooks + [shDialogs];
 end;
 
 end.

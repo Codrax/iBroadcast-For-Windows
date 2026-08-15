@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.TitleBarCtrls, Vcl.Imaging.pngimage,
-  Cod.Visual.Image, Vcl.StdCtrls, Cod.Visual.Button, Cod.SysUtils;
+  Cod.Visual.Image, Vcl.StdCtrls, Cod.Visual.Button, Cod.SysUtils, COd.Forms;
 
 type
   TNewVersion = class(TForm)

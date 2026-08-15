@@ -8,7 +8,7 @@ interface
     Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
     Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL, IdURI,
     IdHTTP, IdGlobal, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
-    Cod.VarHelpers, Cod.Dialogs, Cod.SysUtils, Cod.Files, Cod.ArrayHelpers;
+    Cod.Helpers, Cod.Helpers.Vcl, Cod.Dialogs, Cod.SysUtils, Cod.Files, Cod.ArrayHelpers;
 
   type
     // Cardinals

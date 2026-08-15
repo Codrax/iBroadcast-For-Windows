@@ -17,7 +17,7 @@ interface
   uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, System.Types,
   Vcl.Graphics, Vcl.Imaging.pngimage, Vcl.Imaging.GIFImg, Vcl.Imaging.jpeg, Winapi.GDIPAPI,
-  Winapi.GDIPOBJ, Cod.ColorUtils, Cod.Types;
+  Winapi.GDIPOBJ, Cod.Types, Cod.Helpers;
 
   type
     // Requirements
@@ -29,12 +29,6 @@ interface
 
     TGDIBrush = TGPSolidBrush;
     TGDIPen = TGPPen;
-
-    function MakeBrush(Color: TColor; Opacity: byte = 255): TGDIBrush; overload;
-    function MakeBrush(R, G, B: Byte; Opacity: byte = 255): TGDIBrush; overload;
-
-    function MakePen(Color: TColor; Width: Single = 1; Opacity: byte = 255): TGDIPen; overload;
-    function MakePen(R, G, B: Byte; Width: Single = 1; Opacity: byte = 255): TGDIPen; overload;
 
     // Utils
     function MakePointF(APoint: TPointF): TGPPointF; overload;
@@ -127,34 +121,6 @@ begin
   end;
 end;
 
-function MakeBrush(Color: TColor; Opacity: byte = 255): TGDIBrush;
-var
-  RGB: CRGB;
-begin
-  RGB := GetRGB( Color );
-
-  Result := TGDIBrush.Create( MakeColor(RGB.R, RGB.G, RGB.B, Opacity) );
-end;
-
-function MakeBrush(R, G, B: Byte; Opacity: byte = 255): TGDIBrush;
-begin
-  Result := TGDIBrush.Create( MakeColor(R, G, B, Opacity) );
-end;
-
-function MakePen(Color: TColor; Width: Single = 1; Opacity: byte = 255): TGDIPen; overload;
-var
-  RGB: CRGB;
-begin
-  RGB := GetRGB( Color );
-
-  Result := TGDIPen.Create( MakeColor(RGB.R, RGB.G, RGB.B, Opacity), Width );
-end;
-
-function MakePen(R, G, B: Byte; Width: Single = 1; Opacity: byte = 255): TGDIPen; overload;
-begin
-  Result := TGDIPen.Create( MakeColor(R, G, B, Opacity), Width );
-end;
-
 procedure PrepareBMP(bmp: TBitmap; Width, Height: Integer);
 var
   p: Pointer;
@@ -201,7 +167,7 @@ begin
 
   // Client Draw
   G := TGPGRaphics.Create(Canvas.Handle);
-  B := GetRGB(Color, Opacity).MakeGDIBrush;
+  B := Color.MakeGDIBrush(Opacity);
   try
     G.SetSmoothingMode(SmoothingModeHighQuality);
 

@@ -7,7 +7,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs,
   Cod.SysUtils, Vcl.TitleBarCtrls, Cod.Visual.Image, Vcl.StdCtrls,
   Cod.Visual.Button, Vcl.ExtCtrls, Cod.Math, Math, Cod.Visual.Slider,
-  SpectrumVis3D, UITypes, Cod.Animation.Component;
+  SpectrumVis3D, UITypes, Cod.Animation.Component, Cod.Forms;
 
 type
   TMiniPlayer = class(TForm)

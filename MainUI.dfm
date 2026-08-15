@@ -22828,7 +22828,6 @@ object UIForm: TUIForm
               Animations.PAAnimateEngine = cbneAtDraw
               Animations.FadeAnimation = True
               Animations.FASpeed = 10
-              ExplicitLeft = 126
             end
           end
           object Controlbar_Downloads: TPanel
@@ -23342,7 +23341,6 @@ object UIForm: TUIForm
               Animations.PAAnimateEngine = cbneAtDraw
               Animations.FadeAnimation = True
               Animations.FASpeed = 10
-              ExplicitLeft = 202
             end
             object CButton32: CButton
               Tag = 1
@@ -23411,7 +23409,6 @@ object UIForm: TUIForm
               Animations.PAAnimateEngine = cbneAtDraw
               Animations.FadeAnimation = True
               Animations.FASpeed = 10
-              ExplicitLeft = 96
             end
             object CButton33: CButton
               Tag = 3
@@ -23479,7 +23476,6 @@ object UIForm: TUIForm
               Animations.PAAnimateEngine = cbneAtDraw
               Animations.FadeAnimation = True
               Animations.FASpeed = 10
-              ExplicitLeft = 308
             end
             object CButton34: CButton
               AlignWithMargins = True
@@ -23547,7 +23543,6 @@ object UIForm: TUIForm
               Animations.PAAnimateEngine = cbneAtDraw
               Animations.FadeAnimation = True
               Animations.FASpeed = 10
-              ExplicitLeft = 426
             end
           end
           object Controlbar_ArtistManage: TPanel

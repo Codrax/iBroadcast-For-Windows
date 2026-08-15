@@ -17,7 +17,12 @@ unit Cod.Internet;
 
 interface
   uses
-  System.SysUtils, System.Classes, IdHTTP, IdSSLOpenSSL, IdIcmpClient, Types,
+  System.SysUtils, System.Classes, Types,
+
+  // Indy Internet Direct
+  IdHTTP, IdSSLOpenSSL, IdGlobal, IdIcmpClient, IdUDPClient, IdComponent,
+
+  // Windows
   {$IFDEF MSWINDOWS}
   Windows, Vcl.Graphics, Vcl.Imaging.jpeg, Vcl.Imaging.GIFImg, Vcl.Imaging.pngimage,
   URLMon, ActiveX, Variants, Winapi.IpTypes, Winapi.IpHlpApi, Win.ComObj,
@@ -35,45 +40,70 @@ type
     function ToString: string;
   end;
 
-  // Net utils
-  {$IFDEF MSWINDOWS}
-  function GetNetworkConnected: boolean;
-  function GetAdapterDescription: string;
-  function GetGatewayIP: string;
-  function GetLocalIP: string;
-  {$ENDIF}
+  THTTPDownloadWorkProc = reference to procedure(var Cancel: boolean; Work, WorkTotal: int64);
+  THTTPDownloadWorkGroup = record
+    P: THTTPDownloadWorkProc;
+    FCancel: boolean;
+    FTotal: int64;
+  end;
+  THTTPDownloadWorkGroupP = ^THTTPDownloadWorkGroup;
 
-  // UPnP
-  {$IFDEF MSWINDOWS}
-  function RegisterUPnPPort(const Port: Word; const Protocol: TNetworkProtocol; const Description: string): boolean;
-  function UnregisterUPnPPort(const Port: Word; const Protocol: TNetworkProtocol): boolean;
-  {$ENDIF}
+  TUPnPMapping = record
+    PortExternal,
+    PortInternal: integer;
+    Client: string;
+    Description: string;
+    Protocol: TNetworkProtocol;
+  end;
 
-  // General
-  function DownloadFile(Source, Destination: string): Boolean;
-  function GetInternetStream(URL: string; downloadfallback: boolean = true): TStream;
-  {$IFDEF MSWINDOWS}
-  function GetInternetImage(ImageURL: string; downloadfallback: boolean = true): TGraphic; overload;
-  procedure GetInternetImage(ImageURL: string; var Image: TGraphic; downloadfallback: boolean = true); overload;
-  {$ENDIF}
+// Net utils
+{$IFDEF MSWINDOWS}
+function GetNetworkConnected: boolean;
+function GetAdapterDescription: string;
+function GetGatewayIP: string;
+function GetLocalIP: string;
+{$ENDIF}
 
-  // Indy Internet
-  function PostJSONRequest(URL: string; RequestJSON: string): string;
+// UPnP
+{$IFDEF MSWINDOWS}
+function GetUPnPMappings: TArray<TUPnPMapping>;
+function RegisterUPnPPort(const ExternalPort, InternalPort: Word; const Protocol: TNetworkProtocol; const ClientAddress: string; const Description: string): boolean;
+function UnregisterUPnPPort(const ExternalPort: Word; const Protocol: TNetworkProtocol): boolean;
+{$ENDIF}
 
-  // Devices
-  function PingDevice(Destination: string): boolean;
+// General
+function DownloadFile(Source, Destination: string): Boolean; overload;
+function DownloadFile(Source, Destination: string; OnWork: THTTPDownloadWorkProc): Boolean; overload;
+function GetInternetStream(URL: string; downloadfallback: boolean = true): TStream;
+{$IFDEF MSWINDOWS}
+function GetInternetImage(ImageURL: string; downloadfallback: boolean = true): TGraphic; overload;
+procedure GetInternetImage(ImageURL: string; var Image: TGraphic; downloadfallback: boolean = true); overload;
+{$ENDIF}
 
-  // Util
-  function DownloadFileHTTP(Source, Destination: string): Boolean;
-  {$IFDEF MSWINDOWS}
-  function DownloadFileMon(Source, Destination: string): Boolean;
-  {$ENDIF}
+// Indy Internet
+function PostJSONRequest(URL: string; RequestJSON: string): string;
 
-  // String Data
-  function MaskEmailAdress(Adress: string): string;
+// Domains
+function DomainToPunycode(const Domain: string): string;
 
-  // Utils
-  function AnsiCharArrayToString(AnsiChars: array of AnsiChar): AnsiString;
+// Devices
+function PingDevice(Destination: string): boolean;
+
+// WakeOnLan
+procedure SendWakeOnLAN(Mac: string; Host: string='192.168.1.255'; Port: TIdPort=9);
+
+// Util
+function DownloadFileHTTP(Source, Destination: string): Boolean; overload;
+function DownloadFileHTTP(Source, Destination: string; OnWork: THTTPDownloadWorkProc): Boolean; overload;
+{$IFDEF MSWINDOWS}
+function DownloadFileMon(Source, Destination: string): Boolean;
+{$ENDIF}
+
+// String Data
+function MaskEmailAdress(Adress: string): string;
+
+// Utils
+function AnsiCharArrayToString(AnsiChars: array of AnsiChar): AnsiString;
 
 implementation
 
@@ -177,7 +207,44 @@ end;
 {$ENDIF}
 
 {$IFDEF MSWINDOWS}
-function RegisterUPnPPort(const Port: Word; const Protocol: TNetworkProtocol; const Description: string): boolean;
+function GetUPnPMappings: TArray<TUPnPMapping>;
+var
+  UPnPNAT, Mappings, Enum: OleVariant;
+  Item: OleVariant;
+  Fetch: LongWord;
+  EnumVar: IEnumVARIANT;
+  Mapping: TUPnPMapping;
+begin
+  Result := [];
+
+  UPnPNAT := CreateOleObject('HNetCfg.NATUPnP');
+  Mappings := UPnPNAT.StaticPortMappingCollection;
+
+  if VarIsNull(Mappings) then
+    Exit;
+
+  Enum := Mappings._NewEnum;
+  EnumVar := IUnknown(Enum) as IEnumVARIANT;
+
+  while EnumVar.Next(1, Item, Fetch) = S_OK do
+  begin
+    Mapping.PortExternal := Item.ExternalPort;
+    Mapping.PortInternal := Item.InternalPort;
+    Mapping.Client := Item.InternalClient;
+    Mapping.Description := Item.Description;
+
+    Mapping.Protocol := TNetworkProtocol.FromString(Item.Protocol);
+
+    Result := Result + [Mapping];
+    Item := Unassigned;
+
+    Sleep(1); // required by device
+  end;
+end;
+
+function RegisterUPnPPort(const ExternalPort, InternalPort: Word;
+  const Protocol: TNetworkProtocol; const ClientAddress: string;
+  const Description: string): boolean;
 const
   CLSID_UPnPNAT = '{AE1E00AA-3FD5-403C-8A27-2BBDC30CD0E1}';
 var
@@ -193,14 +260,14 @@ begin
   if not VarIsNull(Mappings) then
     try
       // Add the port mapping
-      Mappings.Add(Port, Protocol.ToString, Port, GetLocalIP, True, Description);
+      Mappings.Add(ExternalPort, Protocol.ToString, InternalPort, ClientAddress, True, Description);
       Result := true;
     except
       Result := false;
     end;
 end;
 
-function UnregisterUPnPPort(const Port: Word; const Protocol: TNetworkProtocol): boolean;
+function UnregisterUPnPPort(const ExternalPort: Word; const Protocol: TNetworkProtocol): boolean;
 const
   CLSID_UPnPNAT = '{AE1E00AA-3FD5-403C-8A27-2BBDC30CD0E1}';
 var
@@ -216,7 +283,7 @@ begin
   if not VarIsNull(Mappings) then
     // Remove mapping
     try
-      Result := Mappings.Remove(Port, Protocol.ToString) = S_OK;
+      Result := Mappings.Remove(ExternalPort, Protocol.ToString) = S_OK;
     except
       Result := false;
     end;
@@ -225,10 +292,15 @@ end;
 
 function DownloadFile(Source, Destination: string): Boolean;
 begin
+  Result := DownloadFile(Source, Destination, nil);
+end;
+
+function DownloadFile(Source, Destination: string; OnWork: THTTPDownloadWorkProc): Boolean;
+begin
   Result := false;
 
   // Attempt 1 - IDHTTP
-  if DownloadFileHTTP( Source, Destination ) then
+  if DownloadFileHTTP( Source, Destination, OnWork ) then
     Exit(true);
 
   {$IFDEF MSWINDOWS}
@@ -270,6 +342,22 @@ begin
   end;
 end;
 
+function DomainToPunycode(const Domain: string): string;
+var
+  Len: Integer;
+begin
+  // First call: get required length
+  Len := IdnToAscii(0, PChar(Domain), Length(Domain), nil, 0);
+  if Len = 0 then
+    RaiseLastOSError;
+
+  SetLength(Result, Len);
+
+  // Second call: do the conversion
+  if IdnToAscii(0, PChar(Domain), Length(Domain), PChar(Result), Len) = 0 then
+    RaiseLastOSError;
+end;
+
 function PingDevice(Destination: string): boolean;
 var
   Icmp: TIdIcmpClient;
@@ -288,16 +376,91 @@ begin
   end;
 end;
 
+procedure SendWakeOnLAN(Mac: string; Host: string; Port: TIdPort);
+  function HexToBytes(const Hex: string): TIdBytes;
+  var
+    s: string;
+    i, len: Integer;
+  begin
+    // remove separators
+    s := StringReplace(Hex, ':', '', [rfReplaceAll]);
+    s := StringReplace(s, '-', '', [rfReplaceAll]);
+    s := StringReplace(s, ' ', '', [rfReplaceAll]);
+    s := UpperCase(s);
+
+    // must be even length
+    len := Length(s) div 2;
+    SetLength(Result, len);
+
+    for i := 0 to len - 1 do
+      Result[i] := StrToInt('$' + s[i*2+1] + s[i*2+2]);
+  end;
+
+  function BuildMagicPacket(const Mac: string): TIdBytes;
+  var
+    i: Integer;
+    macBytes: TIdBytes;
+  begin
+    macBytes := HexToBytes(Mac);
+    SetLength(Result, 6 + 16 * 6);
+
+    // FF FF FF FF FF FF
+    for i := 0 to 5 do
+      Result[i] := $FF;
+
+    // MAC × 16
+    for i := 0 to 15 do
+      CopyTIdBytes(macBytes, 0, Result, 6 + i * 6, 6);
+  end;
+var
+  Client: TIdUDPClient;
+begin
+  Client := TIdUDPClient.Create(nil);
+  try
+    Client.BroadcastEnabled := True;
+
+    Client.SendBuffer(Host, Port, BuildMagicPacket(MAC));
+  finally
+    Client.Free;
+  end;
+end;
+
 function DownloadFileHTTP(Source, Destination: string): Boolean;
+begin
+  Result := DownloadFileHTTP(Source, Destination, nil);
+end;
+
+type
+  TDownloadFileHTTPClass = class
+    class procedure IdHTTPWork(ASender: TObject; AWorkMode: TWorkMode;
+      AWorkCount: Int64);
+    class procedure IdHTTPWorkBegin(ASender: TObject; AWorkMode: TWorkMode;
+      AWorkCountMax: Int64);
+  end;
+
+function DownloadFileHTTP(Source, Destination: string; OnWork: THTTPDownloadWorkProc): Boolean;
 var
   HTTP: TIdHTTP;
   SSLIOHandler: TIdSSLIOHandlerSocketOpenSSL;
   FileStream: TFileStream;
+
+  DownloadProgress: THTTPDownloadWorkGroup;
 begin
+  Result := false;
+
+  DownloadProgress.P := OnWork;
+  DownloadProgress.FCancel := false;
+  DownloadProgress.FTotal := 0;
   try
     // Attempt 1 - IDHTTP
     HTTP := TIdHTTP.Create(nil);
     HTTP.HandleRedirects := true;
+
+    if Assigned(OnWork) then begin
+      HTTP.Tag := int64(@DownloadProgress);
+      HTTP.OnWork := TDownloadFileHTTPClass.IdHTTPWork;
+      HTTP.OnWorkBegin := TDownloadFileHTTPClass.IdHTTPWorkBegin;
+    end;
 
     SSLIOHandler := TIdSSLIOHandlerSocketOpenSSL.Create(HTTP);
     SSLIOHandler.SSLOptions.SSLVersions := [sslvTLSv1_2];
@@ -307,13 +470,20 @@ begin
     try
       HTTP.Get(Source, FileStream);
 
+      if DownloadProgress.FCancel then begin
+        try
+          TFile.Delete(Destination);
+        except
+        end;
+        Exit(false);
+      end;
+
       Result := TFile.Exists(Destination);
     finally
       HTTP.Free;
       FileStream.Free;
     end;
   except
-    Result := false;
   end;
 end;
 
@@ -475,6 +645,36 @@ begin
     TNetworkProtocol.TCP: Exit('TCP');
     TNetworkProtocol.UDP: Exit('UDP');
   end;
+end;
+
+{ TDownloadFileHTTPClass }
+
+class procedure TDownloadFileHTTPClass.IdHTTPWork(ASender: TObject;
+  AWorkMode: TWorkMode; AWorkCount: Int64);
+var
+  DownloadProgress: THTTPDownloadWorkGroupP;
+begin
+  DownloadProgress := Pointer(TIdHTTP(ASender).Tag);
+  DownloadProgress^.P(
+    DownloadProgress^.FCancel,
+    AWorkCount,
+    DownloadProgress^.FTotal
+  );
+  if DownloadProgress^.FCancel then
+    try
+      TIdHTTP(ASender).Disconnect;
+      abort;
+    except
+    end;
+end;
+
+class procedure TDownloadFileHTTPClass.IdHTTPWorkBegin(ASender: TObject;
+  AWorkMode: TWorkMode; AWorkCountMax: Int64);
+var
+  DownloadProgress: THTTPDownloadWorkGroupP;
+begin
+  DownloadProgress := Pointer(TIdHTTP(ASender).Tag);
+  DownloadProgress.FTotal := AWorkCountMax;
 end;
 
 end.

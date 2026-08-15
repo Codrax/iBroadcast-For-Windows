@@ -19,7 +19,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, Classes, Vcl.Graphics, System.Types, System.Math,
   Vcl.Forms, System.SysUtils, Vcl.Imaging.pngimage, Vcl.Imaging.GIFImg,
-  Vcl.Imaging.jpeg, Cod.ColorUtils, Cod.VarHelpers, Cod.Types,
+  Vcl.Imaging.jpeg, Cod.Helpers, Cod.Helpers.Vcl, Cod.Types, Vcl.Dialogs,
   Cod.StringUtils, Cod.GDI, Cod.ArrayHelpers, Contnrs;
 
 type
@@ -105,6 +105,7 @@ procedure InitializeBitmapCombined(Image: TBitMap; R: byte; G: byte; B: byte; Al
 ///  </summary>
 function GetBitmapAlphaValue(Image: TBitMap; Value: byte): boolean;
 function GetBitmapRGBValue(Image: TBitMap; Value: byte): boolean;
+function RemoveBitmapWhitespace(Source: TBitmap; Destination: TBitmap; EmptyColor: TColor=clWhite): boolean;
 
 { Drawing }
 function DrawModeToImageLayout(DrawMode: TDrawMode): TRectLayout;
@@ -125,9 +126,9 @@ procedure StretchInvertedMask(Source: TCanvas; Destination: TCanvas; DestRect: T
 procedure CopyRectWithOpacity(Dest: TCanvas; DestRect: TRect; Source: TCanvas; SourceRect: TRect; Opacity: Byte);
 
 { Screen }
-procedure QuickScreenShot(var BitMap: TBitMap; Monitor: integer = -2);
-procedure QuickScreenShotEx(var Bild: TBitMap);
-procedure ScreenShotApplication(var BitMap: TBitMap; ApplicationCapton: string = 'Program Manager');
+procedure QuickScreenShot(BitMap: TBitMap; Monitor: integer = -2);
+procedure QuickScreenShotEx(Bild: TBitMap);
+procedure ScreenShotApplication(var BitMap: TBitMap; ApplicationCaption: string = 'Program Manager');
 
 { Graphics }
 procedure LoadGraphicFromFile(var Graphic: TGraphic; filename: string);
@@ -1067,16 +1068,59 @@ begin
   Result := true;
 end;
 
-procedure DrawImageInRect(Canvas: TCanvas; Rect: TRect; Image: TGraphic;
-  DrawMode: TDrawMode; ImageMargin: integer; ClipImage: boolean; Opacity: byte);
+function RemoveBitmapWhitespace(Source: TBitmap; Destination: TBitmap; EmptyColor: TColor): boolean;
+type
+  PRGBTripleArray = ^TRGBTripleArray;
+  TRGBTripleArray = array[0..32767] of TRGBTriple;
 var
-  Layout: TRectLayout;
+  x, y: Integer;
+  MinX, MinY, MaxX, MaxY: Integer;
+  Pixel: TColor;
+  IsEmptyPixel: Boolean;
+  RowScanline: PRGBTripleArray;
 begin
-  Layout := DrawModeToImageLayout(DrawMode);
-  Layout.MarginParent := ImageMargin;
+  Source.PixelFormat := pf24bit; // Ensures scanline is RGB format
 
-  // Data
-  DrawImageInRect(Canvas, Rect, Image, Layout, ClipImage, Opacity);
+  MinX := Source.Width;
+  MinY := Source.Height;
+  MaxX := -1;
+  MaxY := -1;
+
+  for y := 0 to Source.Height - 1 do
+  begin
+    RowScanline := Source.ScanLine[y];
+
+    for x := 0 to Source.Width - 1 do
+    begin
+      // Get pixel color
+      Pixel := RGB(RowScanline[x].r, RowScanline[x].g, RowScanline[x].b);
+
+      // Check if not "white" (adjust tolerance if needed)
+      IsEmptyPixel := (Pixel = EmptyColor);
+
+      if not IsEmptyPixel then
+      begin
+        if x < MinX then MinX := x;
+        if x > MaxX then MaxX := x;
+        if y < MinY then MinY := y;
+        if y > MaxY then MaxY := y;
+      end;
+    end;
+  end;
+
+  // If no non-white pixels found, return a 1x1 empty bitmap
+  if (MaxX < MinX) or (MaxY < MinY) then
+    Exit(false);
+
+  // Now crop
+  Destination.Canvas.CopyRect(
+    Rect(0, 0, Destination.Width, Destination.Height),
+    Source.Canvas,
+    Rect(MinX, MinY, MaxX + 1, MaxY + 1),
+    255
+  );
+
+  Result := true;
 end;
 
 function DrawModeToImageLayout(DrawMode: TDrawMode): TRectLayout;
@@ -1117,6 +1161,18 @@ begin
       Result.TileFlags := [TRectLayoutTileFlag.ExtendX, TRectLayoutTileFlag.ExtendY];
     end;
   end;
+end;
+
+procedure DrawImageInRect(Canvas: TCanvas; Rect: TRect; Image: TGraphic;
+  DrawMode: TDrawMode; ImageMargin: integer; ClipImage: boolean; Opacity: byte);
+var
+  Layout: TRectLayout;
+begin
+  Layout := DrawModeToImageLayout(DrawMode);
+  Layout.MarginParent := ImageMargin;
+
+  // Data
+  DrawImageInRect(Canvas, Rect, Image, Layout, ClipImage, Opacity);
 end;
 
 procedure DrawImageInRect(Canvas: TCanvas; Rect: TRect; Image: TGraphic;
@@ -1260,46 +1316,39 @@ begin
   );
 end;
 
-procedure QuickScreenShot(var BitMap: TBitMap; Monitor: integer);
+procedure QuickScreenShot(BitMap: TBitMap; Monitor: integer);
 var
   C: TCanvas;
   R: TRect;
+  DC: HDC;
 begin
-  /// PARAMETER VALUES               ///
-  ///                                ///
-  /// -2 All Monitors (Default)      ///
-  ///                                ///
-  /// -1 Default Monitor             ///
-  ///                                ///
-  ///  >= 0 Monitor Index            ///
-  ///                                ///
-
   case Monitor of
-    -2: R := Rect(Screen.DesktopRect.Left, Screen.DesktopRect.Top, Screen.DesktopRect.Right, Screen.DesktopRect.Bottom);
-
-    -1: R := Rect(Screen.PrimaryMonitor.BoundsRect.Left, Screen.PrimaryMonitor.BoundsRect.Top,
-            Screen.PrimaryMonitor.BoundsRect.Right, Screen.PrimaryMonitor.BoundsRect.Bottom);
-
-    else R := Rect(Screen.Monitors[Monitor].BoundsRect.Left, Screen.Monitors[Monitor].BoundsRect.Top,
-            Screen.Monitors[Monitor].BoundsRect.Right, Screen.Monitors[Monitor].BoundsRect.Bottom);
+    -2: R := Screen.DesktopRect; // -2  All Monitors (Default)
+    -1: R := Screen.PrimaryMonitor.BoundsRect; // -1 Default Monitor
+  else // >= 0 Monitor Index
+    R := Screen.Monitors[Monitor].BoundsRect;
   end;
 
-
-
-  BitMap.Width := R.Width;
-  BitMap.Height := R.Height;
-
-  C := TCanvas.Create;
+  // Prepare DC + bitmap
+  DC := GetDC(0);
   try
-    C.Handle := GetDC(0);
+    // Prepare bitmap in device pixels
+    BitMap.PixelFormat := pf24bit;
+    BitMap.SetSize(R.Width, R.Height);
 
-    BitMap.Canvas.CopyRect( BitMap.Canvas.ClipRect, C, R );
+    C := TCanvas.Create;
+    try
+      C.Handle := DC;
+      BitMap.Canvas.CopyRect(BitMap.Canvas.ClipRect, C, R);
+    finally
+      C.Free;
+    end;
   finally
-    C.Free;
+    ReleaseDC(0, DC);
   end;
 end;
 
-procedure QuickScreenShotEx(var Bild: TBitMap);
+procedure QuickScreenShotEx(Bild: TBitMap);
 var
   c: TCanvas;
   r: TRect;
@@ -1317,7 +1366,7 @@ begin
   end;
 end;
 
-procedure ScreenShotApplication(var BitMap: TBitMap; ApplicationCapton: string);
+procedure ScreenShotApplication(var BitMap: TBitMap; ApplicationCaption: string);
 var
   Handle: HWND;
   R: TRect;
@@ -1325,7 +1374,7 @@ var
   Old: HGDIOBJ;
 
 begin
-  Handle := FindWindow(nil, PWideChar(ApplicationCapton));
+  Handle := FindWindow(nil, PWideChar(ApplicationCaption));
   GetWindowRect(Handle, R);
 
   Bitmap := TBitmap.Create;

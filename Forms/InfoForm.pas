@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Cod.SysUtils, Vcl.TitleBarCtrls,
   Cod.Visual.Image, Vcl.StdCtrls, Vcl.ExtCtrls, Cod.Visual.Button, Cod.Dialogs,
   BroadcastAPI, MainUI, Vcl.Menus, Vcl.ExtDlgs, iBroadcastUtils,
-  Cod.Visual.StarRate, Math, Offline, Cod.ArrayHelpers;
+  Cod.Visual.StarRate, Math, Offline, Cod.ArrayHelpers, Cod.Forms;
 
 type
   TInfoBox = class(TForm)

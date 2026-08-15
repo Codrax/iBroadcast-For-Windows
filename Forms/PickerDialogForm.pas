@@ -7,8 +7,8 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, Vcl.Forms, System.Variants,
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Dialogs, Vcl.TitleBarCtrls, Cod.SysUtils,
-  Vcl.StdCtrls, Vcl.ExtCtrls, BroadcastAPI, Cod.Visual.Button, Cod.VarHelpers,
-  Cod.Types, Cod.ColorUtils, Math, Imaging.jpeg, Vcl.WinXCtrls, Types,
+  Vcl.StdCtrls, Vcl.ExtCtrls, BroadcastAPI, Cod.Visual.Button, Cod.Helpers, Cod.Helpers.Vcl,
+  Cod.Types, Math, Imaging.jpeg, Vcl.WinXCtrls, Types, UITypes, Cod.Forms,
   iBroadcastUtils, Cod.ArrayHelpers;
 
 type
@@ -198,13 +198,13 @@ begin
             begin
               // Color
               if I = HoveredItem then
-                AColor := ChangeColorSat(Color, 40)
+                AColor := AColor.ChangeSaturation(40)
               else
-                AColor := ChangeColorSat(Color, 20);
+                AColor := AColor.ChangeSaturation(20);
 
               // Rect
               GDIRoundRect(MakeRoundRect(ARect, ITEM_ROUND),
-                GetRGB(AColor).MakeGDIBrush, nil);
+                AColor.ToRGB.MakeGDIBrush, nil);
 
               // Selection
               IsSelected := Items[I].Checked;
@@ -219,14 +219,14 @@ begin
                 AColor := clGray;
 
               GDIRoundRect(MakeRoundRect(BRect, 5),
-                GetRGB(AColor).MakeGDIBrush, nil);
+                AColor.ToRGB.MakeGDIBrush, nil);
 
               if IsSelected then
                 begin
                   BRect.Inflate(-5, -5);
 
                   GDIRoundRect(MakeRoundRect(BRect, 2),
-                    GetRGB(clWhite).MakeGDIBrush, nil);
+                    TColors.White.ToRGB.MakeGDIBrush, nil);
                 end;
 
               // Image

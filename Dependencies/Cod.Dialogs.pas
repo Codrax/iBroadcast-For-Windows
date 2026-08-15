@@ -7,7 +7,7 @@ uses
   Cod.Files, Winapi.Windows, Vcl.Dialogs, Cod.Visual.Button, UITypes,
   Types, Classes, Variants, Vcl.Graphics, Vcl.Forms, Vcl.StdCtrls,
   Cod.Visual.StandardIcons, Vcl.Themes, Vcl.Styles, Vcl.Controls,
-  Cod.Components, Cod.ColorUtils, SysUtils, Vcl.ExtCtrls,
+  Cod.Components, SysUtils, Vcl.ExtCtrls, Cod.Helpers,
   Vcl.TitleBarCtrls, Cod.SysUtils, Math, Cod.Math, Vcl.ComCtrls,
   Cod.Windows;
 
@@ -268,6 +268,14 @@ function CodRadioDialog(const Title, Text: string; Strings: TStringList; const
                     BtColor: TColor = -1; GlobalSyncToggle: boolean = false): integer;
 
 implementation
+
+function FontColorForBackground(Color: TColor): TColor;
+begin
+  if Color.GetLightValue < 65 then
+    Result := TColors.White
+  else
+    Result := TColors.Black;
+end;
 
 function CodDialog(const Title, Text: string; Kind: CMessageType;
   Buttons: TMsgDlgButtons; ButtonPreset: CButtonPreset; FormColor: TColor;

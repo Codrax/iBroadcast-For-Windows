@@ -32,7 +32,7 @@ interface
   procedure DateTimePassed(Time1, Time2: TDateTime; var Years, Months, Days, Hours, Minutes, Seconds, Milliseconds: cardinal);
 
   (* String *)
-  function TimePassedToString(Seconds: cardinal): string;
+  function TimePassedToString(Seconds: cardinal; AlwaysShowHours: boolean=false): string;
   function DateTimePassedString(Time1, Time2: TDateTime; IncludeMilliseconds: boolean = false; Acronym: boolean = false): string;
   // Converts a value type to a formatted string. Such as 4 = "4 Minutes"
   function DateValueToString(Value: integer; AType: TDateValueType; Acronym: boolean = false): string;
@@ -119,7 +119,7 @@ begin
   Milliseconds := MillisecondsBetween(Time1, Time2);
 end;
 
-function TimePassedToString(Seconds: cardinal): string;
+function TimePassedToString(Seconds: cardinal; AlwaysShowHours: boolean): string;
 var
   Minutes, Hours: cardinal;
 begin
@@ -131,7 +131,7 @@ begin
 
   Result := IntToStrIncludePrefixZeros(Minutes, 2) + ':' + IntToStrIncludePrefixZeros(Seconds, 2);
 
-  if Hours > 0 then
+  if (Hours > 0) or AlwaysShowHours then
     Result := IntToStrIncludePrefixZeros(Hours, 2) + ':' + Result;
 end;
 
