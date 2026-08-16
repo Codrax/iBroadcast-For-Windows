@@ -66,22 +66,22 @@ uses
 
 procedure TDebugUI.CButton1Click(Sender: TObject);
 begin
-  Clipboard.AsText := TOKEN;
+  Clipboard.AsText := OAuth2_AccessToken;
 end;
 
 procedure TDebugUI.CButton2Click(Sender: TObject);
 begin
-  Clipboard.AsText := USER_ID.ToString;
+  Clipboard.AsText := OAuth2_RefreshToken;
 end;
 
 procedure TDebugUI.CButton3Click(Sender: TObject);
 begin
-  Memo2.Text := SendClientRequest( StringReplace(Memo1.Text, #13, '', [rfReplaceAll]) ).ToJSON;
+  //Memo2.Text := SendClientRequest( StringReplace(Memo1.Text, #13, '', [rfReplaceAll]) ).ToJSON;
 end;
 
 procedure TDebugUI.CButton4Click(Sender: TObject);
 begin
-  Clipboard.AsText := STREAMING_ENDPOINT + Tracks[PlayIndex].StreamLocations
+  Clipboard.AsText := ENDPOINT_STREAMING + Tracks[PlayIndex].StreamLocations
 end;
 
 procedure TDebugUI.CButton5Click(Sender: TObject);
@@ -122,7 +122,7 @@ begin
   Left := Screen.Width - Width;
 
   // Constant
-  Label13.Caption := 'Version: ' + Version.ToString;
+  Label13.Caption := 'Version: ' + APP_VERSION.ToString;
 end;
 
 procedure TDebugUI.SearchBox1InvokeSearch(Sender: TObject);

@@ -23,7 +23,9 @@ uses
   PickerDialogForm, Vcl.Clipbrd, DateUtils, Cod.Visual.Scrollbar, Cod.Windows,
   Cod.Version, Cod.ArrayHelpers, Cod.Components, RatingPopup, Cod.GDI,
   CodeSources, SpectrumVis3D, Vcl.Buttons, LoggingForm, Cod.CodrutSoftware.API.Update,
-  Cod.IniSettings, IdSSLOpenSSL, Cod.Forms;
+  Cod.IniSettings, IdSSLOpenSSL, Cod.Forms, IdCustomTCPServer,
+  IdCustomHTTPServer, IdHTTPServer, IdContext, System.NetEncoding,
+  System.Hash, Cod.JSON, Cod.JSON.Utils, Cod.Special.EasterEggs;
 
 const
   WM_CUSTOMAPPMESSAGE = WM_USER + 100;
@@ -115,17 +117,28 @@ type
 
   // Threads
   TPrimaryTaskThread = class(TThread)
+  private
+    HTTP: TIdHTTP;
   protected
     procedure Execute; override;
     procedure Task; virtual;
     procedure TaskDone; virtual;
   public
     constructor Create;
+    destructor Destroy; override;
   end;
 
   TLoginThread = class(TPrimaryTaskThread)
   private
     LoggedIn: boolean;
+
+    OAuth2State: string;
+    OAuth2Code: string;
+
+    procedure DoHTTPServerCommandGet(
+      AContext: TIdContext;
+      ARequestInfo: TIdHTTPRequestInfo;
+      AResponseInfo: TIdHTTPResponseInfo);
 
   protected
     procedure Task; override;
@@ -297,17 +310,12 @@ type
     Complete_Verify: TLabel;
     Label9: TLabel;
     Complete_Premium: TLabel;
-    Label33: TLabel;
     Label14: TLabel;
     Label40: TLabel;
     CStandardIcon1: CStandardIcon;
     CButton11: CButton;
     CButton12: CButton;
     CButton1: CButton;
-    LoginItems: TControlList;
-    Label34: TLabel;
-    Label35: TLabel;
-    ICON_CONNECT: TLabel;
     Panel8: TPanel;
     Shape7: TShape;
     Panel9: TPanel;
@@ -491,16 +499,10 @@ type
     Shape6: TShape;
     CImage9: CImage;
     LoginBox: TPanel;
-    Label13: TLabel;
     Label16: TLabel;
     CButton13: CButton;
-    Login_UsrToken: TEdit;
-    Advanced_Login: TPanel;
-    Label12: TLabel;
-    Login_ID: TEdit;
     Panel30: TPanel;
     CButton21: CButton;
-    CButton23: CButton;
     CImage3: CImage;
     Label10: TLabel;
     Status_Work: TLabel;
@@ -526,6 +528,8 @@ type
     Playnext1: TMenuItem;
     Playnext2: TMenuItem;
     Playnext3: TMenuItem;
+    IdHTTPServer1: TIdHTTPServer;
+    PeriodicAccessTokenRefresh: TTimer;
     procedure FormCreate(Sender: TObject);
     procedure Action_PlayExecute(Sender: TObject);
     procedure Button_ToggleMenuClick(Sender: TObject);
@@ -588,8 +592,6 @@ type
     procedure Search_ButtonClick(Sender: TObject);
     procedure Quick_SearchExit(Sender: TObject);
     procedure Quick_SearchChange(Sender: TObject);
-    procedure LoginItemsBeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
-      ARect: TRect; AState: TOwnerDrawState);
     procedure CButton19Click(Sender: TObject);
     procedure SettingsApplyes(Sender: CCheckBox; State: TCheckBoxState);
     procedure CButton20Click(Sender: TObject);
@@ -683,13 +685,13 @@ type
       Min: Integer);
     procedure Page_LoginResize(Sender: TObject);
     procedure StatusUpdaterMsTimer(Sender: TObject);
-    procedure CButton23Click(Sender: TObject);
     procedure CButton13Click(Sender: TObject);
     procedure PeriodicCheck1msTimer(Sender: TObject);
     procedure PeriodicCheck100msTimer(Sender: TObject);
     procedure Setting_VisualisationsChange(Sender: CCheckBox; State: TCheckBoxState);
     procedure PopupGeneralAddTracksNextUp(Sender: TObject);
     procedure Song_NameClick(Sender: TObject);
+    procedure PeriodicAccessTokenRefreshTimer(Sender: TObject);
   private
     { Private declarations }
     // Vars
@@ -884,6 +886,9 @@ type
     // Properties
     property AudioSpeed: single read FAudioSpeed write SetAudioSpeed;
     property AudioVolume: single read FAudioVolume write SetAudioVolume;
+
+    // Events
+    procedure DoException(Sender: TObject; E: Exception);
   end;
 
   // Logging
@@ -893,15 +898,6 @@ type
   procedure WorkDataStatusChange(Status: string);
 
 const
-  // SYSTEM
-  APP_NAME = 'Cod'#39's iBroadcast';
-  APP_DESCRIPTION = 'Codrut'#39's iBroadcast for Windows';
-  APP_USERMODELID = 'com.codrutsoft.ibroadcast';
-
-  VERSION: TVersion = (Major:1; Minor:11; Maintenance: 0);
-
-  API_APPNAME = 'ibroadcast';
-
   // UI
   ICON_FILL = #$E73B;
 
@@ -913,6 +909,8 @@ const
   ICON_DOWNLOADED = #$E73D;
 
   UPDATE_CHECK_DAY_INTERVAL = 2; // every two days
+
+  FILENAME_TOKEN = 'oauth2.json';
 
 resourcestring
   ARTIST_UNKNOWN = 'Unknown Artist';
@@ -1035,10 +1033,10 @@ var
 
   // Draw
   Press10Stat: cardinal = 0;
-  MouseIsPress: boolean;
-  IndexPress,
-  IndexHover,
-  IndexHoverSort: integer;
+  MouseIsPress: boolean = false;
+  IndexPress: integer = -1;
+  IndexHover: integer = -1;
+  IndexHoverSort: integer = -1;
   HoverActiveZone: boolean;
 
   EnableVisualisations: boolean = true;
@@ -1077,11 +1075,6 @@ var
   OptionDisableAnimations: boolean=false;
   OptionQueueSave:boolean=true;
   OptionCloseToTray:boolean=true;
-
-  // Logging
-  EnableLogging: boolean = false;
-  EnableLog32: boolean = false;
-  PrivacyEnabled: boolean = true;
 
   // Queue System
   PlayIndex: integer = -1;
@@ -1143,8 +1136,9 @@ var
   ItemActiveColor: TColor;
   TextColor: TColor;
 
-  // Special time
-  ChristmasMode: boolean;
+  ///  Threads global
+  // Login
+  ThreadLogin: TThread;
 
 implementation
 
@@ -1260,7 +1254,12 @@ begin
       ThreadSyncStatus('Pushing history to server...');
 
       // Push
-      PushHistory([Item]);
+      PushHistory(V2_HTTP, [Item]);
+
+      // Pre-pend
+      const Index = GetPlaylistOfType('recently-played');
+      if Index <> -1 then
+        PrependToPlaylist(V2_HTTP, Playlists[Index].ID, [Item.TrackID]);
 
       // Finish
       ThreadSyncClearStatus;
@@ -1333,11 +1332,11 @@ begin
 
         // Remove from deleted
         for I := 0 to High(Existing) do
-          DeleteFromPlaylist(Existing[I], [ID]);
+          DeleteFromPlaylist(V2_HTTP, Existing[I], [ID]);
 
         // Add to new
         for I := 0 to High(Selected) do
-          AppentToPlaylist(Selected[I], [ID]);
+          AppentToPlaylist(V2_HTTP, Selected[I], [ID]);
 
         // Decrease
         Dec(EditorThread);
@@ -1414,10 +1413,10 @@ begin
 
         try
           // Add new tracks
-          AppentToPlaylist(ID, Selected);
+          AppentToPlaylist(V2_HTTP, ID, Selected);
 
           // Delete tracks
-          DeleteFromPlaylist(ID, Existing);
+          DeleteFromPlaylist(V2_HTTP, ID, Existing);
         except
           // Offline
           TThread.Synchronize(nil,
@@ -1570,7 +1569,7 @@ begin
     end;
 
   // Create
-  CreateNewPlayList(AName, '', false, ATracks);
+  CreateNewPlayList(V2_HTTP, AName, '', false, ATracks);
 end;
 
 procedure TUIForm.Button_ShuffleClick(Sender: TObject);
@@ -1744,18 +1743,21 @@ procedure TUIForm.CButton12Click(Sender: TObject);
 var
   FileName: string;
 begin
+  // Log Off
+  if not V2_Login_Token_Revoke(V2_HTTP) then begin
+    if OpenDialog('Logoff failed', 'The server rejected the logoff request'#13#13'Log off anyways?', ctWarning, [mbYes, mbNo]) <> mrYes then
+      Exit;
+  end;
+
   // Stop Audio
   if Player.PlayStatus = psPlaying then
     QueueClear;
 
   // Delete Token
   LOGIN_TOKEN := '';
-  FileName := AppData + 'login.token';
+  FileName := AppData + FILENAME_TOKEN;
   if TFile.Exists(FileName) then
     TFile.Delete(FileName);
-
-  // Log Off
-  LogOffUser;
 
   // Login
   PrepareForLogin;
@@ -1766,11 +1768,8 @@ begin
   if ThreadTaskActive then
     Exit;
 
-  APPLICATION_ID := Login_ID.Text;
-  LOGIN_TOKEN := Login_UsrToken.Text;
-
   // Start login process
-  TLoginThread.Create;
+  ThreadLogin := TLoginThread.Create;
 end;
 
 procedure TUIForm.CButton16Click(Sender: TObject);
@@ -1780,11 +1779,11 @@ begin
   // Social Exec
   case CButton(Sender).Tag of
     1: URL  := 'https://www.codrutsoft.com/';
-    2: URL  := 'https://www.youtube.com/LavaTechnology/';
-    3: URL  := 'https://www.twitter.com/LAVAplanks/';
-    4: URL  := 'mailto:petculescucodrut@outlook.com';
-    5: URL  := 'https://buymeacoffee.com/codrutcat';
-    6: URL  := 'https://www.paypal.me/codrutpetcu/';
+    2: URL  := 'https://go.codrutsoft.com/youtube';
+    3: URL  := 'https://go.codrutsoft.com/twitter';
+    4: URL  := 'https://go.codrutsoft.com/email';
+    5: URL  := 'https://go.codrutsoft.com/buymeacoffe';
+    6: URL  := 'https://go.codrutsoft.com/paypal';
   end;
 
   ShellRun(URL, false);
@@ -1804,20 +1803,7 @@ end;
 
 procedure TUIForm.CButton21Click(Sender: TObject);
 begin
-  ShellRun('https://docs.codrutsoft.com/apps/ibroadcast/', true);
-end;
-
-procedure TUIForm.CButton23Click(Sender: TObject);
-begin
-  if Advanced_Login.Visible
-    or (OpenDialog('Advanced Login', 'Would you like to toggle Advanced Login?', ctQuestion, [mbYes, mbNo]) = mrYes) then
-    Advanced_Login.Visible := not Advanced_Login.Visible;
-
-  if Advanced_Login.Visible then
-    Advanced_Login.Top := 0;
-
-  // Draw
-  LoginBox.Invalidate;
+  ShellRun('https://docs.codrutsoft.com/apps/ibroadcast-windows/', true);
 end;
 
 procedure TUIForm.CButton25Click(Sender: TObject);
@@ -1872,6 +1858,11 @@ end;
 
 procedure TUIForm.CButton31Click(Sender: TObject);
 begin
+  if IsOffline then begin
+    OfflineDialog('To create playlists, please go online');
+    Exit;
+  end;
+
   CreatePlaylist := TCreatePlaylist.Create(Self);
   try
     CreatePlaylist.ShowModal;
@@ -1885,7 +1876,7 @@ end;
 procedure TUIForm.CButton34Click(Sender: TObject);
 begin
   if OpenDialog('Are you sure?', 'Are you sure you want to empty the trash? This action is irreversible.', ctQuestion, [mbYes, mbNo]) = mrYes then
-    CompleteEmptyTrash;
+    CompleteEmptyTrash(V2_HTTP);
 end;
 
 procedure TUIForm.CButton39Click(Sender: TObject);
@@ -2153,7 +2144,7 @@ begin
 
             // Delete
             try
-              TouchupPlaylist(PopupDrawItem.ItemID);
+              TouchupPlaylist(V2_HTTP, PopupDrawItem.ItemID);
 
               // Redraw
               TThread.Synchronize(nil,
@@ -2243,28 +2234,6 @@ procedure TUIForm.CopyIDGeneral(Sender: TObject);
 begin
   // Copy to clipboard
   Clipboard.AsText := PopupDrawItem.ItemID;
-end;
-
-procedure TUIForm.LoginItemsBeforeDrawItem(AIndex: Integer; ACanvas: TCanvas;
-  ARect: TRect; AState: TOwnerDrawState);
-var
-  Connect, Join, Location: string;
-begin
-  if Sessions[AIndex].Connected then
-    Connect := 'Connected'
-  else
-    Connect := 'Disconnected';
-  if Sessions[AIndex].Joinable then
-    Join := 'Joinable'
-  else
-    Join := 'Unjoinable';
-  if Sessions[AIndex].Location <> '' then
-    Location := Sessions[AIndex].Location
-  else
-    Location := 'Unknown location';
-
-  Label34.Caption := Sessions[AIndex].DeviceName + ' (' + Location + ')';
-  Label35.Caption := Connect + ', ' + Join + ', Last Login:' + DateTimeToStr(Sessions[AIndex].LastLogin);
 end;
 
 procedure TUIForm.DeleteDownloaded(MusicID: string);
@@ -2368,6 +2337,11 @@ begin
         Text := CAPTION_DOWNLOAD;
         BSegoeIcon := ICON_DOWNLOAD;
       end;
+end;
+
+procedure TUIForm.DoException(Sender: TObject; E: Exception);
+begin
+  AddToLog('[EXCEPTION] '+E.ClassName+': '+E.Message);
 end;
 
 procedure TUIForm.DownloadItem(Sender: TObject);
@@ -3037,7 +3011,7 @@ begin
   SaveFormPositions(Self, AppData+'form.ini');
 
   // Last known version (LKV)
-  StatusManager.Put<string>('Last version', 'Update', VERSION.ToString);
+  StatusManager.Put<string>('Last version', 'Update', APP_VERSION.ToString);
 
   // Views
   for I := 0 to High(SavedViews) do
@@ -3057,6 +3031,9 @@ procedure TUIForm.FormCreate(Sender: TObject);
 var
   I, J: Integer;
 begin
+  // Remove exceptions
+  Application.OnException := DoException;
+
   // Style
   Cod.Components.CustomAccentColor := $00E60073;
 
@@ -3088,14 +3065,8 @@ begin
       ButtonInactiveBackgroundColor := BackgroundColor;
     end;
 
-  // Christmas mode
-  const DayOfTheCurrentYear = DayOfTheYear(Now);
-  ChristmasMode := (DayOfTheCurrentYear > 365-20) or (DayOfTheCurrentYear <= 10);
-
   // Christmas mode UI
-  Christmas_Mode.Visible := ChristmasMode;
-  if ChristmasMode then
-    WELCOME_STRING := WELCOME_STRING_SPECIAL;
+  Christmas_Mode.Visible := IsChristmasTime;
 
   // Audio Manager
   AddToLog('Form.Create.Create.Audio.Interfaces');
@@ -3171,7 +3142,6 @@ begin
 
   // UI Preparation
   Queue_Extend.Height := 0;
-  ICON_CONNECT.Font.Name := GetSegoeIconFont;
 
   AddToLog('Form.Create.CalculateGeneralStorage');
   // Storage
@@ -3204,10 +3174,7 @@ begin
   // Get login info
   try
     TokenLoginInfo(true);
-    if PrivacyEnabled then
-      AddToLog(Format('Form.Create.TokenLoginInfo LoginDataLoaded, ID<PRIVATE>, TOKEN<PRIVATE>', [APPLICATION_ID, LOGIN_TOKEN]))
-    else
-      AddToLog(Format('Form.Create.TokenLoginInfo LoginDataLoaded, ID<%S>, TOKEN<%S>', [APPLICATION_ID, LOGIN_TOKEN]));
+    AddToLog(Format('Form.Create.TokenLoginInfo LoginDataLoaded', []));
   except
   end;
 
@@ -3215,7 +3182,7 @@ begin
   OnUpdateType := BackendUpdate;
 
   // Load Existing session
-  if (APPLICATION_ID <> '') and (LOGIN_TOKEN <> '') then
+  if (OAuth2_AccessToken <> '') then
     begin
       AddToLog('Form.Create.InitiateLogin APPLICATION_ID, LOGIN_TOKEN <> NULL');
 
@@ -3224,7 +3191,7 @@ begin
         InitiateOfflineMode
       else
         // Login process
-        TLoginThread.Create;
+        ThreadLogin := TLoginThread.Create;
     end
   else
     // Login
@@ -3522,11 +3489,11 @@ begin
   Latest_Version.Caption := 'Latest version on server: ' + VersionChecker.ServerVersion.ToString;
 
   // Download UI
-  if VersionChecker.ServerVersion.NewerThan(VERSION) then begin
+  if VersionChecker.ServerVersion.NewerThan(APP_VERSION) then begin
     NewVersion := TNewVersion.Create(Self);
     with NewVersion do
       try
-        Version_Old.Caption := VERSION.ToString();
+        Version_Old.Caption := APP_VERSION.ToString();
         Version_New.Caption := VersionChecker.ServerVersion.ToString();
 
         if ShowModal <> mrOk then
@@ -3547,7 +3514,7 @@ begin
   Result := false;
 
   // Logged in offline
-  if not TFile.Exists( AppData + 'login.token' ) then
+  if not TFile.Exists( AppData + FILENAME_TOKEN ) then
     Exit;
 
   // Folder
@@ -3980,8 +3947,11 @@ begin
 
   (* Home Items *)
   if ARoot = 'home' then begin
-    Welcome_Label.Caption := Format(WELCOME_STRING, [Account.Username]);
-    
+    if IsChristmasTime then
+      Welcome_Label.Caption := Format(WELCOME_STRING_SPECIAL, [Account.Username])
+    else
+      Welcome_Label.Caption := Format(WELCOME_STRING, [Account.Username]);
+
     // Settings
     HomeFitItems := HomeDraw.Width div (CoverWidth + CoverSpacing);
 
@@ -4168,7 +4138,7 @@ begin
 
   (* About *)
   if ARoot = 'about' then begin
-    Version_Label.Caption := 'Version ' + Version.ToString();
+    Version_Label.Caption := 'Version ' + APP_VERSION.ToString();
   end;
 
   (* Account *)
@@ -4204,10 +4174,6 @@ begin
     Data_Artists.Caption := Length(Artists).ToString;
     Data_Plays.Caption := LibraryStatus.TotalPlays.ToString;
     Data_Albums.Caption := Length(Albums).ToString;
-
-    // Items
-    LoginItems.ItemCount := Length(Sessions);
-    LoginItems.Height := LoginItems.ItemCount * LoginItems.ItemHeight;
   end;
 end;
 
@@ -4384,7 +4350,7 @@ var
   I: Integer;
   Data: TDrawableItem;
 begin
-  AddToLog(Format('Form.NavigatePath(%S, ' + booleantostring(AddHistory) + ')', [Path]));
+  AddToLog('Form.NavigatePath('+Path+', ' + booleantostring(AddHistory) + ')');
 
   // Already there
   if Location = Path then
@@ -4545,7 +4511,7 @@ var
   ADate: string;
 begin
   // Use legacy writing for TextFile.Append
-  if EnableLogging or EnableLog32 then
+  if EnableLogging or AllowDebug then
     begin
       // File logging
       if EnableLogging then
@@ -4568,7 +4534,7 @@ begin
         end;
 
       // UI logging
-      if EnableLog32 then
+      if AllowDebug then
         if (Logging <> nil) and Logging.Visible then
           Logging.Log.Lines.Add(ALog);
     end;
@@ -5004,6 +4970,13 @@ begin
   BoxContainer.Top := Status_Work.Top + Status_Work.Height + Status_Work.Margins.Bottom;
 end;
 
+procedure TUIForm.PeriodicAccessTokenRefreshTimer(Sender: TObject);
+var
+  Success: boolean;
+begin
+  V2_Login_LoggedIn(V2_HTTP, Success);;
+end;
+
 procedure TUIForm.PeriodicCheck100msTimer(Sender: TObject);
 begin
   if CounterForImageThreads > 0 then begin
@@ -5367,25 +5340,29 @@ end;
 procedure TUIForm.Popup_AlbumPopup(Sender: TObject);
 begin
   // Trash
-  Restore2.Visible := PopupDrawItem.Trashed;
-  Trash2.Visible := not Restore2.Visible;
+  Restore2.Visible := not IsOffline and PopupDrawItem.Trashed;
+  Trash2.Visible := not IsOffline and not Restore2.Visible;
 end;
 
 procedure TUIForm.Popup_ArtistPopup(Sender: TObject);
 begin
   // Trash
-  Restore3.Visible := PopupDrawItem.Trashed;
-  Trash3.Visible := not Restore3.Visible;
+  Restore3.Visible := not IsOffline and PopupDrawItem.Trashed;
+  Trash3.Visible := not IsOffline and not Restore3.Visible;
 end;
 
 procedure TUIForm.Popup_PlaylistPopup(Sender: TObject);
 begin
-  // Disable delete for system playlists
-  if PopupDrawItem.Index <> -1 then
-    begin
-      Delete1.Enabled := Playlists[PopupDrawItem.Index].PlaylistType = '';
-      Addtracks2.Enabled := Delete1.Enabled;
-    end;
+  // Disable edits for system playlists
+  Delete1.Enabled := false;
+  if PopupDrawItem.Index <> -1 then begin
+    Delete1.Enabled := not IsOffline and (Playlists[PopupDrawItem.Index].PlaylistType = '');
+  end;
+  Addtracks2.Enabled := Delete1.Enabled;
+
+  //
+  Addtracks2.Enabled := not IsOffline;
+  Cleanupplaylist1.Enabled := not IsOffline;
 end;
 
 procedure TUIForm.Popup_TrackPopup(Sender: TObject);
@@ -5394,8 +5371,12 @@ begin
   PlayQueue1.Visible := Popup_Track.Tag = 0;
 
   // Trash
-  Restore1.Visible := PopupDrawItem.Trashed;
-  Trash1.Visible := not Restore1.Visible;
+  Restore1.Visible := not IsOffline and PopupDrawItem.Trashed;
+  Trash1.Visible := not IsOffline and not Restore1.Visible;
+
+  //
+  Addtoplaylist1.Enabled := not IsOffline;
+  Trash1.Enabled := not IsOffline;
 end;
 
 procedure TUIForm.Popup_TrayPopup(Sender: TObject);
@@ -5501,6 +5482,7 @@ end;
 
 procedure TUIForm.PrepareForLogin;
 begin
+  WORK_STATUS := '';
   AddToLog('Form.PrepareForLogin.HideAllUI');
 
   NavigatePath('Login', False);
@@ -6551,7 +6533,7 @@ begin
       Success := false;
       try
         // Add new tracks
-        Success := UpdateTrackRating(ID, AValue, false); // Change manaully
+        Success := UpdateTrackRating(V2_HTTP, ID, AValue, false); // Change manaully
       except
         // Offline
         TThread.Synchronize(nil,
@@ -6565,7 +6547,7 @@ begin
       Tracks[PlayIndex].Rating := AValue;
 
       // Add to thumbsup playlist
-      TrackRatingToLikedPlaylist(ID);
+      TrackRatingToLikedPlaylist(V2_HTTP, ID);
 
       // Change UI
       if Success then
@@ -7241,7 +7223,7 @@ begin
     Status_Work.Caption := WORK_STATUS;
 
   // Workin
-  const ShouldShowLogin = not ThreadTaskActive and not USER_STATUS_LOGGEDIN;
+  const ShouldShowLogin = not ThreadTaskActive;
   if ShouldShowLogin <> LoginBox.Visible then
     LoginBox.Visible := ShouldShowLogin;
   if not ShouldShowLogin <> LoadingIcon.Visible then
@@ -7510,43 +7492,37 @@ end;
 
 procedure TUIForm.TokenLoginInfo(Load: boolean);
 var
-  ST: TStringList;
+  Obj: IJObject;
   FileName: string;
 begin
   // Invalid
-  if not Load and ((APPLICATION_ID = '') or (LOGIN_TOKEN = '')) then
+  if not Load and (OAuth2_RefreshToken = '') then
     Exit;
 
   // File Name
-  FileName := AppData + 'login.token';
+  FileName := AppData + FILENAME_TOKEN;
   if Load then
     // Load Token
     begin
       if not TFile.Exists(FileName) then
         Exit;
 
-      ST := TStringList.Create;
-      try
-        ST.LoadFromFile( FileName );
+      Obj := TJValue.LoadFromFile(FileName) as IJObject;
 
-        APPLICATION_ID := ST[0];
-        LOGIN_TOKEN := ST[1];
-      finally
-        ST.Free;
-      end;
+      OAuth2_RefreshToken := Obj['refresh_token'].AsString;
+      OAuth2_AccessToken := Obj['access_token'].AsString;
+      OAuth2_Expiry := Obj['expiry'].AsFloat;
     end
   else
     // Save Token
     begin
-      ST := TStringList.Create;
-      try
-        St.Add( APPLICATION_ID );
-        St.Add( LOGIN_TOKEN );
+      Obj := TJObject.CreateNew;
 
-        ST.SaveToFile( FileName );
-      finally
-        ST.Free;
-      end;
+      Obj.Put('refresh_token', OAuth2_RefreshToken);
+      Obj.Put('access_token', OAuth2_AccessToken);
+      Obj.Put('expiry', double(OAuth2_Expiry));
+
+      TJValue.SaveToFile(Obj, Filename, [TJValueWriteToFileFlag.FlushFileToDisk]);
     end;
 end;
 
@@ -8041,10 +8017,10 @@ end;
 procedure TDrawableItem.TrashFromLibrary;
 begin
   case Source of
-    TDataSource.Tracks: DeleteTrack(ItemID);
-    TDataSource.Albums: DeleteAlbum(ItemID);
-    TDataSource.Artists: DeleteArtist(ItemID);
-    TDataSource.Playlists: DeletePlayList(ItemID);
+    TDataSource.Tracks: DeleteTracks(V2_HTTP, [ItemID]);
+    TDataSource.Albums: DeleteAlbum(V2_HTTP, ItemID);
+    TDataSource.Artists: DeleteArtist(V2_HTTP, ItemID);
+    TDataSource.Playlists: DeletePlayList(V2_HTTP, ItemID);
   end;
 end;
 
@@ -8484,9 +8460,9 @@ end;
 procedure TDrawableItem.RestoreFromLibrary;
 begin
   case Source of
-    TDataSource.Tracks: RestoreTrack(ItemID);
-    TDataSource.Albums: RestoreAlbum(ItemID);
-    TDataSource.Artists: RestoreArtist(ItemID);
+    TDataSource.Tracks: RestoreTracks(V2_HTTP, [ItemID]);
+    TDataSource.Albums: RestoreAlbum(V2_HTTP, ItemID);
+    TDataSource.Artists: RestoreArtist(V2_HTTP, ItemID);
     TDataSource.Playlists: (* nothing *);
   end;
 end;
@@ -8635,6 +8611,8 @@ var
 constructor TPrimaryTaskThread.Create;
 begin
   inherited Create(false);
+  HTTP := V2_CreateHTTP;
+
   FreeOnTerminate := true;
 
   ThreadTaskError := '';
@@ -8642,6 +8620,12 @@ begin
   // UI
   if BareRoot <> 'login' then
     UIForm.NavigatePath('Login')
+end;
+
+destructor TPrimaryTaskThread.Destroy;
+begin
+  HTTP.Free;
+  inherited;
 end;
 
 procedure TPrimaryTaskThread.Execute;
@@ -8666,38 +8650,130 @@ end;
 
 { TLoginThread }
 
+procedure TLoginThread.DoHTTPServerCommandGet(AContext: TIdContext;
+  ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+begin
+  if ARequestInfo.CommandType <> hcGET then
+    Exit;
+
+  AResponseInfo.ResponseNo := 200;
+  AResponseInfo.ContentType := 'text/plain';
+
+  // Get
+  const OAuth2State_Fetched = ARequestInfo.Params.Values['state'];
+  const OAuth2State_ErrorDesc = ARequestInfo.Params.Values['error_description'];
+
+  // Validate
+  if OAuth2State_ErrorDesc <> '' then begin
+    ThreadTaskError := 'Server error: '+OAuth2State_ErrorDesc;
+    Terminate;
+
+    AResponseInfo.ContentText := 'Server error: '+OAuth2State_ErrorDesc;
+    Exit;
+  end;
+  if OAuth2State_Fetched <> OAuth2State then begin
+    ThreadTaskError := 'Secure state check failed';
+    Terminate;
+
+    AResponseInfo.ContentText := 'Secure code validation failed.';
+    Exit;
+  end;
+
+  // Set
+  WORK_STATUS := 'Reading code...';
+  OAuth2Code := ARequestInfo.Params.Values['code'];
+
+  // Success
+  AResponseInfo.ContentText := 'Authorization successful. You can close this window.';
+end;
+
 procedure TLoginThread.Task;
 begin
   // Verbose
-  WORK_STATUS := 'Contacting iBroadcast for login...';
+  WORK_STATUS := 'Creating session...';
+  ThreadTaskError := '';
+  AddToLog('TLoginThread.Task');
 
-  // Attempt log in
-  try
-    AddToLog('Attempting Login... Form.InitiateLogin.LoginUser');
-    LoggedIn := LoginUser;
-  except
-      // Load offline mode if avalabile
+  // Fetch a new token
+  if OAuth2_AccessToken = '' then begin
+    // Create challange
+    const ACodeVerifier = TNetEncoding.Base64URL.EncodeBytesToString(TEncoding.UTF8.GetBytes(TGUID.NewGuid.ToString));
+    const ACodeChallenge = TNetEncoding.Base64URL.EncodeBytesToString(
+      THashSHA2.GetHashBytes(ACodeVerifier, THashSHA2.TSHA2Version.SHA256)
+    );
+
+    // Create session
+    OAuth2State := Random(100000).ToString;
+    const URL = V2_Login_AuthorizeURL(OAuth2State, ACodeChallenge);
+    Synchronize(procedure begin
+      ShellRun(URL, true);
+    end);
+
+    // Create server
+    const Server = TIdHTTPServer.Create(nil);
+    try
+      Server.DefaultPort := OAUTH2_LISTEN_PORT;
+      Server.Active := true;
+
+      Server.OnCommandGet := DoHTTPServerCommandGet;
+
+      // Wait for HTTP to read token
+      WORK_STATUS := 'Waiting for user to log in...';
+      while OAuth2_AccessToken = '' do begin
+        if Terminated then begin
+          WORK_STATUS := '';
+          Exit;
+        end;
+
+        Sleep(1000);
+
+        // Fetched code?
+        if OAuth2Code <> '' then
+          try
+            WORK_STATUS := 'Getting token...';
+
+            if not V2_Login_Token_GetFromCode(HTTP, OAuth2Code, ACodeVerifier) then begin
+              ThreadTaskError := 'Failed to get token from server';
+              Exit;
+            end;
+          finally
+            OAuth2Code := '';
+          end;
+      end;
+    finally
+      Server.Free;
+    end;
+  end;
+
+  // Log in
+  var Succeeded: boolean;
+  LoggedIn := V2_Login_LoggedIn(HTTP, Succeeded);
+
+  // Offline mode
+  if not LoggedIn and not Succeeded then begin
+    // Load offline mode if avalabile
     if UIForm.HasOfflineBackup then begin
       Synchronize(procedure begin
-        AddToLog('Offline Mode... Form.InitiateLogin.InitiateOfflineMode');
+        AddToLog('TLoginThread.Task: Offline Mode... Form.InitiateLogin.InitiateOfflineMode');
         WORK_STATUS := 'Loading Offline Mode...';
         UIForm.InitiateOfflineMode;
       end);
     end
     else
       // Network Error
-      ThreadTaskError := 'Can'#39't connect to the internet! Check your connection settings';
+      ThreadTaskError := 'The connection to the server failed, are you online?';
 
     Exit;
   end;
 
   // Logon succeded
   if not LoggedIn then begin
-    AddToLog('Login Unsuccessfull!');
-    ThreadTaskError := 'The login has failed';
+    AddToLog('TLoginThread.Task: Login failed!');
+    ThreadTaskError := 'Login failed!';
     Exit;
   end;
-  AddToLog('Logged In!');
+
+  AddToLog('TLoginThread.Task: Logged In!');
 end;
 
 procedure TLoginThread.TaskDone;
@@ -8723,12 +8799,12 @@ begin
     // Get Status
     WORK_STATUS := 'Loading your account...';
     AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
-    LoadStatus;
+    LoadStatus(V2_HTTP);
 
     // Get Library
     WORK_STATUS := 'Loading your library...';
     AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
-    LoadLibrary;
+    LoadLibrary(V2_HTTP);
 
     // No longer offline
     if IsOffline then
@@ -8985,7 +9061,7 @@ initialization
   TransparentIndex := SettingsManager.Get<integer>('Opacity', 'Miniplayer', TransparentIndex);
 
   // Version
-  VersionChecker := TStandardVersionCheckerUpdateUrl.Create(API_APPNAME, VERSION);
+  VersionChecker := TStandardVersionCheckerUpdateUrl.Create('ibroadcast-windows', APP_VERSION, 'https://api.codrutsoft.com/');
 
   // Register
   AppRegistration.AppUserModelID := APP_USERMODELID;

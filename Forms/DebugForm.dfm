@@ -236,7 +236,7 @@ object DebugUI: TDebugUI
     FontAutoSize.Enabled = False
     FontAutoSize.Max = -1
     FontAutoSize.Min = -1
-    Text = 'Copy User ID'
+    Text = 'Copy R. Token'
     SubText = 'Hello World!'
     AutoExtendImage = False
     State = mbsLeave

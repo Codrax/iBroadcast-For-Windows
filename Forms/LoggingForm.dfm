@@ -4,7 +4,7 @@ object Logging: TLogging
   BorderIcons = [biSystemMenu]
   Caption = 'iBroadcast for Windows logging'
   ClientHeight = 464
-  ClientWidth = 584
+  ClientWidth = 384
   Color = 2886678
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWhite
@@ -14,7 +14,7 @@ object Logging: TLogging
   Position = poDesigned
   OnCloseQuery = FormCloseQuery
   DesignSize = (
-    584
+    384
     464)
   TextHeight = 21
   object Label2: TLabel
@@ -49,10 +49,11 @@ object Logging: TLogging
   object Log: TMemo
     Left = 19
     Top = 74
-    Width = 547
+    Width = 347
     Height = 382
     Anchors = [akLeft, akTop, akRight, akBottom]
     ParentColor = True
+    ScrollBars = ssVertical
     TabOrder = 0
   end
 end

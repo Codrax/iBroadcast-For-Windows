@@ -9,7 +9,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Dialogs, Vcl.TitleBarCtrls, Cod.SysUtils,
   Vcl.StdCtrls, Vcl.ExtCtrls, BroadcastAPI, Cod.Visual.Button, Cod.Helpers, Cod.Helpers.Vcl,
   Cod.Types, Math, Imaging.jpeg, Vcl.WinXCtrls, Types, UITypes, Cod.Forms,
-  iBroadcastUtils, Cod.ArrayHelpers;
+  iBroadcastUtils, Cod.ArrayHelpers, GDIPOBJ;
 
 type
   TPickType = (Song, Album, Artist, Playlist);
@@ -186,6 +186,7 @@ var
   AColor: TColor;
   IsSelected: boolean;
   AText: string;
+  B: TGPSolidBrush;
 begin
   with DrawBox.Canvas do
     begin
@@ -197,14 +198,19 @@ begin
           if not Items[I].Hidden and ClipRect.IntersectsWith(ARect) then
             begin
               // Color
+              AColor := Color;
               if I = HoveredItem then
                 AColor := AColor.ChangeSaturation(40)
               else
                 AColor := AColor.ChangeSaturation(20);
 
               // Rect
-              GDIRoundRect(MakeRoundRect(ARect, ITEM_ROUND),
-                AColor.ToRGB.MakeGDIBrush, nil);
+              B := AColor.ToRGB.MakeGDIBrush;
+              try
+                GDIRoundRect(MakeRoundRect(ARect, ITEM_ROUND), B, nil);
+              finally
+                B.Free;
+              end;
 
               // Selection
               IsSelected := Items[I].Checked;
@@ -218,15 +224,24 @@ begin
               else
                 AColor := clGray;
 
-              GDIRoundRect(MakeRoundRect(BRect, 5),
-                AColor.ToRGB.MakeGDIBrush, nil);
+              B := AColor.ToRGB.MakeGDIBrush;
+              try
+                GDIRoundRect(MakeRoundRect(BRect, 5), B, nil);
+              finally
+                B.Free;
+              end;
+
 
               if IsSelected then
                 begin
                   BRect.Inflate(-5, -5);
 
-                  GDIRoundRect(MakeRoundRect(BRect, 2),
-                    TColors.White.ToRGB.MakeGDIBrush, nil);
+                  B := TColors.White.ToRGB.MakeGDIBrush;
+                  try
+                    GDIRoundRect(MakeRoundRect(BRect, 2), B, nil);
+                  finally
+                    B.Free;
+                  end;
                 end;
 
               // Image

@@ -18,9 +18,6 @@ const
   FN_COLOR: TColor = TColors.White;
 
 var
-  // App Config
-  AllowDebug: boolean;
-
   // Application Settings
   IsOffline: boolean;
   SmallSize: integer;

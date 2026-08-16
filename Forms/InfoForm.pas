@@ -71,13 +71,13 @@ begin
   try
     case InfoBoxPointer.Source of
       TDataSource.Tracks: with Tracks[InfoBoxPointer.Index] do
-        if UpdateTrackRating(ID, Song_Rating.Rating, false) then
+        if UpdateTrackRating(V2_HTTP, ID, Song_Rating.Rating, false) then
           begin
             // Update
             Rating := Song_Rating.Rating;
 
             // Playlist manage
-            TrackRatingToLikedPlaylist(ID);
+            TrackRatingToLikedPlaylist(V2_HTTP, ID);
 
             // Update UI
             UIForm.UpdateRatingIcon;
@@ -86,14 +86,14 @@ begin
           Song_Rating.Rating := Rating;
 
       TDataSource.Albums: with Albums[InfoBoxPointer.Index] do
-        if UpdateAlbumRating(ID, Song_Rating.Rating, false) then
+        if UpdateAlbumRating(V2_HTTP, ID, Song_Rating.Rating, false) then
           // Update
           Rating := Song_Rating.Rating
         else
           Song_Rating.Rating := Rating;
 
       TDataSource.Artists: with Artists[InfoBoxPointer.Index] do
-        if UpdateArtistRating(ID, Song_Rating.Rating, false) then
+        if UpdateArtistRating(V2_HTTP, ID, Song_Rating.Rating, false) then
           // Update
           Rating := Song_Rating.Rating
         else
@@ -234,7 +234,11 @@ begin
   Song_Rating.Visible := InfoBoxPointer.Source in [TDataSource.Tracks, TDataSource.Albums, TDataSource.Artists];
 
   // Editable
-  Song_Name.ReadOnly := (InfoBoxPointer.Source <> TDataSource.Playlists) or IsOffline;
+  Song_Name.ReadOnly := true;
+  if (InfoBoxPointer.Source = TDataSource.Playlists)
+    and not IsOffline then
+    Song_Name.ReadOnly := false; // allow rename of special playlists too
+
   Song_Rating.ViewOnly := IsOffline or not Song_Rating.Visible;
 
   // Edit UI
@@ -252,7 +256,7 @@ begin
   try
     case InfoBoxPointer.Source of
       TDataSource.Playlists: with Playlists[InfoBoxPointer.Index] do
-        if UpdatePlayList(InfoBoxPointer.ItemID, Name, Edit_Desc.Lines.Text, false) then
+        if UpdatePlayList(V2_HTTP, InfoBoxPointer.ItemID, Name, Edit_Desc.Lines.Text, false) then
           // Update playlist
           Description := Edit_Desc.Lines.Text;
     end;
@@ -275,7 +279,7 @@ begin
     case InfoBoxPointer.Source of
       TDataSource.Playlists: with Playlists[InfoBoxPointer.Index] do
 
-        if UpdatePlayList(InfoBoxPointer.ItemID, Song_Name.Text, Description, false) then
+        if UpdatePlayList(V2_HTTP, InfoBoxPointer.ItemID, Song_Name.Text, Description, false) then
           begin
             // Update Playlist
             Name := Song_Name.Text;

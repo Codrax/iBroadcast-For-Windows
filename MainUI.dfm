@@ -984,6 +984,3408 @@ object UIForm: TUIForm
             ParentColor = False
           end
         end
+        object Page_Settings: TPanel
+          Left = 0
+          Top = 0
+          Width = 880
+          Height = 498
+          Align = alClient
+          BevelOuter = bvNone
+          Caption = 'Settings'
+          Color = 2886678
+          FullRepaint = False
+          ParentBackground = False
+          ShowCaption = False
+          TabOrder = 7
+          object ScrollBox3: TScrollBox
+            Left = 0
+            Top = 0
+            Width = 880
+            Height = 498
+            HorzScrollBar.Tracking = True
+            VertScrollBar.Tracking = True
+            Align = alClient
+            BorderStyle = bsNone
+            TabOrder = 0
+            OnMouseWheel = ScrollBox1MouseWheel
+            object Label29: TLabel
+              AlignWithMargins = True
+              Left = 3
+              Top = 702
+              Width = 857
+              Height = 21
+              Margins.Top = 20
+              Align = alTop
+              AutoSize = False
+              Caption = 'Maximum Thread count'
+              ExplicitLeft = 15
+              ExplicitTop = 273
+            end
+            object Label32: TLabel
+              AlignWithMargins = True
+              Left = 3
+              Top = 575
+              Width = 857
+              Height = 21
+              Margins.Top = 20
+              Align = alTop
+              AutoSize = False
+              Caption = 'Preffered Artwork'
+              ExplicitLeft = 5
+              ExplicitTop = 392
+            end
+            object Artwork_Storage: TLabel
+              AlignWithMargins = True
+              Left = 3
+              Top = 471
+              Width = 857
+              Height = 17
+              Cursor = crHandPoint
+              Margins.Bottom = 20
+              Align = alTop
+              AutoSize = False
+              Caption = 'Storage Used by Artwork: 0MB'
+              Font.Charset = ANSI_CHARSET
+              Font.Color = clWhite
+              Font.Height = -13
+              Font.Name = 'Segoe UI'
+              Font.Pitch = fpFixed
+              Font.Style = []
+              ParentFont = False
+              ShowAccelChar = False
+              Layout = tlCenter
+              OnClick = Artwork_StorageClick
+              ExplicitTop = 274
+            end
+            object Label24: TLabel
+              AlignWithMargins = True
+              Left = 0
+              Top = 3
+              Width = 860
+              Height = 40
+              Margins.Left = 0
+              Align = alTop
+              Caption = 'Settings'
+              Color = 2886678
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -29
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+              ExplicitWidth = 106
+            end
+            object Setting_ArtworkStore: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 405
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              TabStop = True
+              TabOrder = 0
+              OnChange = Setting_ArtworkStoreChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Enable Artwork Store (caches artwork for fast load)'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Setting_DataSaver: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 437
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              TabStop = True
+              TabOrder = 1
+              OnChange = Setting_DataSaverChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Use low resolution covers (data saver)'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Setting_Graph: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 258
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              TabStop = True
+              TabOrder = 2
+              OnChange = Setting_GraphChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Enable performance graph'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Setting_PlayerOnTop: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 111
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 20
+              TabStop = True
+              TabOrder = 3
+              OnChange = Setting_PlayerOnTopChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Make the mini popup player stay on top'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Setting_QueueSaver: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 194
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              TabStop = True
+              TabOrder = 4
+              OnChange = Setting_QueueSaverChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Save last played queue when closed'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Setting_Rating: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 290
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              TabStop = True
+              TabOrder = 5
+              OnChange = Setting_RatingChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Use ratings instead of thumbs up'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Setting_SongStreaming: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 373
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              TabStop = True
+              TabOrder = 6
+              OnChange = Setting_SongStreamingChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Stream songs from the internet'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Setting_StartWindows: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 162
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              TabStop = True
+              TabOrder = 7
+              OnChange = Setting_StartWindowsChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Start minimized with Windows'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Setting_TrayClose: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 79
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              TabStop = True
+              TabOrder = 8
+              OnChange = Setting_TrayCloseChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Close button minimises iBroadcast'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Settings_CheckUpdate: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 47
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              TabStop = True
+              TabOrder = 9
+              OnChange = Settings_CheckUpdateChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Check for updates on startup'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Settings_DisableAnimations: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 322
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 20
+              TabStop = True
+              TabOrder = 10
+              OnChange = Settings_DisableAnimationsChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Disable menu animations'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object Panel3: TPanel
+              AlignWithMargins = True
+              Left = 0
+              Top = 600
+              Width = 863
+              Height = 81
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              Align = alTop
+              BevelOuter = bvNone
+              FullRepaint = False
+              ParentColor = True
+              TabOrder = 11
+              object ImgSelector_2: CButton
+                AlignWithMargins = True
+                Left = 2
+                Top = 0
+                Width = 88
+                Height = 81
+                Margins.Left = 2
+                Margins.Top = 0
+                Margins.Right = 2
+                Margins.Bottom = 0
+                OnClick = ImgSelector_1Click
+                TabOrder = 0
+                Align = alLeft
+                BSegoeIcon = #59188
+                BPicture.Data = {
+                  0954506E67496D61676589504E470D0A1A0A0000000D49484452000000320000
+                  00320802000000915D1FE6000000017352474200AECE1CE90000000467414D41
+                  0000B18F0BFC6105000000097048597300000EC300000EC301C76FA864000005
+                  9C4944415478DACD98F953E24814C7BBC3998B1BD1D172B7A66A1C11449DD9DD
+                  F9FFFF82ADBD6666553C5847C5011224408040F6E52090A43B04AD72CC0F907E
+                  E9CEFBF4F7BDBE823FA1238C7484307A4D17FE846AF6DD6B225B60215BB15701
+                  E7C2B22CAF810BFF866A448E1F1B53030B9929EFA3F891B201D6A17583C86945
+                  B3BF10D6C242847B61323F1672D4F98161C5BF9A58E1157A99A16063D1E4718C
+                  0C8EEC147E4E8B79866100D8B8186CDD20DABD5191318D489B6A378DB3E67D23
+                  3C56D574ED5A7FB08BCC78B45B789B11F24408FBC6E0307EE61518E7DEAC6014
+                  4FBFFEDEE934C3637979FCB255773E804E83BEA24DC64E78B11367A79DB350B8
+                  1EE154A9C0A6C476EBEEFCECCF5058BF98589ED7FB0BD5ED8FD0E15E579A8CC7
+                  2103B17C65B7B784624EEA34CF4EFF5803CBCD418866F5CD0908D07BEC1A6AAD
+                  7F65DE6C8A855C477A383F0B8B55217158FFBA93F595AD630859AF0758932761
+                  95847C4E02ACF3B041AC7814F216CC52B5740419ADF41E35ED49585B252197ED
+                  C80FF5FA5FA1B03EA2CA92423A25EB7165A3066A29FDDE13B13637F85C5602AC
+                  8BBFC362B939C8B21D146A90F2FD81E2C78A44A309968DC5E3986120C4A3E170
+                  321A79EAA44B453E9791E4D6C5E59A58C17007F94348F9C150818971F9112708
+                  498E07A0E5D90BC87AEDB6AEEB0BAC8D229F4D4BDDD6C5D53F4FC14294F158CE
+                  55C1E540ED2F6371BC906439A051B5A132522007B8A420B029A09C8C54F9E1BB
+                  5333552C00960C58D79F43617D4007B4BDF2F2F257CE540CACF1603AC78A46A3
+                  829806636BD092066DA7A6C8A6B70BBB30BBF7644955FA3656A1C06552F263EB
+                  B2F1252C160A319D96D31550650858B3A92D152BC413F1FEA47FD7BBF5BCB408
+                  937ABAA4699AD46CCEB1F25C1AB0DA97FF7D0EB37FB3B1880A2DC3ED8B6548F9
+                  E14475B0443EC54422CDC1BD32563C4DE2D1C4DBCD3D68DABEBFD36733A3723E
+                  C7A55272AF7D79F385E86505D69CC3DBAC2CEC9B39349AEA4B580C73DBBF1D6A
+                  434FE508137DB769D4EF34EF6716560EB04403EBDB575AFF5D0C27766EF91EB8
+                  E1F6B9F79046EA6CEC6071493E1A8976C6923C923C6D8584B89DDB8591D879B0
+                  832866B3AC28CA4AFBEAF65F8F1FB2F71354A6EFF816FF8005BF231DB066F348
+                  416A25A768763BF8A6CD16C393C1CC4EF6A7648C1D8F54E5B16B83663280D505
+                  ACBB53BF1FBF770BCBF14F1C8FC68F1F0B2A73099E89309AAEB5462D555375A4
+                  2722C9A2B0C1C639A8F02877A6535B5A210D5882A1D6FD6998E3820B0B51120B
+                  1B6AED7BB09091430C105873E90C162E8C2291A8B51DEDF795C97831D70BE974
+                  92E7BB7DE9AA791A103BC7EEC5A2C956266159218368C6A2316C6EA6A11D0C55
+                  551D4EDD8B019F4AB19C200F3BD7CDB3794F17DB133F193E36B108D175CB46C3
+                  72BA61EDF167B3E9F29AB3C01253498EEB0EA5EB8773AF1322D931DAA7C56ED9
+                  1E8CB5F2E20531616235BED70362B7285B5881AA1A623C13CB5A3DBBAA7CDDAA
+                  9314F2CA868FD0BEFB9C439EE60EB8F2B3B03801363F80D568D789F278003C58
+                  64F6E763B11C9F4CB0DD91DCE85C04787182666051147229F75C2C964B5858D2
+                  A5273844EF80F53EB086AD364CA70C8299733A43C158F3B323C68B0246F15822
+                  128BC96AE7A6DB206695A7E06011145AB2E252BC948FE6422983EDCB3AEC3BA7
+                  7078CB955C878D1099C8BDEB2460116583B7166305312286F934626DA04D3E9B
+                  1296CED6F04199F4021D2D22866B26961F9C966D446844DFA851C21470FE33FB
+                  55437B74142A1FC548F8BEBF8A83DC550B6BC5D9D5FB41C7D446277574E56A41
+                  32123E16E143B4E77F1C3C05AF926D6D08BF2E0616A2E49D4EB1FBFC85952790
+                  D8E5D3C65A4B21927D0DD98876EF8732072B58D510C4465F29CA11E4D103072F
+                  AEA27714F6802F9734CD82EC942D1D22C6D4C00A5415D1C9A8FE1039E1083308
+                  95CCC20AA1106D28D0147AC210596AE560855368853D2444209CF1F33FBDE004
+                  06C20E13410000000049454E44AE426082}
+                UseAccentColor = None
+                GradientOptions.Enabled = False
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = clRed
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = ''
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                Colors.Enter = 15073395
+                Colors.Leave = 12976227
+                Colors.Down = 8388672
+                Colors.BLine = 8388672
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = False
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 6
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+              object ImgSelector_3: CButton
+                Tag = 1
+                AlignWithMargins = True
+                Left = 94
+                Top = 0
+                Width = 88
+                Height = 81
+                Margins.Left = 2
+                Margins.Top = 0
+                Margins.Right = 2
+                Margins.Bottom = 0
+                OnClick = ImgSelector_1Click
+                TabOrder = 1
+                Align = alLeft
+                BSegoeIcon = #59188
+                BPicture.Data = {
+                  0954506E67496D61676589504E470D0A1A0A0000000D49484452000000320000
+                  00320802000000915D1FE6000000017352474200AECE1CE90000000467414D41
+                  0000B18F0BFC6105000000097048597300000EC300000EC301C76FA864000007
+                  DA4944415478DAED980B7054D519C7EFEEDE7D6FC863B3BB49F6614352B02320
+                  F8682D012D42A013ECA08C69A2AD88D48E8E02B6A31375CA481DA80E0A656883
+                  1185349A310981088D453A3149B1622A79A041B2C2A6E4B11BB28FBCF6FD7EF4
+                  BFF7B2CB26269BC71086E9E4CC4EB27BF7CE3DBFFDBEFFF9FEDF390C116F2571
+                  EB0DC61CD61CD61CD62D30E6B06E1A1683C1608607831EB15F854221FA2F4630
+                  48FF0FDD0C2CE070B96CBE80C7E371D8242B8C1525A31082C1602010F4FBFC5E
+                  9FDFE7F5FB7C7EBF3F808BB3888508F1785CB138313D23353D432212F159246B
+                  54B48221AFD7E774B85C2E8FDDE6B4581D568BDD6673E223E0268DDCE45820A0
+                  33458403702D2324C94A4E4EF8D1A2AC57F7BEB060A18A8A1511CD223D27EE74
+                  B9DC96119BAEA7BFBD59DDD67441AB359A8CC356AB03C4F1C926C162914C2E87
+                  CDE373381C363E22176EB7D7E70BB058CCB4F4D4470A73B7EFD8C2C76D8CB14C
+                  D1F7981D69F31184DE3054F5FEC97FD7B7687BF566B31D6433C462B2C2994A4E
+                  162A5552D56D3204EC6ADF604FB7C16E734322C85DE193EB9FDE5EC067106414
+                  6234161DC2B0CE401622EC3EFFE1FD959F9E3803322414CA9B3E168360936462
+                  9270E95D594F3FB33E4124C41528A5A2BCA1E59CC6E5F4A6A5890B9E5CBFE5F9
+                  47050C8296558020FC7885AE9131A928E22BFA5B20784384C9627F6DDBDED6E6
+                  0E9371C4E3F14E1B0B62E170D91249627EE103B96B7F2C1008282C77D3D9F6A3
+                  159F5B2C4EA924298CF5DCA37C6A6E3A53CD4DDF5EFAAE1BEA8118A532F1E27B
+                  6ECFCE527022DC80768588EAF2D3A5C5D53DDDFD0E877B22854D8E55F8AB550F
+                  AEB95720C0EC0C44ABE9CB0B55C0323BA4D2E4824D79512C84CA1D222A8ED4D6
+                  9F6E321886828160C23CE10F3233F237E5DDB77C0997110E5E90BAA7A5EDBB3F
+                  15155FBAD463B53826AA17F1B0D86C32392561F98A3B363DB50E58B8E676B9AA
+                  2A1A9BCEAAF14391C4C248B4E8299D21E2D0FECADAE30D3A9D118B83CFE72A55
+                  B29C954B5F7CFD1911C924A97B3C2142DDA9DBB97D6FC7C52EB3D93691BCE249
+                  1E5560DE3CA142295D76F782EC6C398A40D795FEF36D9AFEAB035EAF5FAE903E
+                  B6792CD6C1B7CB4F1CADD7F61AA01B2E972357487E72DFE21D6F6F4B4D109094
+                  F68175F172EFCEEDFBD41D5D168B7D2658D08750C893CA52944A596A6A12B435
+                  3C64D1E94C03A661D42444E2B1CD0F8DC12AD9F7D1C9EA7A9DD688F54F476B79
+                  CE9DAFBCF97C029BC58A24F1CC99B67D3BDFEBD4E8B018A79DC46BD14A146666
+                  CA1FFAE59AF93F5462A9F7F6E84F55D7775DE9C3AC72856C4CB420E70F4A6A4E
+                  D77EA1EF1F0884B525C89C2FDFF8F8BAB579395CAAB0F929F403BB4B3FA969EC
+                  D39950F1A72D790C9450992C65DD86FB5F796B1B97AA401E82F8EBAED2BF57D5
+                  59ADF6F47449E1E6512B1109FAE7C9CFCF7DD93E346CC5CD1259CAF207EF59B1
+                  EA6E01793D54E7CF5FDAF7DA21B5BA0781874B4E34751CC933200E8552B2217F
+                  CD0B542907179E7BF84055F5879F0E0C9A6325CFA27483C5E8840DF8E07961CB
+                  E2C3C2190C32521D503E349DBA237F39DA7CAE43AB454D76C5B1ED7858680D54
+                  AA3438CCD69737F1297301D6DFDE395E5576CA681A462063B1880859B4D033A8
+                  8ACAA4DE60FE11ABE38BC6D686BA73EDDF688065B33A67182D380F3C6763E1DA
+                  AD454FF0287184B14A6A2ACBFE61348E8F151C8D4593458991E5AFCF5FFEE0E0
+                  B1F6AF2FEBFB071D0ED7B45762042B6D23A255F4C4F56895D4205A06E3D0F7B1
+                  A2E6138C8916ED3FCCC80D20BBD2A37FEBD58317BED11829FF1957F5370CEBBA
+                  F9A8BBD15D41373C3E57AE4A5BB46CA1422EE150761E8A9841DDE9A6923DE59D
+                  9D5AD8D4B801BB6158B1E6A3D70FA2CA936C5463914A25FB4541EECF56DF4BFB
+                  0FC8E0CFC32E4FD196DD6DADEA019379DC0EE7C660C5984F45EDB146988FDBE3
+                  458B8F8A8A05BB74D9C2DFFFF1B7CAB41436F564BA7AEDDF75A4F658435F9F09
+                  0DDCAC63C17C3EAEFA4CA735B85CE1C9E0AA62F1BCC54BB29F7BE9D73FCD5942
+                  173FBA8F283BF471F97B276153E316D559C23262320A8B95929208AC675F7C7C
+                  C5CAA5B158A5EF1CFFE848ED4DC28A76101EB797AE7C3299F8CE650B7EB7634B
+                  A64A169BC43FBF7EB8B6A6F1EAAC26312AF9CA5248FE3F903C5A0C9264262408
+                  150A69DEC655B9EB7378310B76D8E52DFACDAED696994B7EAAE5949EAFF5AB8E
+                  CBE8EFB0EC8341EC2265E9A9B72FCA9E9F25E744FA7D9ABEE1B3E6E237CB341A
+                  AD7582DE6632F3B92DED918209CC479A12A7970F8D574EE976DE306C7DE3A503
+                  2DCD1D06FD103238ED724A59B57443FEEA71AC7AC02CA19AE6D89D0F11319F51
+                  CFA1FED285149B1FD388F5DD3D1F9EFD575B9FCE68B3C17C02E3CF3E6963F3F3
+                  871F7879CFD6686353BCBBF444659D79C42A16273D5C98BBED0F4F8DD92712DF
+                  DB2A064354EE0281B6AF2ED6949DEAF8F6BFE86F91E8995835068B156E9AB14D
+                  C8CB5F2D574A313176519F1CADEBEEBAEA727AD0E5DDB1286B6771115A503226
+                  30B164D8D7DB6C0E439FA953DDDD72B6FD8AA657AF1F1A1AB4C0A4E36FF9E361
+                  218F1C0E291209129344024158F44E6CDECD76BBDD898722C5E2D4C48C0C4986
+                  428A6A8E7DF698ED3E6CD1EDF480002F6BF80CC261B5399C0EB7C7E39B287753
+                  C2A2C9103354456A56227C02E30FD03F1497C227367C2E560639E6C486B87686
+                  84F5889BE18FD4A18D0FEFF184A99C284DE9C426F6EC2AF6A1A3CFB7C6A6913E
+                  E142074A1F72E1E3D48FB8FE1F4F03E7B06E8D31873587355BE37F35AF15500C
+                  C744110000000049454E44AE426082}
+                UseAccentColor = None
+                GradientOptions.Enabled = False
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = clRed
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = ''
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                Colors.Enter = 15073395
+                Colors.Leave = 12976227
+                Colors.Down = 8388672
+                Colors.BLine = 8388672
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = False
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 6
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+              object ImgSelector_4: CButton
+                Tag = 2
+                AlignWithMargins = True
+                Left = 186
+                Top = 0
+                Width = 88
+                Height = 81
+                Margins.Left = 2
+                Margins.Top = 0
+                Margins.Right = 2
+                Margins.Bottom = 0
+                OnClick = ImgSelector_1Click
+                TabOrder = 2
+                Align = alLeft
+                BSegoeIcon = #59188
+                BPicture.Data = {
+                  0954506E67496D61676589504E470D0A1A0A0000000D49484452000000320000
+                  00320802000000915D1FE6000000017352474200AECE1CE90000000467414D41
+                  0000B18F0BFC6105000000097048597300000EC300000EC301C76FA864000007
+                  FB4944415478DACD99796C14551CC7DFDBEE7D76B7DD6ED9EDB12D6B29A545CA
+                  59A55AA1E52A022DA5DC94822646FFD13F087845134D8C46A331D168F0885C22
+                  D88A18214141220202728B12686929D0760B52DAEE7D75FCCDCC5EB3333BDD85
+                  D6F8D24C5E67DE9BDF67BEBFDFFBBD63F124D488FE7F05FF9FB108A850FF4657
+                  820D5837A3EF44DF64D731F30E629A405C1683753C11AD656032A1865380F81F
+                  CDD178226A18018607FE8664B062F4E77FCADF98B36F444D5C8AD60401990F79
+                  FCC8D306330390F3CD88D9916D17AE80B53A59814726F6983678B09272C33063
+                  4D40ABE20982B9E20571E512B6803CB921E67E8C4363B0D82FE1EC457055E299
+                  E6E9C8A71419F213D0CA91F1C30315FC305A8158EE602772B62B117FE491CF30
+                  C6D405238240C4200185D31007008D957C09BD0DD300947528022C10E0142842
+                  81509422120BC51211D4DD2EEFC03D87C7E5053856AEE0881CC05A7E3F22836D
+                  302C04F329601EFEC0BC582A92CAC4328544A694AA5215EA34A55AA754699512
+                  B9D87AABF748F3C9CEB6DB3EAF3F41272E8BF154BCE08FF449C10AA54C6FD4EA
+                  0C1AB556499B27AF50D72A94A90AA5462E938B25002A118A44C2C1C1C18EF63B
+                  5BDEDA73EEC865A7DD83A3BCC7394B92D7F121ACC48B4426CA2FCA9ABF7EA6A5
+                  381B38A49479B15848CB264C11A4A40804F047F91402CBEB0DB4B558BF78B3E9
+                  C4818B769B2B91640C584B93F41F52AA65657326346CAAC91B9D21918A04028A
+                  800AAF48A447C58CD7E36F6BB57EFE46D3F103E71D03496011213FD2830663A6
+                  C2CC1E58952AAF5838A5F1A55A739E1E829A6C498E34B23D39D806C931374886
+                  36120A49E57CA01689F5EDF103171C034EBA65BC80A1ADE312549F9C58184138
+                  3F5133A5F1C5DADCBC0C30ECF7053C1EBFCF077F018868A87B3D3E8FDB076F37
+                  1875BA74156086B0CEDB1354AB042D49D6896A126B2A8965CE802FFFA7A7BFED
+                  6AF7EDCEDEFEBBB6815E5BFF5D3B5C5D76777A66EABCD5152593F321E0DA5B7B
+                  3EA3B068B5EE078B77862628272A6650583966BDC7E33B7BF4CADE2F0F5EBFD2
+                  EDB2BB4027100CF48360371718D76CAC7DB4B218E28FC2DA1D8A2D8EF9966994
+                  C0C5A82E69276A1533164DA3B19C0ECFAFFBCF6D7BF7FBEB573B2186A8E0A2A2
+                  4A24CC2F32AD7FA5BEBC6A3C89758DC63A075844226A15A3C5493A11AB492C50
+                  6B714EAEDEE1F01CDE7766EBDBCDD75BBA03BE00F9588060684276CD1F6B5AFB
+                  52DDF4CA124860612C7B50ADE1C742EAA05A11AC2D6F3777B47405FC83303015
+                  2A19340047E7583217AEAF9A30AD4024A6636BD7314A2D9ED80ABB128F43B5C9
+                  3B510958EB18584D375AADC094999D5E34C5326EDA1883294DA5916799F58651
+                  5A30D6DE6ADDFCC62ECA89CE849C18C24A40582A6BC33C08534DC582A90D1B6A
+                  B273D31D760AEB9D66EBCD3B26B3A16A697979F52443662A4C3E305F834ED01E
+                  46401B89F54D124E1C876A1211492014C01CACD1A9345AA556AF9EF4F8B8F9AB
+                  671846A5DA6DEEC3FB4E6F7B6F8FD3E69AB1F89145EBAA8055261343E20FA6FB
+                  509607AC6307CEF238317A30E222B4684826483C5ABDA6A02477E213257985D9
+                  1A9D3255AB30E6E8154AC940BF0BB0767EF88344265EBBA97ECAF4316A8D9C62
+                  8A9410D6CE63893BB1082DA42B713E00C1A40BF24CAE2859D038CB32D60456E9
+                  F918AEA0467F9F13B0BEFDF847438EFEA997973D5468944A45316F01AC6B2D80
+                  F535E9C4E054CD5E733337FB21AC78D8482A978C2DCD5FB3A1AEB4AC40AB5340
+                  AC84BD0329AAEF1E89D5F4C9BE6C8BB171D392D1964C584DC4BC0326A2962BDD
+                  9FBEBEFDE42F179C7677B413E3A56E3C162DE0A312E034BD66EE8A8A65CFCE87
+                  A0893119C6DAF5D10F6986D4A75F5D59589C2593493066B481D1FAE7D9F64F5E
+                  DB7AE98F16B7D38BD0D03B0D1E2CF24BC083C65CFDAA176AE7D54F4FCF50C704
+                  0D85E5F8E5C7D33B3ED8038F963F5FF3F8EC525DBA9252946E80FCFEC09D9EFE
+                  837B4FEDFA68EFCD6B56BFCF3FD4EE93A0B19EE4C009D561656CCA33346C5832
+                  BBB64C97A68AC182D5CBBD5EFB4F7B4E6C7FFF3B5BBF03E26FE9730B2C854695
+                  5A469211C8E70FF4F7392E5FBC014CE78EFE6DEB731089043C0014A2F95C1115
+                  3A0B4811188C6975CF54D734CC84741096812EA084B5BBEFFB2D87BEDBBCBFF7
+                  CE00F811C8662E2E3717986090C22B6C3657CBA58E434DBF9DFFFD726F4F1FB4
+                  673990DB9FDC5891C7D4EAAAACB274EDC6FA8242935C21090B0652391DEEAB97
+                  BBBE7A77F78983B0907202B4264D9565368C2E36EB8D69208CF5C6ED6B7F7574
+                  75F4C0B6C74FCE988916C0AAE6745FB808C5C2AC3C43F5AACAD975E5A34C5A29
+                  952A8109F6585D9DF77E6E3EBA7FC7A15BED3D7E6A4B03B128920821EA451232
+                  4D78DD5E97CBEBF3F8A87D5812058F21B1183CF4BA99E6A497E690DF732CC6C7
+                  AAA795CD9A94314A0BBB09AFD7DFD3D57BE2E73347F79FBAD1DAE5727A88C82A
+                  8ADE3352FD09FA5DE117467F3E8118298BE14DC09A3734BB004BA562089DACFC
+                  CC6C8B49A19283CB6EB676DE6AB7DEEDE9F3B8BDC98A91885A73136B087B6501
+                  BD47853938100878DD3E588B060283894CBD496315A0B93C673D04E9478CA2A7
+                  061C6A41D037833DA05928142231408D99E8AD29C7231CB18CC2BE06AC39C3FE
+                  ADC3A2D6EC64BBFC1787940F5158EC73B4780767F11A739EBFC49C2C10BC9518
+                  AC5923FDE9F7A756551C39384F37D9F20DBD1A48E0578BD866D812C48A3C8C29
+                  3C67E8D10DD8E77A6C2276FB78BFB50056E50838E1410B2716FFCF24F18E4EF9
+                  CF1D13E9C8C09AC9EE8AE30F967806D9911873224C70DD417104F8178899C2BB
+                  BCF55B090000000049454E44AE426082}
+                UseAccentColor = None
+                GradientOptions.Enabled = False
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = clRed
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = ''
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                Colors.Enter = 15073395
+                Colors.Leave = 12976227
+                Colors.Down = 8388672
+                Colors.BLine = 8388672
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = False
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 6
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+              object ImgSelector_5: CButton
+                Tag = 3
+                AlignWithMargins = True
+                Left = 278
+                Top = 0
+                Width = 88
+                Height = 81
+                Margins.Left = 2
+                Margins.Top = 0
+                Margins.Right = 2
+                Margins.Bottom = 0
+                OnClick = ImgSelector_1Click
+                TabOrder = 3
+                Align = alLeft
+                BSegoeIcon = #59188
+                BPicture.Data = {
+                  0954506E67496D61676589504E470D0A1A0A0000000D49484452000000320000
+                  00320802000000915D1FE6000000017352474200AECE1CE90000000467414D41
+                  0000B18F0BFC6105000000097048597300000EC300000EC301C76FA864000003
+                  7969545874584D4C3A636F6D2E61646F62652E786D7000000000003C3F787061
+                  636B657420626567696E3D22EFBBBF222069643D2257354D304D704365686948
+                  7A7265537A4E54637A6B633964223F3E0D0A3C783A786D706D65746120786D6C
+                  6E733A783D2261646F62653A6E733A6D6574612F2220783A786D70746B3D2241
+                  646F626520584D5020436F726520352E362D633134322037392E313630393234
+                  2C20323031372F30372F31332D30313A30363A33392020202020202020223E0D
+                  0A20203C7264663A52444620786D6C6E733A7264663D22687474703A2F2F7777
+                  772E77332E6F72672F313939392F30322F32322D7264662D73796E7461782D6E
+                  7323223E0D0A202020203C7264663A4465736372697074696F6E207264663A61
+                  626F75743D222220786D6C6E733A786D704D4D3D22687474703A2F2F6E732E61
+                  646F62652E636F6D2F7861702F312E302F6D6D2F2220786D6C6E733A73745265
+                  663D22687474703A2F2F6E732E61646F62652E636F6D2F7861702F312E302F73
+                  547970652F5265736F75726365526566232220786D6C6E733A786D703D226874
+                  74703A2F2F6E732E61646F62652E636F6D2F7861702F312E302F2220786D704D
+                  4D3A4F726967696E616C446F63756D656E7449443D2243343144363346374339
+                  424532303942324146363233453745364644363235462220786D704D4D3A446F
+                  63756D656E7449443D22786D702E6469643A3143373231303832304131433131
+                  4539394442393842313031343042393332412220786D704D4D3A496E7374616E
+                  636549443D22786D702E6969643A314337323130383130413143313145393944
+                  42393842313031343042393332412220786D703A43726561746F72546F6F6C3D
+                  2241646F62652050686F746F73686F702043432032303138202857696E646F77
+                  7329223E0D0A2020202020203C786D704D4D3A4465726976656446726F6D2073
+                  745265663A696E7374616E636549443D22786D702E6969643A38376664356134
+                  632D376561622D613034632D613139302D316535333131353566343436222073
+                  745265663A646F63756D656E7449443D22433431443633463743394245323039
+                  423241463632334537453646443632354622202F3E0D0A202020203C2F726466
+                  3A4465736372697074696F6E3E0D0A20203C2F7264663A5244463E0D0A3C2F78
+                  3A786D706D6574613E0D0A3C3F787061636B657420656E643D2272223F3EF867
+                  B17B0000057A4944415478DAED98D953A34A148781ACEA4D32EE46CBAD2C93D2
+                  074B9FEEF8A2DEFFFF7F70B96EE516F72D84301F7DA005929940CCCCBD0F3625
+                  12A0BB3F7EE7F439074CE37FD9CCFF1AE00BEB0BEB0BEB0BEB0BABCF66595626
+                  9361E66C26EB9F720DBB65F3BFD56AFD39AC7C3E5F2814D8E772B96C366B9ADE
+                  A4AEEB1A6AF30EE4A7DA43D66C367F1716928C8C8C0C0D0D158A858C95353AA6
+                  0FFE454EFAB4AE3B602C9480A6542A0D0F0FEB39F4C48ED36A390E1221896747
+                  45FF219ECFE91D0C0C0B0B952B9572B9CC7CFAB99BAA794FAFE6CEA816EE055F
+                  3B68206262811B00167E3336365E2E97F4133F3D3D318DA1BC8A96701CDBB65F
+                  5F5FDB8E93CBE73F85C5945393937F954A42C3B82F2F2F1CE05231550C65DFD8
+                  B13C46F8403F559F58CC3A3131313636263FDFDEDE7850AC0050786E9A1534F9
+                  D9399430B543AD4F23562A95999919FC80FEB8CEE3E363D858CC2D3EA4DD3955
+                  634CC8D2750365767616BF36BC65E5DCDDDD3177B15894ABE2B300F541136B29
+                  FAB3ECE7E7E7C569303F56230AE82546A804EB9334A9B1B0DAF4F4B428DCB869
+                  647359384421CC3740A0A45828B1B8B888E1607A7F7FC77022124D92C9608112
+                  6131EBEAEA6A01EF715D5C1BC3C95A8315913EEF43FD6011275756568A852229
+                  E4F6F69688CC194385ABDF24526F2C54A9D56AD41E30351A0DD69DC8C3BE3354
+                  FE212C9CA656AF178B05D2EACDCD8D6642AD817B77522CC4585B5B9368747F7F
+                  4F04EF8349DCCE4F32DE5F973C930EAB5EAF4BC07C7E7EBABF7F802F39530013
+                  CA33A67069A68F6A27051601B35AAD1A2A9F9F9F9F533C19CAF793F893196A46
+                  34376B2A37D4926211C7D7D7D76580E3E36355CA797E2691B33793E56D0C690A
+                  A13A0ADF60A894F5C1D55685F3AFB1B0D1E6E626B50E50575757F492CCAF53DE
+                  AF99748D10160C8DE9EE95CE810F9024705662327BC9193DB0969696AA3355F0
+                  09E51717178C95D0A57401E31F2098E5BDD5E0A0C82F8506E77591C89DECAFAF
+                  AF59E36D85F6532CECB5B1B1219D4F4E4E246C26329F6978A60BB04460684647
+                  4733413382724537B99389C81C5DFDCCC72222301097292F099E1211640D2634
+                  9FECD16672729285C2F3480516030A57EECC055957539A22D5D6D696209F9E9E
+                  4A622109E71294E11E8DDAA494A0D01067F2CEABC8805FB3B59DB6E3F2E73369
+                  C73F3C3A745A4EA7601E16C9786A6A8A0332315E253ECEBE77A0F23CC9371C4C
+                  4416CD24E285A502A5ADF0341C578F8E8EE47C1C0BDB7FFFFEB7819FBAEED9E9
+                  A915BCBEA55A80D4A4D5EA2CB6A39794CBECB81805F28EF44F486CBB8911D5A1
+                  B7454646A75ABD266FDD07070752B7248F55220CEF1AE3E3E322B06085D58AEA
+                  E453D19D9548A4D08A4646A64C90B293B870767696C2820116E65B5858904C60
+                  C916048B4E7F0FA462EF2D79DB6EE95B22236F6F6F8B8FE355F491C992AC418D
+                  8554AC3E06B1424D778F9329D1384FDC7A7878505EA5AC18C3DAD9D991CE48A5
+                  270BBFEEF5C232171616E57D3500D254A6E441ED3D5A27595B1F2F866A8B62ED
+                  EECA0794E3E37F25F425C7926F54CBCBCB9E54194BC28448A86FF9488041C35B
+                  2E2F2FFDAF0FC185F84ADCDDDD95AC707878286E0E9C44F9240D020AEB402A95
+                  7B4239B1130BA6AB2B989C1853172CE9BCBFBF2F3429D45237CFCDCD91FE2470
+                  C70A1B9D07C5754835BC13482CD554DDA3FCDEDE9E7426B2A536A26A842BDED8
+                  E4893BA552A1DEA47A03483E9C68F1D45EEA1BB71B96FA5AC872D502245C89FA
+                  FE6F956FD333D3F265CBFF6E160886D510E9F9F9D9511FDC5800DE22504EAEE1
+                  BA8C09963CD6C5C5256157CE268C5B61B27C215F2A954786877150EF13A8DD7A
+                  6FBEB3E29AB6CD5274A37E1656ACFB8082456B369B787DAA281F23EB2C03A3D6
+                  8C7C8914A89F8EB6F7CF9E2E5CF17AA149EB5E31327D1CBE1AFEB4DCB396FF01
+                  56C28638BBAABDB20000000049454E44AE426082}
+                UseAccentColor = None
+                GradientOptions.Enabled = False
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = clRed
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = ''
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                Colors.Enter = 15073395
+                Colors.Leave = 12976227
+                Colors.Down = 8388672
+                Colors.BLine = 8388672
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = False
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 6
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+            end
+            object Panel12: TPanel
+              AlignWithMargins = True
+              Left = 0
+              Top = 727
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              Align = alTop
+              BevelOuter = bvNone
+              FullRepaint = False
+              ParentBackground = False
+              ParentColor = True
+              TabOrder = 12
+              object Threads_Text: TLabel
+                Left = 250
+                Top = 0
+                Width = 80
+                Height = 30
+                Align = alLeft
+                AutoSize = False
+                Caption = '10'
+                Layout = tlCenter
+                ExplicitLeft = 256
+                ExplicitTop = 16
+              end
+              object Settings_Threads: CSlider
+                Left = 0
+                Top = 0
+                Width = 250
+                Height = 30
+                OnChange = Settings_ThreadsChange
+                Align = alLeft
+                ParentBackground = True
+                AccentColor = None
+                Presets = cslNone
+                Foreground.Enter = 14442442
+                Foreground.Leave = 12797617
+                Foreground.Down = 11152792
+                Foreground.Border = clGray
+                Foreground.BorderThick = 0
+                Foreground.MultiColor = False
+                Background.Enter = 14211288
+                Background.Leave = 14211288
+                Background.Down = clGray
+                Background.Border = clGray
+                Background.BorderThick = 0
+                Background.MultiColor = False
+                SliderOptions.Height = 10
+                SliderOptions.WidthMargin = 10
+                SliderOptions.Roundness = 5
+                SliderOptions.FlatEnd = False
+                Indicator.Height = 15
+                Indicator.Width = 15
+                Indicator.Roundness = 50
+                Indicator.Enabled = True
+                IndicatorColor.Enter = 16722837
+                IndicatorColor.Leave = 16711808
+                IndicatorColor.Down = 16711808
+                IndicatorColor.Border = 4603449
+                IndicatorColor.BorderThick = 5
+                IndicatorColor.MultiColor = True
+                IndicatorColor.DynamicBorderSize = 3
+                IndicatorColor.DynamicBorder = True
+                State = cssLeave
+                Max = 40
+                Min = 5
+                Position = 10
+              end
+            end
+            object Panel13: TPanel
+              AlignWithMargins = True
+              Left = 0
+              Top = 509
+              Width = 863
+              Height = 45
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              Align = alTop
+              BevelOuter = bvNone
+              FullRepaint = False
+              ParentBackground = False
+              ParentColor = True
+              TabOrder = 13
+              object CButton25: CButton
+                Left = 0
+                Top = 0
+                Width = 350
+                Height = 45
+                OnClick = CButton25Click
+                TabOrder = 0
+                Align = alLeft
+                Constraints.MaxWidth = 857
+                BSegoeIcon = #60770
+                ButtonIcon = cicSegoeFluent
+                UseAccentColor = None
+                GradientOptions.Enabled = False
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = clRed
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = 'Clear artwork cache'
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                Colors.Enter = 15073395
+                Colors.Leave = 12976227
+                Colors.Down = 8388672
+                Colors.BLine = 8388672
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = False
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 6
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+            end
+            object Setting_Visualisations: CCheckBox
+              AlignWithMargins = True
+              Left = 0
+              Top = 226
+              Width = 863
+              Height = 30
+              Margins.Left = 0
+              Margins.Top = 1
+              Margins.Right = 0
+              Margins.Bottom = 1
+              TabStop = True
+              TabOrder = 14
+              OnChange = Setting_VisualisationsChange
+              ParentBackground = False
+              Align = alTop
+              Allignment = taLeftJustify
+              Text = 'Enable visualisations'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+          end
+        end
+        object GeneralDraw: TPanel
+          Left = 0
+          Top = 0
+          Width = 880
+          Height = 498
+          Align = alClient
+          BevelOuter = bvNone
+          Caption = 'Panel2'
+          FullRepaint = False
+          ParentBackground = False
+          ParentColor = True
+          ShowCaption = False
+          TabOrder = 0
+          object DrawItem: TPaintBox
+            Left = 0
+            Top = 0
+            Width = 868
+            Height = 498
+            Align = alClient
+            OnMouseDown = DrawItemMouseDown
+            OnMouseMove = DrawItemMouseMove
+            OnMouseUp = DrawItemMouseUp
+            OnPaint = DrawItemPaint
+            ExplicitLeft = -6
+            ExplicitWidth = 817
+            ExplicitHeight = 478
+          end
+          object ScrollPosition: CScrollbar
+            Left = 868
+            Top = 0
+            Width = 12
+            Height = 498
+            Colors.Foreground = clGray
+            Colors.Buttons = clDarkslategray
+            Colors.Content = 5051678
+            OnChange = ScrollPositionChange
+            Position = 0
+            Animation = True
+            Minimised = True
+            AutoRoundness = True
+            Roundness = 0
+            CustomScrollbarSize = 0
+            PageSize = 20
+            Align = alRight
+            TabOrder = 0
+            Color = 2886678
+            ParentColor = False
+          end
+        end
+        object Page_SubView: TPanel
+          Left = 0
+          Top = 0
+          Width = 880
+          Height = 498
+          Align = alClient
+          BevelOuter = bvNone
+          Caption = 'ViewAlbum,ViewArtist,ViewPlaylist'
+          Color = 2886678
+          FullRepaint = False
+          ParentBackground = False
+          ShowCaption = False
+          TabOrder = 3
+          object DrawItem_Clone1: TPaintBox
+            AlignWithMargins = True
+            Left = 255
+            Top = 0
+            Width = 613
+            Height = 498
+            Margins.Left = 15
+            Margins.Top = 0
+            Margins.Right = 0
+            Margins.Bottom = 0
+            Align = alClient
+            OnMouseDown = DrawItemMouseDown
+            OnMouseMove = DrawItemMouseMove
+            OnMouseUp = DrawItemMouseUp
+            OnPaint = DrawItemPaint
+            ExplicitLeft = 51
+            ExplicitTop = 85
+            ExplicitWidth = 798
+            ExplicitHeight = 374
+          end
+          object Panel1: TPanel
+            Left = 0
+            Top = 0
+            Width = 240
+            Height = 498
+            Align = alLeft
+            BevelOuter = bvNone
+            Caption = 'Panel2'
+            Color = 2886678
+            FullRepaint = False
+            ParentBackground = False
+            ShowCaption = False
+            TabOrder = 0
+            object Label3: TLabel
+              Left = 236
+              Top = 0
+              Width = 4
+              Height = 498
+              Align = alRight
+              Color = 5051678
+              ParentColor = False
+              Transparent = False
+              ExplicitHeight = 21
+            end
+            object Panel15: TPanel
+              Left = 0
+              Top = 0
+              Width = 236
+              Height = 498
+              Align = alClient
+              BevelOuter = bvNone
+              Caption = 'Panel15'
+              FullRepaint = False
+              ShowCaption = False
+              TabOrder = 0
+              object SubView_Cover: CImage
+                AlignWithMargins = True
+                Left = 20
+                Top = 10
+                Width = 196
+                Height = 200
+                Margins.Left = 20
+                Margins.Top = 10
+                Margins.Right = 20
+                Margins.Bottom = 10
+                Align = alTop
+                GifSettings.Enable = False
+                GifSettings.AnimationSpeed = 100
+                ExplicitLeft = 21
+                ExplicitTop = -159
+                ExplicitWidth = 143
+              end
+              object Panel4: TPanel
+                AlignWithMargins = True
+                Left = 6
+                Top = 226
+                Width = 224
+                Height = 266
+                Margins.Left = 6
+                Margins.Top = 6
+                Margins.Right = 6
+                Margins.Bottom = 6
+                Align = alClient
+                BevelOuter = bvNone
+                Caption = 'Panel2'
+                Color = 2886678
+                FullRepaint = False
+                ParentBackground = False
+                ShowCaption = False
+                TabOrder = 0
+                object SubView_Type: TLabel
+                  Left = 0
+                  Top = 42
+                  Width = 224
+                  Height = 32
+                  Align = alTop
+                  Caption = 'Album View'
+                  Font.Charset = DEFAULT_CHARSET
+                  Font.Color = clWhite
+                  Font.Height = -24
+                  Font.Name = 'Segoe UI Semibold'
+                  Font.Style = []
+                  ParentFont = False
+                  Layout = tlBottom
+                  ExplicitWidth = 130
+                end
+                object Label5: TLabel
+                  Left = 0
+                  Top = 74
+                  Width = 224
+                  Height = 192
+                  Align = alClient
+                  Caption = 'More information here'
+                  WordWrap = True
+                  ExplicitWidth = 158
+                  ExplicitHeight = 21
+                end
+                object Panel10: TPanel
+                  Left = 0
+                  Top = 0
+                  Width = 224
+                  Height = 42
+                  Align = alTop
+                  BevelOuter = bvNone
+                  Caption = 'Panel10'
+                  ParentColor = True
+                  ShowCaption = False
+                  TabOrder = 0
+                  object Download_SubView: CButton
+                    AlignWithMargins = True
+                    Left = 3
+                    Top = 1
+                    Width = 172
+                    Height = 40
+                    Margins.Top = 1
+                    Margins.Bottom = 1
+                    OnEnter = ChangeIconDownload
+                    OnClick = DownloadItem
+                    TabOrder = 0
+                    Align = alClient
+                    BSegoeIcon = #59542
+                    ButtonIcon = cicSegoeFluent
+                    UseAccentColor = None
+                    GradientOptions.Enabled = False
+                    GradientOptions.Enter = clFuchsia
+                    GradientOptions.Leave = clRed
+                    GradientOptions.Down = clMaroon
+                    ControlStyle = []
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = 14123546
+                    Font.Height = -16
+                    Font.Name = 'Segoe UI Semibold'
+                    Font.Style = []
+                    SubTextFont.Charset = DEFAULT_CHARSET
+                    SubTextFont.Color = 14123546
+                    SubTextFont.Height = -13
+                    SubTextFont.Name = 'Segoe UI'
+                    SubTextFont.Style = []
+                    FontAutoSize.Enabled = False
+                    FontAutoSize.Max = -1
+                    FontAutoSize.Min = -1
+                    Text = 'Download'
+                    SubText = 'Hello World!'
+                    AutoExtendImage = False
+                    State = mbsLeave
+                    Colors.Enter = 5771359
+                    Colors.Leave = 4853328
+                    Colors.Down = 3539258
+                    Colors.BLine = 3539258
+                    Preset.Color = clBlue
+                    Preset.Kind = cbprCustom
+                    Preset.PenColorAuto = True
+                    Preset.ApplyOnce = False
+                    Preset.IgnoreGlobalSync = False
+                    UnderLine.Enable = True
+                    UnderLine.UnderLineRound = True
+                    UnderLine.UnderLineThicknes = 6
+                    TextColors.Enter = clWhite
+                    TextColors.Leave = clWhite
+                    TextColors.Down = clWhite
+                    TextColors.BLine = clBlack
+                    Pen.Color = 2886678
+                    Pen.Width = 0
+                    Pen.EnableAlternativeColors = False
+                    Pen.FormSyncedColor = False
+                    Pen.AltHoverColor = clBlack
+                    Pen.AltPressColor = clBlack
+                    Pen.GlobalPresetExcept = False
+                    Animations.PressAnimation = True
+                    Animations.PADelay = 2
+                    Animations.PAShrinkAmount = 4
+                    Animations.PAAnimateEngine = cbneAtDraw
+                    Animations.FadeAnimation = True
+                    Animations.FASpeed = 10
+                  end
+                  object CButton27: CButton
+                    AlignWithMargins = True
+                    Left = 181
+                    Top = 1
+                    Width = 40
+                    Height = 40
+                    Margins.Top = 1
+                    Margins.Bottom = 1
+                    OnClick = CButton27Click
+                    TabOrder = 1
+                    Align = alRight
+                    BSegoeIcon = #59542
+                    UseAccentColor = None
+                    GradientOptions.Enabled = False
+                    GradientOptions.Enter = clFuchsia
+                    GradientOptions.Leave = clRed
+                    GradientOptions.Down = clMaroon
+                    ControlStyle = []
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = 14123546
+                    Font.Height = -16
+                    Font.Name = 'Segoe Fluent Icons'
+                    Font.Style = []
+                    SubTextFont.Charset = DEFAULT_CHARSET
+                    SubTextFont.Color = 14123546
+                    SubTextFont.Height = -13
+                    SubTextFont.Name = 'Segoe UI'
+                    SubTextFont.Style = []
+                    FontAutoSize.Enabled = False
+                    FontAutoSize.Max = -1
+                    FontAutoSize.Min = -1
+                    Text = #59718
+                    SubText = 'Hello World!'
+                    AutoExtendImage = False
+                    State = mbsLeave
+                    Colors.Enter = 5771359
+                    Colors.Leave = 4853328
+                    Colors.Down = 3539258
+                    Colors.BLine = 3539258
+                    Preset.Color = clBlue
+                    Preset.Kind = cbprCustom
+                    Preset.PenColorAuto = True
+                    Preset.ApplyOnce = False
+                    Preset.IgnoreGlobalSync = False
+                    UnderLine.Enable = True
+                    UnderLine.UnderLineRound = True
+                    UnderLine.UnderLineThicknes = 6
+                    TextColors.Enter = clWhite
+                    TextColors.Leave = clWhite
+                    TextColors.Down = clWhite
+                    TextColors.BLine = clBlack
+                    Pen.Color = 2886678
+                    Pen.Width = 0
+                    Pen.EnableAlternativeColors = False
+                    Pen.FormSyncedColor = False
+                    Pen.AltHoverColor = clBlack
+                    Pen.AltPressColor = clBlack
+                    Pen.GlobalPresetExcept = False
+                    Animations.PressAnimation = True
+                    Animations.PADelay = 2
+                    Animations.PAShrinkAmount = 4
+                    Animations.PAAnimateEngine = cbneAtDraw
+                    Animations.FadeAnimation = True
+                    Animations.FASpeed = 10
+                  end
+                end
+              end
+            end
+          end
+          object Scrollbar_1: CScrollbar
+            Left = 868
+            Top = 0
+            Width = 12
+            Height = 498
+            Colors.Foreground = clGray
+            Colors.Buttons = clDarkslategray
+            Colors.Content = 5051678
+            OnChange = ScrollPositionChange
+            Position = 0
+            Animation = True
+            Minimised = True
+            AutoRoundness = True
+            Roundness = 0
+            CustomScrollbarSize = 0
+            Align = alRight
+            TabOrder = 1
+            Color = 2886678
+            ParentColor = False
+          end
+        end
+        object Page_Search: TPanel
+          Left = 0
+          Top = 0
+          Width = 880
+          Height = 498
+          Align = alClient
+          BevelOuter = bvNone
+          Caption = 'Search'
+          Color = 2886678
+          FullRepaint = False
+          ParentBackground = False
+          ShowCaption = False
+          TabOrder = 4
+          object Label30: TLabel
+            AlignWithMargins = True
+            Left = 15
+            Top = 10
+            Width = 855
+            Height = 40
+            Margins.Left = 15
+            Margins.Top = 10
+            Margins.Right = 10
+            Margins.Bottom = 10
+            Align = alTop
+            Caption = 'Search for'
+            Color = 2886678
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWhite
+            Font.Height = -29
+            Font.Name = 'Segoe UI Bold'
+            Font.Style = []
+            ParentColor = False
+            ParentFont = False
+            Layout = tlCenter
+            ExplicitWidth = 140
+          end
+          object SearchDraw: TPaintBox
+            Left = 0
+            Top = 246
+            Width = 868
+            Height = 252
+            Align = alClient
+            Color = 2886678
+            ParentColor = False
+            OnMouseDown = DrawItemMouseDown
+            OnMouseMove = DrawItemMouseMove
+            OnMouseUp = DrawItemMouseUp
+            OnPaint = SearchDrawPaint
+            ExplicitLeft = 12
+            ExplicitTop = 194
+            ExplicitWidth = 813
+            ExplicitHeight = 243
+          end
+          object Panel19: TPanel
+            Left = 0
+            Top = 60
+            Width = 880
+            Height = 62
+            Align = alTop
+            BevelOuter = bvNone
+            Caption = 'Panel19'
+            ParentColor = True
+            ShowCaption = False
+            TabOrder = 0
+            object SearchBox1: TSearchBox
+              AlignWithMargins = True
+              Left = 15
+              Top = 15
+              Width = 187
+              Height = 32
+              Margins.Left = 15
+              Margins.Top = 15
+              Margins.Right = 10
+              Margins.Bottom = 15
+              Align = alLeft
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clBlack
+              Font.Height = -16
+              Font.Name = 'Segoe UI'
+              Font.Style = []
+              ParentFont = False
+              TabOrder = 0
+              TextHint = 'Type here to search'
+              OnInvokeSearch = SearchBox1InvokeSearch
+              ExplicitHeight = 29
+            end
+            object CButton19: CButton
+              AlignWithMargins = True
+              Left = 217
+              Top = 12
+              Width = 104
+              Height = 38
+              Margins.Left = 5
+              Margins.Top = 12
+              Margins.Right = 5
+              Margins.Bottom = 12
+              OnClick = CButton19Click
+              TabOrder = 1
+              Align = alLeft
+              BSegoeIcon = #57651
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Filters'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 5771359
+              Colors.Leave = 4853328
+              Colors.Down = 3539258
+              Colors.BLine = 3539258
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object CButton20: CButton
+              AlignWithMargins = True
+              Left = 331
+              Top = 12
+              Width = 104
+              Height = 38
+              Margins.Left = 5
+              Margins.Top = 12
+              Margins.Right = 5
+              Margins.Bottom = 12
+              OnClick = CButton20Click
+              TabOrder = 2
+              Align = alLeft
+              BSegoeIcon = #57651
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Types'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 5771359
+              Colors.Leave = 4853328
+              Colors.Down = 3539258
+              Colors.BLine = 3539258
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+          end
+          object Search_Types: TPanel
+            Left = 0
+            Top = 122
+            Width = 880
+            Height = 62
+            Align = alTop
+            BevelOuter = bvNone
+            Caption = 'Panel19'
+            FullRepaint = False
+            ParentColor = True
+            ShowCaption = False
+            TabOrder = 1
+            Visible = False
+            object Label36: TLabel
+              AlignWithMargins = True
+              Left = 3
+              Top = 3
+              Width = 42
+              Height = 56
+              Margins.Right = 15
+              Align = alLeft
+              Caption = 'Types:'
+              Layout = tlCenter
+              ExplicitHeight = 21
+            end
+            object SType_Album: CButton
+              AlignWithMargins = True
+              Left = 169
+              Top = 12
+              Width = 100
+              Height = 38
+              Margins.Top = 12
+              Margins.Bottom = 12
+              OnClick = SType_SongClick
+              TabOrder = 0
+              Align = alLeft
+              BSegoeIcon = #59708
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Albums'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object SType_Song: CButton
+              AlignWithMargins = True
+              Left = 63
+              Top = 12
+              Width = 100
+              Height = 38
+              Margins.Top = 12
+              Margins.Bottom = 12
+              OnClick = SType_SongClick
+              TabOrder = 1
+              Align = alLeft
+              BSegoeIcon = #60495
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Songs'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object SType_Artist: CButton
+              AlignWithMargins = True
+              Left = 275
+              Top = 12
+              Width = 100
+              Height = 38
+              Margins.Top = 12
+              Margins.Bottom = 12
+              OnClick = SType_SongClick
+              TabOrder = 2
+              Align = alLeft
+              BSegoeIcon = #59259
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Artists'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object SType_Playlist: CButton
+              AlignWithMargins = True
+              Left = 381
+              Top = 12
+              Width = 100
+              Height = 38
+              Margins.Top = 12
+              Margins.Bottom = 12
+              OnClick = SType_SongClick
+              TabOrder = 3
+              Align = alLeft
+              BSegoeIcon = #59659
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Playlists'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+          end
+          object Scrollbar_4: CScrollbar
+            Left = 868
+            Top = 246
+            Width = 12
+            Height = 252
+            Colors.Foreground = clGray
+            Colors.Buttons = clDarkslategray
+            Colors.Content = 5051678
+            OnChange = ScrollPositionChange
+            Position = 0
+            Animation = True
+            Minimised = True
+            AutoRoundness = True
+            Roundness = 0
+            CustomScrollbarSize = 0
+            Align = alRight
+            TabOrder = 2
+            Color = 2886678
+            ParentColor = False
+            ExplicitTop = 370
+            ExplicitHeight = 128
+          end
+          object Search_Filters: TFlowPanel
+            Left = 0
+            Top = 184
+            Width = 880
+            Height = 62
+            Align = alTop
+            AutoSize = True
+            BevelOuter = bvNone
+            Caption = 'FlowPanel1'
+            FullRepaint = False
+            ParentBackground = False
+            ParentColor = True
+            ShowCaption = False
+            TabOrder = 3
+            object Label31: TLabel
+              AlignWithMargins = True
+              Left = 3
+              Top = 3
+              Width = 45
+              Height = 56
+              Margins.Right = 15
+              AutoSize = False
+              Caption = 'Filters:'
+              Layout = tlCenter
+            end
+            object CCheckBox2: CCheckBox
+              AlignWithMargins = True
+              Left = 66
+              Top = 3
+              Width = 125
+              Height = 56
+              TabStop = True
+              TabOrder = 0
+              ParentBackground = False
+              Allignment = taLeftJustify
+              Text = 'Exact Match'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object CCheckBox3: CCheckBox
+              AlignWithMargins = True
+              Left = 197
+              Top = 3
+              Width = 125
+              Height = 56
+              TabStop = True
+              TabOrder = 1
+              ParentBackground = False
+              Allignment = taLeftJustify
+              Text = 'Case sensitive'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+            object CCheckBox1: CCheckBox
+              AlignWithMargins = True
+              Left = 328
+              Top = 3
+              Width = 157
+              Height = 56
+              TabStop = True
+              TabOrder = 2
+              ParentBackground = False
+              Allignment = taLeftJustify
+              Text = 'Search properties'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = True
+              State = cbChecked
+            end
+            object CCheckBox4: CCheckBox
+              AlignWithMargins = True
+              Left = 491
+              Top = 3
+              Width = 157
+              Height = 56
+              TabStop = True
+              TabOrder = 3
+              ParentBackground = False
+              Allignment = taLeftJustify
+              Text = 'Search Trashed'
+              Presets.Color = 12940567
+              Presets.Kind = ccpNone
+              Presets.PenColorAuto = True
+              TrueTransparency = True
+              AccentColor = AccentCustom
+              Animation.Enable = True
+              Animation.Interval = 1
+              Animation.Step = 4
+              Options.DrawStyle = cdmFluent
+              Options.Roundness = 5
+              Options.Width = 3
+              AllowGrayed = False
+              BoxSize.EnableProportional = True
+              BoxSize.Horizontal = 16
+              BoxSize.Vertical = 16
+              Colors.AutomaticFontColor = True
+              Colors.Leave = 16250866
+              Colors.Enter = 15658729
+              Colors.Down = 15066593
+              Colors.Checked = 12940567
+              Colors.CheckIndicator = clWhite
+              Colors.TransparentCenter = True
+              ColorsBorder.Leave = 9013638
+              ColorsBorder.Enter = 9013638
+              ColorsBorder.Down = 12434873
+              ColorsBorder.Checked = 12940567
+              Checked = False
+              State = cbUnchecked
+            end
+          end
+        end
+        object ControlBarContainer: TPanel
+          Left = 0
+          Top = 0
+          Width = 880
+          Height = 498
+          Align = alClient
+          BevelOuter = bvNone
+          Caption = 'Panel2'
+          Color = 2886678
+          FullRepaint = False
+          ParentBackground = False
+          ShowCaption = False
+          TabOrder = 5
+          object Controlbar_Playlist: TPanel
+            Left = 0
+            Top = 201
+            Width = 880
+            Height = 62
+            Align = alTop
+            BevelOuter = bvNone
+            Caption = 'Panel19'
+            FullRepaint = False
+            ParentBackground = False
+            ParentColor = True
+            ShowCaption = False
+            TabOrder = 0
+            object Label4: TLabel
+              AlignWithMargins = True
+              Left = 3
+              Top = 3
+              Width = 102
+              Height = 56
+              Margins.Right = 15
+              Align = alLeft
+              Caption = 'Playlist control'
+              Layout = tlCenter
+              ExplicitHeight = 21
+            end
+            object CButton31: CButton
+              AlignWithMargins = True
+              Left = 123
+              Top = 12
+              Width = 172
+              Height = 38
+              Margins.Top = 12
+              Margins.Right = 15
+              Margins.Bottom = 12
+              OnClick = CButton31Click
+              TabOrder = 0
+              Align = alLeft
+              BSegoeIcon = #60621
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Add new playlist'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+          end
+          object Controlbar_Downloads: TPanel
+            Left = 0
+            Top = 0
+            Width = 880
+            Height = 141
+            Align = alTop
+            BevelOuter = bvNone
+            Caption = 'Panel19'
+            FullRepaint = False
+            ParentBackground = False
+            ParentColor = True
+            ShowCaption = False
+            TabOrder = 1
+            object Label_Storage: TLabel
+              AlignWithMargins = True
+              Left = 15
+              Top = 50
+              Width = 855
+              Height = 21
+              Margins.Left = 15
+              Margins.Top = 0
+              Margins.Right = 10
+              Margins.Bottom = 10
+              Align = alTop
+              Caption = '%S of internal storage used'
+              Color = 2886678
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -16
+              Font.Name = 'Segoe UI'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+              ExplicitWidth = 190
+            end
+            object Label18: TLabel
+              AlignWithMargins = True
+              Left = 15
+              Top = 10
+              Width = 855
+              Height = 40
+              Margins.Left = 15
+              Margins.Top = 10
+              Margins.Right = 10
+              Margins.Bottom = 0
+              Align = alTop
+              Caption = 'Your downloads'
+              Color = 2886678
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -29
+              Font.Name = 'Segoe UI Bold'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+              ExplicitWidth = 221
+            end
+            object Download_Filters: TPanel
+              Left = 0
+              Top = 81
+              Width = 880
+              Height = 60
+              Align = alTop
+              BevelOuter = bvNone
+              Caption = 'Panel19'
+              FullRepaint = False
+              ParentColor = True
+              ShowCaption = False
+              TabOrder = 0
+              object Label38: TLabel
+                AlignWithMargins = True
+                Left = 3
+                Top = 3
+                Width = 34
+                Height = 54
+                Margins.Right = 15
+                Align = alLeft
+                Caption = 'View'
+                Layout = tlCenter
+                ExplicitHeight = 21
+              end
+              object DownFilder_3: CButton
+                Tag = 2
+                AlignWithMargins = True
+                Left = 289
+                Top = 12
+                Width = 100
+                Height = 36
+                Margins.Top = 12
+                Margins.Bottom = 12
+                OnClick = DownloadsFilterSel
+                TabOrder = 0
+                Align = alLeft
+                BSegoeIcon = #59708
+                ButtonIcon = cicSegoeFluent
+                UseAccentColor = None
+                GradientOptions.Enabled = False
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = clRed
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = 'Albums'
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                Colors.Enter = 8985494
+                Colors.Leave = 7935876
+                Colors.Down = 5640542
+                Colors.BLine = 6685295
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = True
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 4
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+              object DownFilder_2: CButton
+                Tag = 1
+                AlignWithMargins = True
+                Left = 183
+                Top = 12
+                Width = 100
+                Height = 36
+                Margins.Top = 12
+                Margins.Bottom = 12
+                OnClick = DownloadsFilterSel
+                TabOrder = 1
+                Align = alLeft
+                BSegoeIcon = #60495
+                ButtonIcon = cicSegoeFluent
+                UseAccentColor = None
+                GradientOptions.Enabled = False
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = clRed
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = 'Songs'
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                Colors.Enter = 8985494
+                Colors.Leave = 7935876
+                Colors.Down = 5640542
+                Colors.BLine = 6685295
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = True
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 4
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+              object DownFilder_4: CButton
+                Tag = 3
+                AlignWithMargins = True
+                Left = 395
+                Top = 12
+                Width = 100
+                Height = 36
+                Margins.Top = 12
+                Margins.Bottom = 12
+                OnClick = DownloadsFilterSel
+                TabOrder = 2
+                Align = alLeft
+                BSegoeIcon = #59259
+                ButtonIcon = cicSegoeFluent
+                UseAccentColor = None
+                GradientOptions.Enabled = False
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = clRed
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = 'Artists'
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                Colors.Enter = 8985494
+                Colors.Leave = 7935876
+                Colors.Down = 5640542
+                Colors.BLine = 6685295
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = True
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 4
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+              object DownFilder_5: CButton
+                Tag = 4
+                AlignWithMargins = True
+                Left = 501
+                Top = 12
+                Width = 100
+                Height = 36
+                Margins.Top = 12
+                Margins.Bottom = 12
+                OnClick = DownloadsFilterSel
+                TabOrder = 3
+                Align = alLeft
+                BSegoeIcon = #59659
+                ButtonIcon = cicSegoeFluent
+                UseAccentColor = None
+                GradientOptions.Enabled = False
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = clRed
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = 'Playlists'
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                Colors.Enter = 8985494
+                Colors.Leave = 7935876
+                Colors.Down = 5640542
+                Colors.BLine = 6685295
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = True
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 4
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+              object DownFilder_1: CButton
+                AlignWithMargins = True
+                Left = 55
+                Top = 12
+                Width = 110
+                Height = 36
+                Margins.Top = 12
+                Margins.Right = 15
+                Margins.Bottom = 12
+                OnClick = DownloadsFilterSel
+                TabOrder = 4
+                Align = alLeft
+                BSegoeIcon = #59606
+                ButtonIcon = cicSegoeFluent
+                UseAccentColor = None
+                GradientOptions.Enabled = False
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = clRed
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = 'All Songs'
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                FlatButton = True
+                Colors.Enter = 8985494
+                Colors.Leave = 7935876
+                Colors.Down = 5640542
+                Colors.BLine = 6685295
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = True
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 4
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+            end
+          end
+          object Controlbar_Trash: TPanel
+            Left = 0
+            Top = 141
+            Width = 880
+            Height = 60
+            Align = alTop
+            BevelOuter = bvNone
+            Caption = 'Delete_Filterbar'
+            FullRepaint = False
+            ParentColor = True
+            ShowCaption = False
+            TabOrder = 2
+            object Label6: TLabel
+              AlignWithMargins = True
+              Left = 3
+              Top = 3
+              Width = 73
+              Height = 54
+              Margins.Right = 15
+              Align = alLeft
+              Caption = 'Trash view'
+              Layout = tlCenter
+              ExplicitHeight = 21
+            end
+            object CButton30: CButton
+              Tag = 2
+              AlignWithMargins = True
+              Left = 200
+              Top = 12
+              Width = 100
+              Height = 36
+              Margins.Top = 12
+              Margins.Bottom = 12
+              OnClick = DeleteFilterSel
+              TabOrder = 0
+              Align = alLeft
+              BSegoeIcon = #59708
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Albums'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object CButton32: CButton
+              Tag = 1
+              AlignWithMargins = True
+              Left = 94
+              Top = 12
+              Width = 100
+              Height = 36
+              Margins.Top = 12
+              Margins.Bottom = 12
+              OnClick = DeleteFilterSel
+              TabOrder = 1
+              Align = alLeft
+              BSegoeIcon = #60495
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Songs'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              FlatButton = True
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object CButton33: CButton
+              Tag = 3
+              AlignWithMargins = True
+              Left = 306
+              Top = 12
+              Width = 100
+              Height = 36
+              Margins.Top = 12
+              Margins.Bottom = 12
+              OnClick = DeleteFilterSel
+              TabOrder = 2
+              Align = alLeft
+              BSegoeIcon = #59259
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Artists'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object CButton34: CButton
+              AlignWithMargins = True
+              Left = 424
+              Top = 12
+              Width = 135
+              Height = 36
+              Margins.Left = 15
+              Margins.Top = 12
+              Margins.Bottom = 12
+              OnClick = CButton34Click
+              TabOrder = 3
+              Align = alLeft
+              BSegoeIcon = #57607
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Empty trash'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+          end
+          object Controlbar_ArtistManage: TPanel
+            Left = 0
+            Top = 263
+            Width = 880
+            Height = 62
+            Align = alTop
+            BevelOuter = bvNone
+            Caption = 'Panel19'
+            FullRepaint = False
+            ParentBackground = False
+            ParentColor = True
+            ShowCaption = False
+            TabOrder = 3
+            object Label7: TLabel
+              AlignWithMargins = True
+              Left = 831
+              Top = 3
+              Width = 34
+              Height = 56
+              Margins.Right = 15
+              Align = alRight
+              Caption = 'View'
+              Layout = tlCenter
+              ExplicitHeight = 21
+            end
+            object CButton36: CButton
+              AlignWithMargins = True
+              Left = 619
+              Top = 12
+              Width = 100
+              Height = 38
+              Margins.Top = 12
+              Margins.Bottom = 12
+              OnClick = ArtistViewSel
+              TabOrder = 0
+              Align = alRight
+              BSegoeIcon = #60495
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Songs'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              FlatButton = True
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object CButton37: CButton
+              Tag = 1
+              AlignWithMargins = True
+              Left = 725
+              Top = 12
+              Width = 100
+              Height = 38
+              Margins.Top = 12
+              Margins.Bottom = 12
+              OnClick = ArtistViewSel
+              TabOrder = 1
+              Align = alRight
+              BSegoeIcon = #59708
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Albums'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8985494
+              Colors.Leave = 7935876
+              Colors.Down = 5640542
+              Colors.BLine = 6685295
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = True
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 4
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+          end
+        end
         object Page_Login: TPanel
           Left = 0
           Top = 0
@@ -1443,7 +4845,7 @@ object UIForm: TUIForm
             Left = 300
             Top = 159
             Width = 225
-            Height = 300
+            Height = 200
             BevelOuter = bvNone
             Caption = 'Panel1'
             Color = 2886678
@@ -1452,11 +4854,202 @@ object UIForm: TUIForm
             ParentDoubleBuffered = False
             ShowCaption = False
             TabOrder = 0
+            object LoginBox: TPanel
+              Left = 0
+              Top = 0
+              Width = 225
+              Height = 200
+              Margins.Left = 0
+              Margins.Top = 0
+              Margins.Right = 0
+              Margins.Bottom = 0
+              Align = alClient
+              BevelOuter = bvNone
+              Caption = 'Panel1'
+              Color = 2886678
+              FullRepaint = False
+              ShowCaption = False
+              TabOrder = 0
+              Visible = False
+              object Label16: TLabel
+                Left = 0
+                Top = 94
+                Width = 225
+                Height = 51
+                Align = alBottom
+                Alignment = taCenter
+                Caption = 
+                  'Notice: This is a 3rd party app developed by Codrut Software usi' +
+                  'ng the iBroadcast API.'
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = clWhite
+                Font.Height = -13
+                Font.Name = 'Segoe UI'
+                Font.Style = []
+                ParentFont = False
+                WordWrap = True
+                ExplicitWidth = 218
+              end
+              object CButton13: CButton
+                AlignWithMargins = True
+                Left = 15
+                Top = 5
+                Width = 195
+                Height = 40
+                Margins.Left = 15
+                Margins.Top = 5
+                Margins.Right = 15
+                Margins.Bottom = 5
+                OnClick = CButton13Click
+                TabOrder = 0
+                Align = alTop
+                BSegoeIcon = #59188
+                ButtonIcon = cicYes
+                UseAccentColor = None
+                GradientOptions.Enabled = True
+                GradientOptions.Enter = clFuchsia
+                GradientOptions.Leave = 8388863
+                GradientOptions.Down = clMaroon
+                ControlStyle = []
+                Font.Charset = DEFAULT_CHARSET
+                Font.Color = 14123546
+                Font.Height = -16
+                Font.Name = 'Segoe UI Semibold'
+                Font.Style = []
+                SubTextFont.Charset = DEFAULT_CHARSET
+                SubTextFont.Color = 14123546
+                SubTextFont.Height = -13
+                SubTextFont.Name = 'Segoe UI'
+                SubTextFont.Style = []
+                FontAutoSize.Enabled = False
+                FontAutoSize.Max = -1
+                FontAutoSize.Min = -1
+                Text = 'Start login'
+                SubText = 'Hello World!'
+                AutoExtendImage = False
+                State = mbsLeave
+                Colors.Enter = 16559182
+                Colors.Leave = 13927462
+                Colors.Down = 11295744
+                Colors.BLine = 11295744
+                Preset.Color = clBlue
+                Preset.Kind = cbprCustom
+                Preset.PenColorAuto = True
+                Preset.ApplyOnce = False
+                Preset.IgnoreGlobalSync = False
+                UnderLine.Enable = True
+                UnderLine.UnderLineRound = True
+                UnderLine.UnderLineThicknes = 6
+                TextColors.Enter = clWhite
+                TextColors.Leave = clWhite
+                TextColors.Down = clWhite
+                TextColors.BLine = clBlack
+                Pen.Color = 2886678
+                Pen.Width = 0
+                Pen.EnableAlternativeColors = False
+                Pen.FormSyncedColor = False
+                Pen.AltHoverColor = clBlack
+                Pen.AltPressColor = clBlack
+                Pen.GlobalPresetExcept = False
+                Animations.PressAnimation = False
+                Animations.PADelay = 2
+                Animations.PAShrinkAmount = 6
+                Animations.PAAnimateEngine = cbneAtDraw
+                Animations.FadeAnimation = True
+                Animations.FASpeed = 10
+              end
+              object Panel30: TPanel
+                AlignWithMargins = True
+                Left = 15
+                Top = 160
+                Width = 195
+                Height = 40
+                Margins.Left = 15
+                Margins.Top = 15
+                Margins.Right = 15
+                Margins.Bottom = 0
+                Align = alBottom
+                AutoSize = True
+                BevelOuter = bvNone
+                Caption = 'Panel30'
+                FullRepaint = False
+                ParentColor = True
+                ShowCaption = False
+                TabOrder = 1
+                object CButton21: CButton
+                  AlignWithMargins = True
+                  Left = 0
+                  Top = 0
+                  Width = 192
+                  Height = 40
+                  Margins.Left = 0
+                  Margins.Top = 0
+                  Margins.Bottom = 0
+                  OnClick = CButton21Click
+                  TabOrder = 0
+                  Align = alClient
+                  BSegoeIcon = #59543
+                  ButtonIcon = cicSegoeFluent
+                  UseAccentColor = None
+                  GradientOptions.Enabled = True
+                  GradientOptions.Enter = clFuchsia
+                  GradientOptions.Leave = 8388863
+                  GradientOptions.Down = clMaroon
+                  ControlStyle = []
+                  Font.Charset = DEFAULT_CHARSET
+                  Font.Color = 14123546
+                  Font.Height = -16
+                  Font.Name = 'Segoe UI Semibold'
+                  Font.Style = []
+                  SubTextFont.Charset = DEFAULT_CHARSET
+                  SubTextFont.Color = 14123546
+                  SubTextFont.Height = -13
+                  SubTextFont.Name = 'Segoe UI'
+                  SubTextFont.Style = []
+                  FontAutoSize.Enabled = False
+                  FontAutoSize.Max = -1
+                  FontAutoSize.Min = -1
+                  Text = 'Help logging in'
+                  SubText = 'Hello World!'
+                  AutoExtendImage = False
+                  State = mbsLeave
+                  Colors.Enter = 16559182
+                  Colors.Leave = 13927462
+                  Colors.Down = 11295744
+                  Colors.BLine = 11295744
+                  Preset.Color = clBlue
+                  Preset.Kind = cbprCustom
+                  Preset.PenColorAuto = True
+                  Preset.ApplyOnce = False
+                  Preset.IgnoreGlobalSync = False
+                  UnderLine.Enable = True
+                  UnderLine.UnderLineRound = True
+                  UnderLine.UnderLineThicknes = 6
+                  TextColors.Enter = clWhite
+                  TextColors.Leave = clWhite
+                  TextColors.Down = clWhite
+                  TextColors.BLine = clBlack
+                  Pen.Color = 2886678
+                  Pen.Width = 0
+                  Pen.EnableAlternativeColors = False
+                  Pen.FormSyncedColor = False
+                  Pen.AltHoverColor = clBlack
+                  Pen.AltPressColor = clBlack
+                  Pen.GlobalPresetExcept = False
+                  Animations.PressAnimation = False
+                  Animations.PADelay = 2
+                  Animations.PAShrinkAmount = 6
+                  Animations.PAAnimateEngine = cbneAtDraw
+                  Animations.FadeAnimation = True
+                  Animations.FASpeed = 10
+                end
+              end
+            end
             object LoadingIcon: TPanel
               Left = 0
               Top = 0
               Width = 225
-              Height = 300
+              Height = 200
               Margins.Left = 0
               Margins.Top = 0
               Margins.Right = 0
@@ -1474,11 +5067,11 @@ object UIForm: TUIForm
                 Left = 50
                 Top = 25
                 Width = 125
-                Height = 50
+                Height = 75
                 Margins.Left = 50
                 Margins.Top = 25
                 Margins.Right = 50
-                Margins.Bottom = 225
+                Margins.Bottom = 100
                 Align = alClient
                 BevelOuter = bvNone
                 Caption = 'CPanel2'
@@ -1492,7 +5085,7 @@ object UIForm: TUIForm
                   Left = 3
                   Top = 3
                   Width = 119
-                  Height = 44
+                  Height = 69
                   Align = alClient
                   Brush.Color = clBlack
                   Pen.Color = 10485760
@@ -1508,7 +5101,7 @@ object UIForm: TUIForm
                   Left = 10
                   Top = 10
                   Width = 105
-                  Height = 30
+                  Height = 55
                   Margins.Left = 10
                   Margins.Top = 10
                   Margins.Right = 10
@@ -9437,355 +13030,1013 @@ object UIForm: TUIForm
                 end
               end
             end
-            object LoginBox: TPanel
-              Left = 0
-              Top = 0
-              Width = 225
-              Height = 300
-              Margins.Left = 0
-              Margins.Top = 0
-              Margins.Right = 0
-              Margins.Bottom = 0
-              Align = alClient
-              BevelOuter = bvNone
-              Caption = 'Panel1'
+          end
+        end
+        object Page_Account: TPanel
+          Left = 0
+          Top = 0
+          Width = 880
+          Height = 498
+          Align = alClient
+          BevelOuter = bvNone
+          Caption = 'Account'
+          Color = 2886678
+          FullRepaint = False
+          ParentBackground = False
+          ShowCaption = False
+          TabOrder = 2
+          object ScrollBox2: TScrollBox
+            Left = 0
+            Top = 0
+            Width = 880
+            Height = 498
+            HorzScrollBar.Tracking = True
+            VertScrollBar.Position = 255
+            VertScrollBar.Tracking = True
+            Align = alClient
+            BorderStyle = bsNone
+            TabOrder = 0
+            OnMouseWheel = ScrollBox1MouseWheel
+            object Label8: TLabel
+              AlignWithMargins = True
+              Left = 8
+              Top = -236
+              Width = 260
+              Height = 40
+              Margins.Left = 8
+              Caption = 'About your account'
               Color = 2886678
-              FullRepaint = False
-              ShowCaption = False
-              TabOrder = 0
-              Visible = False
-              object Label13: TLabel
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -29
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+            end
+            object Complete_Email: TLabel
+              AlignWithMargins = True
+              Left = 8
+              Top = -180
+              Width = 173
+              Height = 30
+              Cursor = crHandPoint
+              Margins.Left = 8
+              Caption = 'Your email adress: '
+              Color = 2886678
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -21
+              Font.Name = 'Segoe UI'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+              OnClick = Complete_EmailClick
+            end
+            object Complete_User: TLabel
+              AlignWithMargins = True
+              Left = 8
+              Top = -144
+              Width = 194
+              Height = 30
+              Margins.Left = 8
+              Caption = 'iBroadcast user since'
+              Color = 2886678
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -21
+              Font.Name = 'Segoe UI'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+            end
+            object Complete_Verify: TLabel
+              AlignWithMargins = True
+              Left = 41
+              Top = -102
+              Width = 196
+              Height = 25
+              Margins.Left = 8
+              Caption = 'Your account is verified'
+              Color = 2886678
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -19
+              Font.Name = 'Segoe UI'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+            end
+            object Label9: TLabel
+              AlignWithMargins = True
+              Left = 8
+              Top = 364
+              Width = 178
+              Height = 40
+              Margins.Left = 8
+              Caption = 'Subscriptions'
+              Color = 2886678
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -29
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+            end
+            object Complete_Premium: TLabel
+              AlignWithMargins = True
+              Left = 8
+              Top = 410
+              Width = 165
+              Height = 30
+              Margins.Left = 8
+              Caption = 'Premium is yours!'
+              Color = 2886678
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -21
+              Font.Name = 'Segoe UI'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+            end
+            object Label14: TLabel
+              AlignWithMargins = True
+              Left = 407
+              Top = -44
+              Width = 112
+              Height = 25
+              Margins.Left = 8
+              Caption = 'User Settings'
+              Color = 2886678
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -19
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+            end
+            object Label40: TLabel
+              AlignWithMargins = True
+              Left = 8
+              Top = -50
+              Width = 117
+              Height = 25
+              Margins.Left = 8
+              Caption = 'Library Status'
+              Color = 2886678
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWhite
+              Font.Height = -19
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              ParentColor = False
+              ParentFont = False
+              Layout = tlCenter
+            end
+            object CStandardIcon1: CStandardIcon
+              Left = 8
+              Top = -99
+              Width = 22
+              Height = 22
+              ParentBackground = False
+              Proportional = True
+              SelectedIcon = ciconCheckmark
+              PenWidth = 10
+            end
+            object CButton11: CButton
+              AlignWithMargins = True
+              Left = 3
+              Top = 460
+              Width = 265
+              Height = 38
+              OnClick = CButton11Click
+              Allignment = taLeftJustify
+              TabOrder = 1
+              BSegoeIcon = #59189
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'About iBroadcast premium'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8388863
+              Colors.Leave = 5439654
+              Colors.Down = 3997817
+              Colors.BLine = 4722507
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = False
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 2
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object CButton12: CButton
+              AlignWithMargins = True
+              Left = 3
+              Top = 251
+              Width = 265
+              Height = 38
+              OnClick = CButton12Click
+              Allignment = taLeftJustify
+              TabOrder = 2
+              BSegoeIcon = #59961
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Log off'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8388863
+              Colors.Leave = 5439654
+              Colors.Down = 3997817
+              Colors.BLine = 4722507
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = False
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 2
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object CButton1: CButton
+              AlignWithMargins = True
+              Left = 3
+              Top = 297
+              Width = 265
+              Height = 38
+              OnClick = Button_ReloadLibClick
+              Allignment = taLeftJustify
+              TabOrder = 3
+              BSegoeIcon = #59633
+              ButtonIcon = cicSegoeFluent
+              UseAccentColor = None
+              GradientOptions.Enabled = False
+              GradientOptions.Enter = clFuchsia
+              GradientOptions.Leave = clRed
+              GradientOptions.Down = clMaroon
+              ControlStyle = []
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = 14123546
+              Font.Height = -16
+              Font.Name = 'Segoe UI Semibold'
+              Font.Style = []
+              SubTextFont.Charset = DEFAULT_CHARSET
+              SubTextFont.Color = 14123546
+              SubTextFont.Height = -13
+              SubTextFont.Name = 'Segoe UI'
+              SubTextFont.Style = []
+              FontAutoSize.Enabled = False
+              FontAutoSize.Max = -1
+              FontAutoSize.Min = -1
+              Text = 'Reload library'
+              SubText = 'Hello World!'
+              AutoExtendImage = False
+              State = mbsLeave
+              Colors.Enter = 8388863
+              Colors.Leave = 5439654
+              Colors.Down = 3997817
+              Colors.BLine = 4722507
+              Preset.Color = clBlue
+              Preset.Kind = cbprCustom
+              Preset.PenColorAuto = True
+              Preset.ApplyOnce = False
+              Preset.IgnoreGlobalSync = False
+              UnderLine.Enable = False
+              UnderLine.UnderLineRound = True
+              UnderLine.UnderLineThicknes = 6
+              TextColors.Enter = clWhite
+              TextColors.Leave = clWhite
+              TextColors.Down = clWhite
+              TextColors.BLine = clBlack
+              Pen.Color = 2886678
+              Pen.Width = 0
+              Pen.EnableAlternativeColors = False
+              Pen.FormSyncedColor = False
+              Pen.AltHoverColor = clBlack
+              Pen.AltPressColor = clBlack
+              Pen.GlobalPresetExcept = False
+              Animations.PressAnimation = True
+              Animations.PADelay = 2
+              Animations.PAShrinkAmount = 2
+              Animations.PAAnimateEngine = cbneAtDraw
+              Animations.FadeAnimation = True
+              Animations.FASpeed = 10
+            end
+            object Panel8: TPanel
+              Left = 3
+              Top = -13
+              Width = 432
+              Height = 235
+              BevelOuter = bvNone
+              Caption = 'Panel8'
+              DoubleBuffered = False
+              ParentDoubleBuffered = False
+              TabOrder = 4
+              object Shape7: TShape
                 AlignWithMargins = True
-                Left = 3
-                Top = 78
-                Width = 219
-                Height = 21
-                Margins.Top = 15
-                Align = alTop
-                Alignment = taCenter
-                AutoSize = False
-                Caption = 'Login Token'
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWhite
-                Font.Height = -16
-                Font.Name = 'Segoe UI'
-                Font.Style = []
-                ParentFont = False
-                ExplicitTop = 85
-                ExplicitWidth = 83
-              end
-              object Label16: TLabel
-                Left = 0
-                Top = 194
-                Width = 225
-                Height = 51
-                Align = alBottom
-                Alignment = taCenter
-                Caption = 
-                  'Notice: This is a 3rd party app developed by Codrut Software usi' +
-                  'ng the iBroadcast API.'
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWhite
-                Font.Height = -13
-                Font.Name = 'Segoe UI'
-                Font.Style = []
-                ParentFont = False
-                WordWrap = True
-                ExplicitWidth = 218
-              end
-              object CButton13: CButton
-                AlignWithMargins = True
-                Left = 15
-                Top = 143
-                Width = 195
-                Height = 40
-                Margins.Left = 15
-                Margins.Top = 5
-                Margins.Right = 15
-                Margins.Bottom = 5
-                OnClick = CButton13Click
-                TabOrder = 0
-                Align = alTop
-                BSegoeIcon = #59188
-                ButtonIcon = cicYes
-                UseAccentColor = None
-                GradientOptions.Enabled = True
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = 8388863
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = 'Login'
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                Colors.Enter = 16559182
-                Colors.Leave = 13927462
-                Colors.Down = 11295744
-                Colors.BLine = 11295744
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = False
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 6
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-              object Login_UsrToken: TEdit
-                AlignWithMargins = True
-                Left = 3
-                Top = 105
-                Width = 219
-                Height = 30
-                Align = alTop
-                Alignment = taCenter
-                AutoSize = False
-                Color = 2886678
-                Constraints.MaxWidth = 219
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWhite
-                Font.Height = -17
-                Font.Name = 'Segoe UI'
-                Font.Style = []
-                ParentFont = False
-                TabOrder = 1
-              end
-              object Advanced_Login: TPanel
                 Left = 0
                 Top = 0
-                Width = 225
-                Height = 63
-                Align = alTop
-                AutoSize = True
-                BevelOuter = bvNone
-                Caption = 'Panel30'
-                FullRepaint = False
-                ShowCaption = False
-                TabOrder = 2
-                Visible = False
-                object Label12: TLabel
-                  AlignWithMargins = True
-                  Left = 15
-                  Top = 3
-                  Width = 195
-                  Height = 21
-                  Margins.Left = 15
-                  Margins.Right = 15
-                  Align = alTop
-                  Alignment = taCenter
-                  AutoSize = False
-                  Caption = 'Application ID'
-                  Font.Charset = DEFAULT_CHARSET
-                  Font.Color = clWhite
-                  Font.Height = -16
-                  Font.Name = 'Segoe UI'
-                  Font.Style = []
-                  ParentFont = False
-                  ExplicitWidth = 97
-                end
-                object Login_ID: TEdit
-                  AlignWithMargins = True
-                  Left = 3
-                  Top = 30
-                  Width = 219
-                  Height = 30
-                  Align = alTop
-                  Alignment = taCenter
-                  AutoSize = False
-                  Color = 2886677
-                  Constraints.MaxWidth = 219
-                  Font.Charset = DEFAULT_CHARSET
-                  Font.Color = clWhite
-                  Font.Height = -17
-                  Font.Name = 'Segoe UI'
-                  Font.Style = []
-                  ParentFont = False
-                  TabOrder = 0
-                  Text = '1078'
-                end
-              end
-              object Panel30: TPanel
-                AlignWithMargins = True
-                Left = 15
-                Top = 260
-                Width = 195
-                Height = 40
-                Margins.Left = 15
-                Margins.Top = 15
-                Margins.Right = 15
+                Width = 382
+                Height = 235
+                Margins.Left = 0
+                Margins.Top = 0
+                Margins.Right = 50
                 Margins.Bottom = 0
-                Align = alBottom
-                AutoSize = True
+                Align = alClient
+                Brush.Color = 6167086
+                Pen.Style = psClear
+                Shape = stRoundRect
+                ExplicitWidth = 408
+                ExplicitHeight = 238
+              end
+              object Panel9: TPanel
+                AlignWithMargins = True
+                Left = 10
+                Top = 10
+                Width = 347
+                Height = 215
+                Margins.Left = 10
+                Margins.Top = 10
+                Margins.Right = 75
+                Margins.Bottom = 10
+                Align = alClient
                 BevelOuter = bvNone
-                Caption = 'Panel30'
-                FullRepaint = False
-                ParentColor = True
+                Caption = 'Panel8'
                 ShowCaption = False
-                TabOrder = 3
-                object CButton21: CButton
-                  AlignWithMargins = True
+                TabOrder = 0
+                object Panel18: TPanel
+                  Left = 0
+                  Top = 172
+                  Width = 347
+                  Height = 43
+                  Align = alTop
+                  BevelOuter = bvNone
+                  Caption = 'Panel8'
+                  ShowCaption = False
+                  TabOrder = 0
+                  object Label43: TLabel
+                    Left = 0
+                    Top = 0
+                    Width = 46
+                    Height = 43
+                    Align = alLeft
+                    Alignment = taCenter
+                    AutoSize = False
+                    Caption = #59708
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -27
+                    Font.Name = 'Segoe Fluent Icons'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 11
+                    ExplicitTop = 3
+                    ExplicitHeight = 40
+                  end
+                  object Label44: TLabel
+                    Left = 46
+                    Top = 0
+                    Width = 285
+                    Height = 43
+                    Align = alLeft
+                    AutoSize = False
+                    Caption = 'Albums'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 52
+                    ExplicitTop = -2
+                  end
+                  object Data_Albums: TLabel
+                    Left = 265
+                    Top = 0
+                    Width = 82
+                    Height = 43
+                    Align = alRight
+                    Alignment = taRightJustify
+                    AutoSize = False
+                    Caption = '0'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 318
+                    ExplicitTop = -6
+                  end
+                end
+                object Panel20: TPanel
+                  Left = 0
+                  Top = 129
+                  Width = 347
+                  Height = 43
+                  Align = alTop
+                  BevelOuter = bvNone
+                  Caption = 'Panel8'
+                  ShowCaption = False
+                  TabOrder = 1
+                  object Label41: TLabel
+                    Left = 0
+                    Top = 0
+                    Width = 46
+                    Height = 43
+                    Align = alLeft
+                    Alignment = taCenter
+                    AutoSize = False
+                    Caption = #59240
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -27
+                    Font.Name = 'Segoe Fluent Icons'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 11
+                    ExplicitTop = 3
+                    ExplicitHeight = 40
+                  end
+                  object Label42: TLabel
+                    Left = 46
+                    Top = 0
+                    Width = 285
+                    Height = 43
+                    Align = alLeft
+                    AutoSize = False
+                    Caption = 'Plays'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 52
+                    ExplicitTop = -2
+                  end
+                  object Data_Plays: TLabel
+                    Left = 265
+                    Top = 0
+                    Width = 82
+                    Height = 43
+                    Align = alRight
+                    Alignment = taRightJustify
+                    AutoSize = False
+                    Caption = '0'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 291
+                    ExplicitTop = -6
+                  end
+                end
+                object Panel21: TPanel
+                  Left = 0
+                  Top = 86
+                  Width = 347
+                  Height = 43
+                  Align = alTop
+                  BevelOuter = bvNone
+                  Caption = 'Panel8'
+                  ShowCaption = False
+                  TabOrder = 2
+                  object Label45: TLabel
+                    Left = 0
+                    Top = 0
+                    Width = 46
+                    Height = 43
+                    Align = alLeft
+                    Alignment = taCenter
+                    AutoSize = False
+                    Caption = #59259
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -27
+                    Font.Name = 'Segoe Fluent Icons'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 11
+                    ExplicitTop = 3
+                    ExplicitHeight = 40
+                  end
+                  object Label46: TLabel
+                    Left = 46
+                    Top = 0
+                    Width = 285
+                    Height = 43
+                    Align = alLeft
+                    AutoSize = False
+                    Caption = 'Artists'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 62
+                    ExplicitTop = -6
+                  end
+                  object Data_Artists: TLabel
+                    Left = 265
+                    Top = 0
+                    Width = 82
+                    Height = 43
+                    Align = alRight
+                    Alignment = taRightJustify
+                    AutoSize = False
+                    Caption = '0'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 318
+                    ExplicitTop = -6
+                  end
+                end
+                object Panel22: TPanel
+                  Left = 0
+                  Top = 43
+                  Width = 347
+                  Height = 43
+                  Align = alTop
+                  BevelOuter = bvNone
+                  Caption = 'Panel8'
+                  ShowCaption = False
+                  TabOrder = 3
+                  object Label47: TLabel
+                    Left = 0
+                    Top = 0
+                    Width = 46
+                    Height = 43
+                    Align = alLeft
+                    Alignment = taCenter
+                    AutoSize = False
+                    Caption = #59708
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -27
+                    Font.Name = 'Segoe Fluent Icons'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 11
+                    ExplicitTop = 3
+                    ExplicitHeight = 40
+                  end
+                  object Label48: TLabel
+                    Left = 46
+                    Top = 0
+                    Width = 285
+                    Height = 43
+                    Align = alLeft
+                    AutoSize = False
+                    Caption = 'Playlists'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 52
+                    ExplicitTop = -2
+                  end
+                  object Data_Playlists: TLabel
+                    Left = 265
+                    Top = 0
+                    Width = 82
+                    Height = 43
+                    Align = alRight
+                    Alignment = taRightJustify
+                    AutoSize = False
+                    Caption = '0'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 318
+                    ExplicitTop = -6
+                  end
+                end
+                object Panel23: TPanel
                   Left = 0
                   Top = 0
-                  Width = 154
-                  Height = 40
-                  Margins.Left = 0
-                  Margins.Top = 0
-                  Margins.Bottom = 0
-                  OnClick = CButton21Click
-                  TabOrder = 0
-                  Align = alClient
-                  BSegoeIcon = #59543
-                  ButtonIcon = cicSegoeFluent
-                  UseAccentColor = None
-                  GradientOptions.Enabled = True
-                  GradientOptions.Enter = clFuchsia
-                  GradientOptions.Leave = 8388863
-                  GradientOptions.Down = clMaroon
-                  ControlStyle = []
-                  Font.Charset = DEFAULT_CHARSET
-                  Font.Color = 14123546
-                  Font.Height = -16
-                  Font.Name = 'Segoe UI Semibold'
-                  Font.Style = []
-                  SubTextFont.Charset = DEFAULT_CHARSET
-                  SubTextFont.Color = 14123546
-                  SubTextFont.Height = -13
-                  SubTextFont.Name = 'Segoe UI'
-                  SubTextFont.Style = []
-                  FontAutoSize.Enabled = False
-                  FontAutoSize.Max = -1
-                  FontAutoSize.Min = -1
-                  Text = 'Help logging in'
-                  SubText = 'Hello World!'
-                  AutoExtendImage = False
-                  State = mbsLeave
-                  Colors.Enter = 16559182
-                  Colors.Leave = 13927462
-                  Colors.Down = 11295744
-                  Colors.BLine = 11295744
-                  Preset.Color = clBlue
-                  Preset.Kind = cbprCustom
-                  Preset.PenColorAuto = True
-                  Preset.ApplyOnce = False
-                  Preset.IgnoreGlobalSync = False
-                  UnderLine.Enable = True
-                  UnderLine.UnderLineRound = True
-                  UnderLine.UnderLineThicknes = 6
-                  TextColors.Enter = clWhite
-                  TextColors.Leave = clWhite
-                  TextColors.Down = clWhite
-                  TextColors.BLine = clBlack
-                  Pen.Color = 2886678
-                  Pen.Width = 0
-                  Pen.EnableAlternativeColors = False
-                  Pen.FormSyncedColor = False
-                  Pen.AltHoverColor = clBlack
-                  Pen.AltPressColor = clBlack
-                  Pen.GlobalPresetExcept = False
-                  Animations.PressAnimation = False
-                  Animations.PADelay = 2
-                  Animations.PAShrinkAmount = 6
-                  Animations.PAAnimateEngine = cbneAtDraw
-                  Animations.FadeAnimation = True
-                  Animations.FASpeed = 10
-                end
-                object CButton23: CButton
-                  AlignWithMargins = True
-                  Left = 160
-                  Top = 0
-                  Width = 35
-                  Height = 40
-                  Margins.Top = 0
-                  Margins.Right = 0
-                  Margins.Bottom = 0
-                  OnClick = CButton23Click
-                  TabOrder = 1
-                  Align = alRight
-                  BSegoeIcon = #59154
-                  ButtonIcon = cicSegoeFluent
+                  Width = 347
+                  Height = 43
+                  Align = alTop
+                  BevelOuter = bvNone
+                  Caption = 'Panel8'
                   ShowCaption = False
-                  UseAccentColor = None
-                  GradientOptions.Enabled = True
-                  GradientOptions.Enter = clFuchsia
-                  GradientOptions.Leave = 8388863
-                  GradientOptions.Down = clMaroon
-                  ControlStyle = []
-                  Font.Charset = DEFAULT_CHARSET
-                  Font.Color = 14123546
-                  Font.Height = -16
-                  Font.Name = 'Segoe UI Semibold'
-                  Font.Style = []
-                  SubTextFont.Charset = DEFAULT_CHARSET
-                  SubTextFont.Color = 14123546
-                  SubTextFont.Height = -13
-                  SubTextFont.Name = 'Segoe UI'
-                  SubTextFont.Style = []
-                  FontAutoSize.Enabled = False
-                  FontAutoSize.Max = -1
-                  FontAutoSize.Min = -1
-                  Text = 'Help logging in'
-                  SubText = 'Hello World!'
-                  AutoExtendImage = False
-                  State = mbsLeave
-                  Colors.Enter = 16559182
-                  Colors.Leave = 13927462
-                  Colors.Down = 11295744
-                  Colors.BLine = 11295744
-                  Preset.Color = clBlue
-                  Preset.Kind = cbprCustom
-                  Preset.PenColorAuto = True
-                  Preset.ApplyOnce = False
-                  Preset.IgnoreGlobalSync = False
-                  UnderLine.Enable = True
-                  UnderLine.UnderLineRound = True
-                  UnderLine.UnderLineThicknes = 6
-                  TextColors.Enter = clWhite
-                  TextColors.Leave = clWhite
-                  TextColors.Down = clWhite
-                  TextColors.BLine = clBlack
-                  Pen.Color = 2886678
-                  Pen.Width = 0
-                  Pen.EnableAlternativeColors = False
-                  Pen.FormSyncedColor = False
-                  Pen.AltHoverColor = clBlack
-                  Pen.AltPressColor = clBlack
-                  Pen.GlobalPresetExcept = False
-                  Animations.PressAnimation = False
-                  Animations.PADelay = 2
-                  Animations.PAShrinkAmount = 6
-                  Animations.PAAnimateEngine = cbneAtDraw
-                  Animations.FadeAnimation = True
-                  Animations.FASpeed = 10
+                  TabOrder = 4
+                  object Label49: TLabel
+                    Left = 0
+                    Top = 0
+                    Width = 46
+                    Height = 43
+                    Align = alLeft
+                    Alignment = taCenter
+                    AutoSize = False
+                    Caption = #60495
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -27
+                    Font.Name = 'Segoe Fluent Icons'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 11
+                    ExplicitTop = 3
+                    ExplicitHeight = 40
+                  end
+                  object Label50: TLabel
+                    Left = 46
+                    Top = 0
+                    Width = 285
+                    Height = 43
+                    Align = alLeft
+                    AutoSize = False
+                    Caption = 'Tracks'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 52
+                    ExplicitTop = -2
+                  end
+                  object Data_Tracks: TLabel
+                    Left = 265
+                    Top = 0
+                    Width = 82
+                    Height = 43
+                    Align = alRight
+                    Alignment = taRightJustify
+                    AutoSize = False
+                    Caption = '0'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 318
+                    ExplicitTop = -6
+                  end
+                end
+              end
+            end
+            object Panel24: TPanel
+              Left = 407
+              Top = -13
+              Width = 370
+              Height = 235
+              BevelOuter = bvNone
+              Caption = 'Panel8'
+              DoubleBuffered = False
+              ParentColor = True
+              ParentDoubleBuffered = False
+              TabOrder = 5
+              object Shape8: TShape
+                AlignWithMargins = True
+                Left = 0
+                Top = 0
+                Width = 320
+                Height = 235
+                Margins.Left = 0
+                Margins.Top = 0
+                Margins.Right = 50
+                Margins.Bottom = 0
+                Align = alClient
+                Brush.Color = 6167086
+                Pen.Style = psClear
+                Shape = stRoundRect
+                ExplicitWidth = 408
+                ExplicitHeight = 238
+              end
+              object Panel25: TPanel
+                AlignWithMargins = True
+                Left = 10
+                Top = 10
+                Width = 285
+                Height = 215
+                Margins.Left = 10
+                Margins.Top = 10
+                Margins.Right = 75
+                Margins.Bottom = 10
+                Align = alClient
+                BevelOuter = bvNone
+                Caption = 'Panel8'
+                ParentColor = True
+                ShowCaption = False
+                TabOrder = 0
+                object Panel27: TPanel
+                  Left = 0
+                  Top = 86
+                  Width = 285
+                  Height = 43
+                  Align = alTop
+                  BevelOuter = bvNone
+                  Caption = 'Panel8'
+                  ParentColor = True
+                  ShowCaption = False
+                  TabOrder = 0
+                  object Label54: TLabel
+                    Left = 0
+                    Top = 0
+                    Width = 46
+                    Height = 43
+                    Align = alLeft
+                    Alignment = taCenter
+                    AutoSize = False
+                    Caption = #59189
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -27
+                    Font.Name = 'Segoe Fluent Icons'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 11
+                    ExplicitTop = 3
+                    ExplicitHeight = 40
+                  end
+                  object Label55: TLabel
+                    Left = 46
+                    Top = 0
+                    Width = 285
+                    Height = 43
+                    Align = alLeft
+                    AutoSize = False
+                    Caption = 'Beta Tester'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 52
+                    ExplicitTop = -2
+                  end
+                  object CStandardIcon3: CStandardIcon
+                    AlignWithMargins = True
+                    Left = 252
+                    Top = 10
+                    Width = 23
+                    Height = 23
+                    Margins.Left = 10
+                    Margins.Top = 10
+                    Margins.Right = 10
+                    Margins.Bottom = 10
+                    Color = 6167086
+                    ParentColor = False
+                    ParentBackground = False
+                    Align = alRight
+                    Proportional = True
+                    SelectedIcon = ciconCheckmark
+                    PenWidth = 10
+                  end
+                end
+                object Panel28: TPanel
+                  Left = 0
+                  Top = 43
+                  Width = 285
+                  Height = 43
+                  Align = alTop
+                  BevelOuter = bvNone
+                  Caption = 'Panel8'
+                  ParentColor = True
+                  ShowCaption = False
+                  TabOrder = 1
+                  object Label57: TLabel
+                    Left = 0
+                    Top = 0
+                    Width = 46
+                    Height = 43
+                    Align = alLeft
+                    Alignment = taCenter
+                    AutoSize = False
+                    Caption = #59148
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -27
+                    Font.Name = 'Segoe Fluent Icons'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 11
+                    ExplicitTop = 3
+                    ExplicitHeight = 40
+                  end
+                  object Label58: TLabel
+                    Left = 46
+                    Top = 0
+                    Width = 285
+                    Height = 43
+                    Align = alLeft
+                    AutoSize = False
+                    Caption = 'One Queue'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 52
+                    ExplicitTop = -2
+                  end
+                  object CStandardIcon2: CStandardIcon
+                    AlignWithMargins = True
+                    Left = 252
+                    Top = 10
+                    Width = 23
+                    Height = 23
+                    Margins.Left = 10
+                    Margins.Top = 10
+                    Margins.Right = 10
+                    Margins.Bottom = 10
+                    Color = 6167086
+                    ParentColor = False
+                    ParentBackground = False
+                    Align = alRight
+                    Proportional = True
+                    SelectedIcon = ciconCheckmark
+                    PenWidth = 10
+                  end
+                end
+                object Panel29: TPanel
+                  Left = 0
+                  Top = 0
+                  Width = 285
+                  Height = 43
+                  Align = alTop
+                  BevelOuter = bvNone
+                  Caption = 'Panel8'
+                  ParentColor = True
+                  ShowCaption = False
+                  TabOrder = 2
+                  object Label60: TLabel
+                    Left = 0
+                    Top = 0
+                    Width = 46
+                    Height = 43
+                    Align = alLeft
+                    Alignment = taCenter
+                    AutoSize = False
+                    Caption = #60488
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -27
+                    Font.Name = 'Segoe Fluent Icons'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 11
+                    ExplicitTop = 3
+                    ExplicitHeight = 40
+                  end
+                  object Label61: TLabel
+                    Left = 46
+                    Top = 0
+                    Width = 285
+                    Height = 43
+                    Align = alLeft
+                    AutoSize = False
+                    Caption = 'Audio Bitrate:'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 52
+                    ExplicitTop = -2
+                  end
+                  object Status_Bitrate: TLabel
+                    Left = 203
+                    Top = 0
+                    Width = 82
+                    Height = 43
+                    Align = alRight
+                    Alignment = taRightJustify
+                    AutoSize = False
+                    Caption = '128'
+                    Font.Charset = DEFAULT_CHARSET
+                    Font.Color = clWhite
+                    Font.Height = -20
+                    Font.Name = 'Segoe UI'
+                    Font.Style = []
+                    ParentFont = False
+                    Layout = tlCenter
+                    ExplicitLeft = 318
+                    ExplicitTop = -6
+                  end
                 end
               end
             end
@@ -9818,10 +14069,10 @@ object UIForm: TUIForm
             object Version_Label: TLabel
               Left = 10
               Top = 277
-              Width = 77
+              Width = 101
               Height = 21
               Margins.Left = 8
-              Caption = 'Version X.X'
+              Caption = 'Version X.X.X.X'
               Color = 2886678
               Font.Charset = DEFAULT_CHARSET
               Font.Color = clWhite
@@ -18295,7 +22546,7 @@ object UIForm: TUIForm
               FontAutoSize.Enabled = False
               FontAutoSize.Max = -1
               FontAutoSize.Min = -1
-              Text = 'Open help page'
+              Text = 'Open help documentation'
               SubText = 'Hello World!'
               AutoExtendImage = False
               State = mbsLeave
@@ -18421,7 +22672,7 @@ object UIForm: TUIForm
               FontAutoSize.Enabled = False
               FontAutoSize.Max = -1
               FontAutoSize.Min = -1
-              Text = '3rd Party Acknowledgements'
+              Text = '3rd party acknowledgements'
               SubText = 'Hello World!'
               AutoExtendImage = False
               State = mbsLeave
@@ -19208,4498 +23459,6 @@ object UIForm: TUIForm
               Animations.PressAnimation = True
               Animations.PADelay = 2
               Animations.PAShrinkAmount = 2
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-          end
-        end
-        object Page_Settings: TPanel
-          Left = 0
-          Top = 0
-          Width = 880
-          Height = 498
-          Align = alClient
-          BevelOuter = bvNone
-          Caption = 'Settings'
-          Color = 2886678
-          FullRepaint = False
-          ParentBackground = False
-          ShowCaption = False
-          TabOrder = 7
-          object ScrollBox3: TScrollBox
-            Left = 0
-            Top = 0
-            Width = 880
-            Height = 498
-            HorzScrollBar.Tracking = True
-            VertScrollBar.Tracking = True
-            Align = alClient
-            BorderStyle = bsNone
-            TabOrder = 0
-            OnMouseWheel = ScrollBox1MouseWheel
-            object Label29: TLabel
-              AlignWithMargins = True
-              Left = 3
-              Top = 702
-              Width = 857
-              Height = 21
-              Margins.Top = 20
-              Align = alTop
-              AutoSize = False
-              Caption = 'Maximum Thread count'
-              ExplicitLeft = 15
-              ExplicitTop = 273
-            end
-            object Label32: TLabel
-              AlignWithMargins = True
-              Left = 3
-              Top = 575
-              Width = 857
-              Height = 21
-              Margins.Top = 20
-              Align = alTop
-              AutoSize = False
-              Caption = 'Preffered Artwork'
-              ExplicitLeft = 5
-              ExplicitTop = 392
-            end
-            object Artwork_Storage: TLabel
-              AlignWithMargins = True
-              Left = 3
-              Top = 471
-              Width = 857
-              Height = 17
-              Cursor = crHandPoint
-              Margins.Bottom = 20
-              Align = alTop
-              AutoSize = False
-              Caption = 'Storage Used by Artwork: 0MB'
-              Font.Charset = ANSI_CHARSET
-              Font.Color = clWhite
-              Font.Height = -13
-              Font.Name = 'Segoe UI'
-              Font.Pitch = fpFixed
-              Font.Style = []
-              ParentFont = False
-              ShowAccelChar = False
-              Layout = tlCenter
-              OnClick = Artwork_StorageClick
-              ExplicitTop = 274
-            end
-            object Label24: TLabel
-              AlignWithMargins = True
-              Left = 0
-              Top = 3
-              Width = 860
-              Height = 40
-              Margins.Left = 0
-              Align = alTop
-              Caption = 'Settings'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -29
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-              ExplicitWidth = 106
-            end
-            object Setting_ArtworkStore: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 405
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              TabStop = True
-              TabOrder = 0
-              OnChange = Setting_ArtworkStoreChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Enable Artwork Store (caches artwork for fast load)'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Setting_DataSaver: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 437
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              TabStop = True
-              TabOrder = 1
-              OnChange = Setting_DataSaverChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Use low resolution covers (data saver)'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Setting_Graph: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 258
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              TabStop = True
-              TabOrder = 2
-              OnChange = Setting_GraphChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Enable performance graph'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Setting_PlayerOnTop: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 111
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 20
-              TabStop = True
-              TabOrder = 3
-              OnChange = Setting_PlayerOnTopChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Make the mini popup player stay on top'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Setting_QueueSaver: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 194
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              TabStop = True
-              TabOrder = 4
-              OnChange = Setting_QueueSaverChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Save last played queue when closed'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Setting_Rating: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 290
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              TabStop = True
-              TabOrder = 5
-              OnChange = Setting_RatingChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Use ratings instead of thumbs up'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Setting_SongStreaming: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 373
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              TabStop = True
-              TabOrder = 6
-              OnChange = Setting_SongStreamingChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Stream songs from the internet'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Setting_StartWindows: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 162
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              TabStop = True
-              TabOrder = 7
-              OnChange = Setting_StartWindowsChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Start minimized with Windows'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Setting_TrayClose: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 79
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              TabStop = True
-              TabOrder = 8
-              OnChange = Setting_TrayCloseChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Close button minimises iBroadcast'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Settings_CheckUpdate: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 47
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              TabStop = True
-              TabOrder = 9
-              OnChange = Settings_CheckUpdateChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Check for updates on startup'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Settings_DisableAnimations: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 322
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 20
-              TabStop = True
-              TabOrder = 10
-              OnChange = Settings_DisableAnimationsChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Disable menu animations'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object Panel3: TPanel
-              AlignWithMargins = True
-              Left = 0
-              Top = 600
-              Width = 863
-              Height = 81
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              Align = alTop
-              BevelOuter = bvNone
-              FullRepaint = False
-              ParentColor = True
-              TabOrder = 11
-              object ImgSelector_2: CButton
-                AlignWithMargins = True
-                Left = 2
-                Top = 0
-                Width = 88
-                Height = 81
-                Margins.Left = 2
-                Margins.Top = 0
-                Margins.Right = 2
-                Margins.Bottom = 0
-                OnClick = ImgSelector_1Click
-                TabOrder = 0
-                Align = alLeft
-                BSegoeIcon = #59188
-                BPicture.Data = {
-                  0954506E67496D61676589504E470D0A1A0A0000000D49484452000000320000
-                  00320802000000915D1FE6000000017352474200AECE1CE90000000467414D41
-                  0000B18F0BFC6105000000097048597300000EC300000EC301C76FA864000005
-                  9C4944415478DACD98F953E24814C7BBC3998B1BD1D172B7A66A1C11449DD9DD
-                  F9FFFF82ADBD6666553C5847C5011224408040F6E52090A43B04AD72CC0F907E
-                  E9CEFBF4F7BDBE823FA1238C7484307A4D17FE846AF6DD6B225B60215BB15701
-                  E7C2B22CAF810BFF866A448E1F1B53030B9929EFA3F891B201D6A17583C86945
-                  B3BF10D6C242847B61323F1672D4F98161C5BF9A58E1157A99A16063D1E4718C
-                  0C8EEC147E4E8B79866100D8B8186CDD20DABD5191318D489B6A378DB3E67D23
-                  3C56D574ED5A7FB08BCC78B45B789B11F24408FBC6E0307EE61518E7DEAC6014
-                  4FBFFEDEE934C3637979FCB255773E804E83BEA24DC64E78B11367A79DB350B8
-                  1EE154A9C0A6C476EBEEFCECCF5058BF98589ED7FB0BD5ED8FD0E15E579A8CC7
-                  2103B17C65B7B784624EEA34CF4EFF5803CBCD418866F5CD0908D07BEC1A6AAD
-                  7F65DE6C8A855C477A383F0B8B55217158FFBA93F595AD630859AF0758932761
-                  95847C4E02ACF3B041AC7814F216CC52B5740419ADF41E35ED49585B252197ED
-                  C80FF5FA5FA1B03EA2CA92423A25EB7165A3066A29FDDE13B13637F85C5602AC
-                  8BBFC362B939C8B21D146A90F2FD81E2C78A44A309968DC5E3986120C4A3E170
-                  321A79EAA44B453E9791E4D6C5E59A58C17007F94348F9C150818971F9112708
-                  498E07A0E5D90BC87AEDB6AEEB0BAC8D229F4D4BDDD6C5D53F4FC14294F158CE
-                  55C1E540ED2F6371BC906439A051B5A132522007B8A420B029A09C8C54F9E1BB
-                  5333552C00960C58D79F43617D4007B4BDF2F2F257CE540CACF1603AC78A46A3
-                  829806636BD092066DA7A6C8A6B70BBB30BBF7644955FA3656A1C06552F263EB
-                  B2F1252C160A319D96D31550650858B3A92D152BC413F1FEA47FD7BBF5BCB408
-                  937ABAA4699AD46CCEB1F25C1AB0DA97FF7D0EB37FB3B1880A2DC3ED8B6548F9
-                  E14475B0443EC54422CDC1BD32563C4DE2D1C4DBCD3D68DABEBFD36733A3723E
-                  C7A55272AF7D79F385E86505D69CC3DBAC2CEC9B39349AEA4B580C73DBBF1D6A
-                  434FE508137DB769D4EF34EF6716560EB04403EBDB575AFF5D0C27766EF91EB8
-                  E1F6B9F79046EA6CEC6071493E1A8976C6923C923C6D8584B89DDB8591D879B0
-                  832866B3AC28CA4AFBEAF65F8F1FB2F71354A6EFF816FF8005BF231DB066F348
-                  416A25A768763BF8A6CD16C393C1CC4EF6A7648C1D8F54E5B16B83663280D505
-                  ACBB53BF1FBF770BCBF14F1C8FC68F1F0B2A73099E89309AAEB5462D555375A4
-                  2722C9A2B0C1C639A8F02877A6535B5A210D5882A1D6FD6998E3820B0B51120B
-                  1B6AED7BB09091430C105873E90C162E8C2291A8B51DEDF795C97831D70BE974
-                  92E7BB7DE9AA791A103BC7EEC5A2C956266159218368C6A2316C6EA6A11D0C55
-                  551D4EDD8B019F4AB19C200F3BD7CDB3794F17DB133F193E36B108D175CB46C3
-                  72BA61EDF167B3E9F29AB3C01253498EEB0EA5EB8773AF1322D931DAA7C56ED9
-                  1E8CB5F2E20531616235BED70362B7285B5881AA1A623C13CB5A3DBBAA7CDDAA
-                  9314F2CA868FD0BEFB9C439EE60EB8F2B3B03801363F80D568D789F278003C58
-                  64F6E763B11C9F4CB0DD91DCE85C04787182666051147229F75C2C964B5858D2
-                  A5273844EF80F53EB086AD364CA70C8299733A43C158F3B323C68B0246F15822
-                  128BC96AE7A6DB206695A7E06011145AB2E252BC948FE6422983EDCB3AEC3BA7
-                  7078CB955C878D1099C8BDEB2460116583B7166305312286F934626DA04D3E9B
-                  1296CED6F04199F4021D2D22866B26961F9C966D446844DFA851C21470FE33FB
-                  55437B74142A1FC548F8BEBF8A83DC550B6BC5D9D5FB41C7D446277574E56A41
-                  32123E16E143B4E77F1C3C05AF926D6D08BF2E0616A2E49D4EB1FBFC85952790
-                  D8E5D3C65A4B21927D0DD98876EF8732072B58D510C4465F29CA11E4D103072F
-                  AEA27714F6802F9734CD82EC942D1D22C6D4C00A5415D1C9A8FE1039E1083308
-                  95CCC20AA1106D28D0147AC210596AE560855368853D2444209CF1F33FBDE004
-                  06C20E13410000000049454E44AE426082}
-                UseAccentColor = None
-                GradientOptions.Enabled = False
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = clRed
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = ''
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                Colors.Enter = 15073395
-                Colors.Leave = 12976227
-                Colors.Down = 8388672
-                Colors.BLine = 8388672
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = False
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 6
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-              object ImgSelector_3: CButton
-                Tag = 1
-                AlignWithMargins = True
-                Left = 94
-                Top = 0
-                Width = 88
-                Height = 81
-                Margins.Left = 2
-                Margins.Top = 0
-                Margins.Right = 2
-                Margins.Bottom = 0
-                OnClick = ImgSelector_1Click
-                TabOrder = 1
-                Align = alLeft
-                BSegoeIcon = #59188
-                BPicture.Data = {
-                  0954506E67496D61676589504E470D0A1A0A0000000D49484452000000320000
-                  00320802000000915D1FE6000000017352474200AECE1CE90000000467414D41
-                  0000B18F0BFC6105000000097048597300000EC300000EC301C76FA864000007
-                  DA4944415478DAED980B7054D519C7EFEEDE7D6FC863B3BB49F6614352B02320
-                  F8682D012D42A013ECA08C69A2AD88D48E8E02B6A31375CA481DA80E0A656883
-                  1185349A310981088D453A3149B1622A79A041B2C2A6E4B11BB28FBCF6FD7EF4
-                  BFF7B2CB26269BC71086E9E4CC4EB27BF7CE3DBFFDBEFFF9FEDF390C116F2571
-                  EB0DC61CD61CD61CD62D30E6B06E1A1683C1608607831EB15F854221FA2F4630
-                  48FF0FDD0C2CE070B96CBE80C7E371D8242B8C1525A31082C1602010F4FBFC5E
-                  9FDFE7F5FB7C7EBF3F808BB3888508F1785CB138313D23353D432212F159246B
-                  54B48221AFD7E774B85C2E8FDDE6B4581D568BDD6673E223E0268DDCE45820A0
-                  33458403702D2324C94A4E4EF8D1A2AC57F7BEB060A18A8A1511CD223D27EE74
-                  B9DC96119BAEA7BFBD59DDD67441AB359A8CC356AB03C4F1C926C162914C2E87
-                  CDE373381C363E22176EB7D7E70BB058CCB4F4D4470A73B7EFD8C2C76D8CB14C
-                  D1F7981D69F31184DE3054F5FEC97FD7B7687BF566B31D6433C462B2C2994A4E
-                  162A5552D56D3204EC6ADF604FB7C16E734322C85DE193EB9FDE5EC067106414
-                  6234161DC2B0CE401622EC3EFFE1FD959F9E3803322414CA9B3E168360936462
-                  9270E95D594F3FB33E4124C41528A5A2BCA1E59CC6E5F4A6A5890B9E5CBFE5F9
-                  47050C8296558020FC7885AE9131A928E22BFA5B20784384C9627F6DDBDED6E6
-                  0E9371C4E3F14E1B0B62E170D91249627EE103B96B7F2C1008282C77D3D9F6A3
-                  159F5B2C4EA924298CF5DCA37C6A6E3A53CD4DDF5EFAAE1BEA8118A532F1E27B
-                  6ECFCE527022DC80768588EAF2D3A5C5D53DDDFD0E877B22854D8E55F8AB550F
-                  AEB95720C0EC0C44ABE9CB0B55C0323BA4D2E4824D79512C84CA1D222A8ED4D6
-                  9F6E321886828160C23CE10F3233F237E5DDB77C0997110E5E90BAA7A5EDBB3F
-                  15155FBAD463B53826AA17F1B0D86C32392561F98A3B363DB50E58B8E676B9AA
-                  2A1A9BCEAAF14391C4C248B4E8299D21E2D0FECADAE30D3A9D118B83CFE72A55
-                  B29C954B5F7CFD1911C924A97B3C2142DDA9DBB97D6FC7C52EB3D93691BCE249
-                  1E5560DE3CA142295D76F782EC6C398A40D795FEF36D9AFEAB035EAF5FAE903E
-                  B6792CD6C1B7CB4F1CADD7F61AA01B2E972357487E72DFE21D6F6F4B4D109094
-                  F68175F172EFCEEDFBD41D5D168B7D2658D08750C893CA52944A596A6A12B435
-                  3C64D1E94C03A661D42444E2B1CD0F8DC12AD9F7D1C9EA7A9DD688F54F476B79
-                  CE9DAFBCF97C029BC58A24F1CC99B67D3BDFEBD4E8B018A79DC46BD14A146666
-                  CA1FFAE59AF93F5462A9F7F6E84F55D7775DE9C3AC72856C4CB420E70F4A6A4E
-                  D77EA1EF1F0884B525C89C2FDFF8F8BAB579395CAAB0F929F403BB4B3FA969EC
-                  D39950F1A72D790C9450992C65DD86FB5F796B1B97AA401E82F8EBAED2BF57D5
-                  59ADF6F47449E1E6512B1109FAE7C9CFCF7DD93E346CC5CD1259CAF207EF59B1
-                  EA6E01793D54E7CF5FDAF7DA21B5BA0781874B4E34751CC933200E8552B2217F
-                  CD0B542907179E7BF84055F5879F0E0C9A6325CFA27483C5E8840DF8E07961CB
-                  E2C3C2190C32521D503E349DBA237F39DA7CAE43AB454D76C5B1ED7858680D54
-                  AA3438CCD69737F1297301D6DFDE395E5576CA681A462063B1880859B4D033A8
-                  8ACAA4DE60FE11ABE38BC6D686BA73EDDF688065B33A67182D380F3C6763E1DA
-                  AD454FF0287184B14A6A2ACBFE61348E8F151C8D4593458991E5AFCF5FFEE0E0
-                  B1F6AF2FEBFB071D0ED7B45762042B6D23A255F4C4F56895D4205A06E3D0F7B1
-                  A2E6138C8916ED3FCCC80D20BBD2A37FEBD58317BED11829FF1957F5370CEBBA
-                  F9A8BBD15D41373C3E57AE4A5BB46CA1422EE150761E8A9841DDE9A6923DE59D
-                  9D5AD8D4B801BB6158B1E6A3D70FA2CA936C5463914A25FB4541EECF56DF4BFB
-                  0FC8E0CFC32E4FD196DD6DADEA019379DC0EE7C660C5984F45EDB146988FDBE3
-                  458B8F8A8A05BB74D9C2DFFFF1B7CAB41436F564BA7AEDDF75A4F658435F9F09
-                  0DDCAC63C17C3EAEFA4CA735B85CE1C9E0AA62F1BCC54BB29F7BE9D73FCD5942
-                  173FBA8F283BF471F97B276153E316D559C23262320A8B95929208AC675F7C7C
-                  C5CAA5B158A5EF1CFFE848ED4DC28A76101EB797AE7C3299F8CE650B7EB7634B
-                  A64A169BC43FBF7EB8B6A6F1EAAC26312AF9CA5248FE3F903C5A0C9264262408
-                  150A69DEC655B9EB7378310B76D8E52DFACDAED696994B7EAAE5949EAFF5AB8E
-                  CBE8EFB0EC8341EC2265E9A9B72FCA9E9F25E744FA7D9ABEE1B3E6E237CB341A
-                  AD7582DE6632F3B92DED918209CC479A12A7970F8D574EE976DE306C7DE3A503
-                  2DCD1D06FD103238ED724A59B57443FEEA71AC7AC02CA19AE6D89D0F11319F51
-                  CFA1FED285149B1FD388F5DD3D1F9EFD575B9FCE68B3C17C02E3CF3E6963F3F3
-                  871F7879CFD6686353BCBBF444659D79C42A16273D5C98BBED0F4F8DD92712DF
-                  DB2A064354EE0281B6AF2ED6949DEAF8F6BFE86F91E8995835068B156E9AB14D
-                  C8CB5F2D574A313176519F1CADEBEEBAEA727AD0E5DDB1286B6771115A503226
-                  30B164D8D7DB6C0E439FA953DDDD72B6FD8AA657AF1F1A1AB4C0A4E36FF9E361
-                  218F1C0E291209129344024158F44E6CDECD76BBDD898722C5E2D4C48C0C4986
-                  428A6A8E7DF698ED3E6CD1EDF480002F6BF80CC261B5399C0EB7C7E39B287753
-                  C2A2C9103354456A56227C02E30FD03F1497C227367C2E560639E6C486B87686
-                  84F5889BE18FD4A18D0FEFF184A99C284DE9C426F6EC2AF6A1A3CFB7C6A6913E
-                  E142074A1F72E1E3D48FB8FE1F4F03E7B06E8D31873587355BE37F35AF15500C
-                  C744110000000049454E44AE426082}
-                UseAccentColor = None
-                GradientOptions.Enabled = False
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = clRed
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = ''
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                Colors.Enter = 15073395
-                Colors.Leave = 12976227
-                Colors.Down = 8388672
-                Colors.BLine = 8388672
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = False
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 6
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-              object ImgSelector_4: CButton
-                Tag = 2
-                AlignWithMargins = True
-                Left = 186
-                Top = 0
-                Width = 88
-                Height = 81
-                Margins.Left = 2
-                Margins.Top = 0
-                Margins.Right = 2
-                Margins.Bottom = 0
-                OnClick = ImgSelector_1Click
-                TabOrder = 2
-                Align = alLeft
-                BSegoeIcon = #59188
-                BPicture.Data = {
-                  0954506E67496D61676589504E470D0A1A0A0000000D49484452000000320000
-                  00320802000000915D1FE6000000017352474200AECE1CE90000000467414D41
-                  0000B18F0BFC6105000000097048597300000EC300000EC301C76FA864000007
-                  FB4944415478DACD99796C14551CC7DFDBEE7D76B7DD6ED9EDB12D6B29A545CA
-                  59A55AA1E52A022DA5DC94822646FFD13F087845134D8C46A331D168F0885C22
-                  D88A18214141220202728B12686929D0760B52DAEE7D75FCCDCC5EB3333BDD85
-                  D6F8D24C5E67DE9BDF67BEBFDFFBBD63F124D488FE7F05FF9FB108A850FF4657
-                  820D5837A3EF44DF64D731F30E629A405C1683753C11AD656032A1865380F81F
-                  CDD178226A18018607FE8664B062F4E77FCADF98B36F444D5C8AD60401990F79
-                  FCC8D306330390F3CD88D9916D17AE80B53A59814726F6983678B09272C33063
-                  4D40ABE20982B9E20571E512B6803CB921E67E8C4363B0D82FE1EC457055E299
-                  E6E9C8A71419F213D0CA91F1C30315FC305A8158EE602772B62B117FE491CF30
-                  C6D405238240C4200185D31007008D957C09BD0DD300947528022C10E0142842
-                  81509422120BC51211D4DD2EEFC03D87C7E5053856AEE0881CC05A7E3F22836D
-                  302C04F329601EFEC0BC582A92CAC4328544A694AA5215EA34A55AA754699512
-                  B9D87AABF748F3C9CEB6DB3EAF3F41272E8BF154BCE08FF449C10AA54C6FD4EA
-                  0C1AB556499B27AF50D72A94A90AA5462E938B25002A118A44C2C1C1C18EF63B
-                  5BDEDA73EEC865A7DD83A3BCC7394B92D7F121ACC48B4426CA2FCA9ABF7EA6A5
-                  381B38A49479B15848CB264C11A4A40804F047F91402CBEB0DB4B558BF78B3E9
-                  C4818B769B2B91640C584B93F41F52AA65657326346CAAC91B9D21918A04028A
-                  800AAF48A447C58CD7E36F6BB57EFE46D3F103E71D03496011213FD2830663A6
-                  C2CC1E58952AAF5838A5F1A55A739E1E829A6C498E34B23D39D806C931374886
-                  36120A49E57CA01689F5EDF103171C034EBA65BC80A1ADE312549F9C58184138
-                  3F5133A5F1C5DADCBC0C30ECF7053C1EBFCF077F018868A87B3D3E8FDB076F37
-                  1875BA74156086B0CEDB1354AB042D49D6896A126B2A8965CE802FFFA7A7BFED
-                  6AF7EDCEDEFEBBB6815E5BFF5D3B5C5D76777A66EABCD5152593F321E0DA5B7B
-                  3EA3B068B5EE078B77862628272A6650583966BDC7E33B7BF4CADE2F0F5EBFD2
-                  EDB2BB4027100CF48360371718D76CAC7DB4B218E28FC2DA1D8A2D8EF9966994
-                  C0C5A82E69276A1533164DA3B19C0ECFAFFBCF6D7BF7FBEB573B2186A8E0A2A2
-                  4A24CC2F32AD7FA5BEBC6A3C89758DC63A075844226A15A3C5493A11AB492C50
-                  6B714EAEDEE1F01CDE7766EBDBCDD75BBA03BE00F9588060684276CD1F6B5AFB
-                  52DDF4CA124860612C7B50ADE1C742EAA05A11AC2D6F3777B47405FC83303015
-                  2A19340047E7583217AEAF9A30AD4024A6636BD7314A2D9ED80ABB128F43B5C9
-                  3B510958EB18584D375AADC094999D5E34C5326EDA1883294DA5916799F58651
-                  5A30D6DE6ADDFCC62ECA89CE849C18C24A40582A6BC33C08534DC582A90D1B6A
-                  B273D31D760AEB9D66EBCD3B26B3A16A697979F52443662A4C3E305F834ED01E
-                  46401B89F54D124E1C876A1211492014C01CACD1A9345AA556AF9EF4F8B8F9AB
-                  671846A5DA6DEEC3FB4E6F7B6F8FD3E69AB1F89145EBAA8055261343E20FA6FB
-                  509607AC6307CEF238317A30E222B4684826483C5ABDA6A02477E213257985D9
-                  1A9D3255AB30E6E8154AC940BF0BB0767EF88344265EBBA97ECAF4316A8D9C62
-                  8A9410D6CE63893BB1082DA42B713E00C1A40BF24CAE2859D038CB32D60456E9
-                  F918AEA0467F9F13B0BEFDF847438EFEA997973D5468944A45316F01AC6B2D80
-                  F535E9C4E054CD5E733337FB21AC78D8482A978C2DCD5FB3A1AEB4AC40AB5340
-                  AC84BD0329AAEF1E89D5F4C9BE6C8BB171D392D1964C584DC4BC0326A2962BDD
-                  9FBEBEFDE42F179C7677B413E3A56E3C162DE0A312E034BD66EE8A8A65CFCE87
-                  A0893119C6DAF5D10F6986D4A75F5D59589C2593493066B481D1FAE7D9F64F5E
-                  DB7AE98F16B7D38BD0D03B0D1E2CF24BC083C65CFDAA176AE7D54F4FCF50C704
-                  0D85E5F8E5C7D33B3ED8038F963F5FF3F8EC525DBA9252946E80FCFEC09D9EFE
-                  837B4FEDFA68EFCD6B56BFCF3FD4EE93A0B19EE4C009D561656CCA33346C5832
-                  BBB64C97A68AC182D5CBBD5EFB4F7B4E6C7FFF3B5BBF03E26FE9730B2C854695
-                  5A469211C8E70FF4F7392E5FBC014CE78EFE6DEB731089043C0014A2F95C1115
-                  3A0B4811188C6975CF54D734CC84741096812EA084B5BBEFFB2D87BEDBBCBFF7
-                  CE00F811C8662E2E3717986090C22B6C3657CBA58E434DBF9DFFFD726F4F1FB4
-                  673990DB9FDC5891C7D4EAAAACB274EDC6FA8242935C21090B0652391DEEAB97
-                  BBBE7A77F78983B0907202B4264D9565368C2E36EB8D69208CF5C6ED6B7F7574
-                  75F4C0B6C74FCE988916C0AAE6745FB808C5C2AC3C43F5AACAD975E5A34C5A29
-                  952A8109F6585D9DF77E6E3EBA7FC7A15BED3D7E6A4B03B128920821EA451232
-                  4D78DD5E97CBEBF3F8A87D5812058F21B1183CF4BA99E6A497E690DF732CC6C7
-                  AAA795CD9A94314A0BBB09AFD7DFD3D57BE2E73347F79FBAD1DAE5727A88C82A
-                  8ADE3352FD09FA5DE117467F3E8118298BE14DC09A3734BB004BA562089DACFC
-                  CC6C8B49A19283CB6EB676DE6AB7DEEDE9F3B8BDC98A91885A73136B087B6501
-                  BD47853938100878DD3E588B060283894CBD496315A0B93C673D04E9478CA2A7
-                  061C6A41D037833DA05928142231408D99E8AD29C7231CB18CC2BE06AC39C3FE
-                  ADC3A2D6EC64BBFC1787940F5158EC73B4780767F11A739EBFC49C2C10BC9518
-                  AC5923FDE9F7A756551C39384F37D9F20DBD1A48E0578BD866D812C48A3C8C29
-                  3C67E8D10DD8E77A6C2276FB78BFB50056E50838E1410B2716FFCF24F18E4EF9
-                  CF1D13E9C8C09AC9EE8AE30F967806D9911873224C70DD417104F8178899C2BB
-                  BCF55B090000000049454E44AE426082}
-                UseAccentColor = None
-                GradientOptions.Enabled = False
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = clRed
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = ''
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                Colors.Enter = 15073395
-                Colors.Leave = 12976227
-                Colors.Down = 8388672
-                Colors.BLine = 8388672
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = False
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 6
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-              object ImgSelector_5: CButton
-                Tag = 3
-                AlignWithMargins = True
-                Left = 278
-                Top = 0
-                Width = 88
-                Height = 81
-                Margins.Left = 2
-                Margins.Top = 0
-                Margins.Right = 2
-                Margins.Bottom = 0
-                OnClick = ImgSelector_1Click
-                TabOrder = 3
-                Align = alLeft
-                BSegoeIcon = #59188
-                BPicture.Data = {
-                  0954506E67496D61676589504E470D0A1A0A0000000D49484452000000320000
-                  00320802000000915D1FE6000000017352474200AECE1CE90000000467414D41
-                  0000B18F0BFC6105000000097048597300000EC300000EC301C76FA864000003
-                  7969545874584D4C3A636F6D2E61646F62652E786D7000000000003C3F787061
-                  636B657420626567696E3D22EFBBBF222069643D2257354D304D704365686948
-                  7A7265537A4E54637A6B633964223F3E0D0A3C783A786D706D65746120786D6C
-                  6E733A783D2261646F62653A6E733A6D6574612F2220783A786D70746B3D2241
-                  646F626520584D5020436F726520352E362D633134322037392E313630393234
-                  2C20323031372F30372F31332D30313A30363A33392020202020202020223E0D
-                  0A20203C7264663A52444620786D6C6E733A7264663D22687474703A2F2F7777
-                  772E77332E6F72672F313939392F30322F32322D7264662D73796E7461782D6E
-                  7323223E0D0A202020203C7264663A4465736372697074696F6E207264663A61
-                  626F75743D222220786D6C6E733A786D704D4D3D22687474703A2F2F6E732E61
-                  646F62652E636F6D2F7861702F312E302F6D6D2F2220786D6C6E733A73745265
-                  663D22687474703A2F2F6E732E61646F62652E636F6D2F7861702F312E302F73
-                  547970652F5265736F75726365526566232220786D6C6E733A786D703D226874
-                  74703A2F2F6E732E61646F62652E636F6D2F7861702F312E302F2220786D704D
-                  4D3A4F726967696E616C446F63756D656E7449443D2243343144363346374339
-                  424532303942324146363233453745364644363235462220786D704D4D3A446F
-                  63756D656E7449443D22786D702E6469643A3143373231303832304131433131
-                  4539394442393842313031343042393332412220786D704D4D3A496E7374616E
-                  636549443D22786D702E6969643A314337323130383130413143313145393944
-                  42393842313031343042393332412220786D703A43726561746F72546F6F6C3D
-                  2241646F62652050686F746F73686F702043432032303138202857696E646F77
-                  7329223E0D0A2020202020203C786D704D4D3A4465726976656446726F6D2073
-                  745265663A696E7374616E636549443D22786D702E6969643A38376664356134
-                  632D376561622D613034632D613139302D316535333131353566343436222073
-                  745265663A646F63756D656E7449443D22433431443633463743394245323039
-                  423241463632334537453646443632354622202F3E0D0A202020203C2F726466
-                  3A4465736372697074696F6E3E0D0A20203C2F7264663A5244463E0D0A3C2F78
-                  3A786D706D6574613E0D0A3C3F787061636B657420656E643D2272223F3EF867
-                  B17B0000057A4944415478DAED98D953A34A148781ACEA4D32EE46CBAD2C93D2
-                  074B9FEEF8A2DEFFFF7F70B96EE516F72D84301F7DA005929940CCCCBD0F3625
-                  12A0BB3F7EE7F439074CE37FD9CCFF1AE00BEB0BEB0BEB0BEB0BABCF66595626
-                  9361E66C26EB9F720DBB65F3BFD56AFD39AC7C3E5F2814D8E772B96C366B9ADE
-                  A4AEEB1A6AF30EE4A7DA43D66C367F1716928C8C8C0C0D0D158A858C95353AA6
-                  0FFE454EFAB4AE3B602C9480A6542A0D0F0FEB39F4C48ED36A390E1221896747
-                  45FF219ECFE91D0C0C0B0B952B9572B9CC7CFAB99BAA794FAFE6CEA816EE055F
-                  3B68206262811B00167E3336365E2E97F4133F3D3D318DA1BC8A96701CDBB65F
-                  5F5FDB8E93CBE73F85C5945393937F954A42C3B82F2F2F1CE05231550C65DFD8
-                  B13C46F8403F559F58CC3A3131313636263FDFDEDE7850AC0050786E9A1534F9
-                  D9399430B543AD4F23562A95999919FC80FEB8CEE3E363D858CC2D3EA4DD3955
-                  634CC8D2750365767616BF36BC65E5DCDDDD3177B15894ABE2B300F541136B29
-                  FAB3ECE7E7E7C569303F56230AE82546A804EB9334A9B1B0DAF4F4B428DCB869
-                  647359384421CC3740A0A45828B1B8B888E1607A7F7FC77022124D92C9608112
-                  6131EBEAEA6A01EF715D5C1BC3C95A8315913EEF43FD6011275756568A852229
-                  E4F6F69688CC194385ABDF24526F2C54A9D56AD41E30351A0DD69DC8C3BE3354
-                  FE212C9CA656AF178B05D2EACDCD8D6642AD817B77522CC4585B5B9368747F7F
-                  4F04EF8349DCCE4F32DE5F973C930EAB5EAF4BC07C7E7EBABF7F802F39530013
-                  CA33A67069A68F6A27051601B35AAD1A2A9F9F9F9F533C19CAF793F893196A46
-                  34376B2A37D4926211C7D7D7D76580E3E36355CA797E2691B33793E56D0C690A
-                  A13A0ADF60A894F5C1D55685F3AFB1B0D1E6E626B50E50575757F492CCAF53DE
-                  AF99748D10160C8DE9EE95CE810F9024705662327BC9193DB0969696AA3355F0
-                  09E51717178C95D0A57401E31F2098E5BDD5E0A0C82F8506E77591C89DECAFAF
-                  AF59E36D85F6532CECB5B1B1219D4F4E4E246C26329F6978A60BB04460684647
-                  4733413382724537B99389C81C5DFDCCC72222301097292F099E1211640D2634
-                  9FECD16672729285C2F3480516030A57EECC055957539A22D5D6D696209F9E9E
-                  4A622109E71294E11E8DDAA494A0D01067F2CEABC8805FB3B59DB6E3F2E73369
-                  C73F3C3A745A4EA7601E16C9786A6A8A0332315E253ECEBE77A0F23CC9371C4C
-                  4416CD24E285A502A5ADF0341C578F8E8EE47C1C0BDB7FFFFEB7819FBAEED9E9
-                  A915BCBEA55A80D4A4D5EA2CB6A39794CBECB81805F28EF44F486CBB8911D5A1
-                  B7454646A75ABD266FDD07070752B7248F55220CEF1AE3E3E322B06085D58AEA
-                  E453D19D9548A4D08A4646A64C90B293B870767696C2820116E65B5858904C60
-                  C916048B4E7F0FA462EF2D79DB6EE95B22236F6F6F8B8FE355F491C992AC418D
-                  8554AC3E06B1424D778F9329D1384FDC7A7878505EA5AC18C3DAD9D991CE48A5
-                  270BBFEEF5C232171616E57D3500D254A6E441ED3D5A27595B1F2F866A8B62ED
-                  EECA0794E3E37F25F425C7926F54CBCBCB9E54194BC28448A86FF9488041C35B
-                  2E2F2FFDAF0FC185F84ADCDDDD95AC707878286E0E9C44F9240D020AEB402A95
-                  7B4239B1130BA6AB2B989C1853172CE9BCBFBF2F3429D45237CFCDCD91FE2470
-                  C70A1B9D07C5754835BC13482CD554DDA3FCDEDE9E7426B2A536A26A842BDED8
-                  E4893BA552A1DEA47A03483E9C68F1D45EEA1BB71B96FA5AC872D502245C89FA
-                  FE6F956FD333D3F265CBFF6E160886D510E9F9F9D9511FDC5800DE22504EAEE1
-                  BA8C09963CD6C5C5256157CE268C5B61B27C215F2A954786877150EF13A8DD7A
-                  6FBEB3E29AB6CD5274A37E1656ACFB8082456B369B787DAA281F23EB2C03A3D6
-                  8C7C8914A89F8EB6F7CF9E2E5CF17AA149EB5E31327D1CBE1AFEB4DCB396FF01
-                  56C28638BBAABDB20000000049454E44AE426082}
-                UseAccentColor = None
-                GradientOptions.Enabled = False
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = clRed
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = ''
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                Colors.Enter = 15073395
-                Colors.Leave = 12976227
-                Colors.Down = 8388672
-                Colors.BLine = 8388672
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = False
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 6
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-            end
-            object Panel12: TPanel
-              AlignWithMargins = True
-              Left = 0
-              Top = 727
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              Align = alTop
-              BevelOuter = bvNone
-              FullRepaint = False
-              ParentBackground = False
-              ParentColor = True
-              TabOrder = 12
-              object Threads_Text: TLabel
-                Left = 250
-                Top = 0
-                Width = 80
-                Height = 30
-                Align = alLeft
-                AutoSize = False
-                Caption = '10'
-                Layout = tlCenter
-                ExplicitLeft = 256
-                ExplicitTop = 16
-              end
-              object Settings_Threads: CSlider
-                Left = 0
-                Top = 0
-                Width = 250
-                Height = 30
-                OnChange = Settings_ThreadsChange
-                Align = alLeft
-                ParentBackground = True
-                AccentColor = None
-                Presets = cslNone
-                Foreground.Enter = 14442442
-                Foreground.Leave = 12797617
-                Foreground.Down = 11152792
-                Foreground.Border = clGray
-                Foreground.BorderThick = 0
-                Foreground.MultiColor = False
-                Background.Enter = 14211288
-                Background.Leave = 14211288
-                Background.Down = clGray
-                Background.Border = clGray
-                Background.BorderThick = 0
-                Background.MultiColor = False
-                SliderOptions.Height = 10
-                SliderOptions.WidthMargin = 10
-                SliderOptions.Roundness = 5
-                SliderOptions.FlatEnd = False
-                Indicator.Height = 15
-                Indicator.Width = 15
-                Indicator.Roundness = 50
-                Indicator.Enabled = True
-                IndicatorColor.Enter = 16722837
-                IndicatorColor.Leave = 16711808
-                IndicatorColor.Down = 16711808
-                IndicatorColor.Border = 4603449
-                IndicatorColor.BorderThick = 5
-                IndicatorColor.MultiColor = True
-                IndicatorColor.DynamicBorderSize = 3
-                IndicatorColor.DynamicBorder = True
-                State = cssLeave
-                Max = 40
-                Min = 5
-                Position = 10
-              end
-            end
-            object Panel13: TPanel
-              AlignWithMargins = True
-              Left = 0
-              Top = 509
-              Width = 863
-              Height = 45
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              Align = alTop
-              BevelOuter = bvNone
-              FullRepaint = False
-              ParentBackground = False
-              ParentColor = True
-              TabOrder = 13
-              object CButton25: CButton
-                Left = 0
-                Top = 0
-                Width = 350
-                Height = 45
-                OnClick = CButton25Click
-                TabOrder = 0
-                Align = alLeft
-                Constraints.MaxWidth = 857
-                BSegoeIcon = #60770
-                ButtonIcon = cicSegoeFluent
-                UseAccentColor = None
-                GradientOptions.Enabled = False
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = clRed
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = 'Clear artwork cache'
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                Colors.Enter = 15073395
-                Colors.Leave = 12976227
-                Colors.Down = 8388672
-                Colors.BLine = 8388672
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = False
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 6
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-            end
-            object Setting_Visualisations: CCheckBox
-              AlignWithMargins = True
-              Left = 0
-              Top = 226
-              Width = 863
-              Height = 30
-              Margins.Left = 0
-              Margins.Top = 1
-              Margins.Right = 0
-              Margins.Bottom = 1
-              TabStop = True
-              TabOrder = 14
-              OnChange = Setting_VisualisationsChange
-              ParentBackground = False
-              Align = alTop
-              Allignment = taLeftJustify
-              Text = 'Enable visualisations'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-          end
-        end
-        object GeneralDraw: TPanel
-          Left = 0
-          Top = 0
-          Width = 880
-          Height = 498
-          Align = alClient
-          BevelOuter = bvNone
-          Caption = 'Panel2'
-          FullRepaint = False
-          ParentBackground = False
-          ParentColor = True
-          ShowCaption = False
-          TabOrder = 0
-          object DrawItem: TPaintBox
-            Left = 0
-            Top = 0
-            Width = 868
-            Height = 498
-            Align = alClient
-            OnMouseDown = DrawItemMouseDown
-            OnMouseMove = DrawItemMouseMove
-            OnMouseUp = DrawItemMouseUp
-            OnPaint = DrawItemPaint
-            ExplicitLeft = -6
-            ExplicitWidth = 817
-            ExplicitHeight = 478
-          end
-          object ScrollPosition: CScrollbar
-            Left = 868
-            Top = 0
-            Width = 12
-            Height = 498
-            Colors.Foreground = clGray
-            Colors.Buttons = clDarkslategray
-            Colors.Content = 5051678
-            OnChange = ScrollPositionChange
-            Position = 0
-            Animation = True
-            Minimised = True
-            AutoRoundness = True
-            Roundness = 0
-            CustomScrollbarSize = 0
-            PageSize = 20
-            Align = alRight
-            TabOrder = 0
-            Color = 2886678
-            ParentColor = False
-          end
-        end
-        object Page_SubView: TPanel
-          Left = 0
-          Top = 0
-          Width = 880
-          Height = 498
-          Align = alClient
-          BevelOuter = bvNone
-          Caption = 'ViewAlbum,ViewArtist,ViewPlaylist'
-          Color = 2886678
-          FullRepaint = False
-          ParentBackground = False
-          ShowCaption = False
-          TabOrder = 3
-          object DrawItem_Clone1: TPaintBox
-            AlignWithMargins = True
-            Left = 255
-            Top = 0
-            Width = 613
-            Height = 498
-            Margins.Left = 15
-            Margins.Top = 0
-            Margins.Right = 0
-            Margins.Bottom = 0
-            Align = alClient
-            OnMouseDown = DrawItemMouseDown
-            OnMouseMove = DrawItemMouseMove
-            OnMouseUp = DrawItemMouseUp
-            OnPaint = DrawItemPaint
-            ExplicitLeft = 51
-            ExplicitTop = 85
-            ExplicitWidth = 798
-            ExplicitHeight = 374
-          end
-          object Panel1: TPanel
-            Left = 0
-            Top = 0
-            Width = 240
-            Height = 498
-            Align = alLeft
-            BevelOuter = bvNone
-            Caption = 'Panel2'
-            Color = 2886678
-            FullRepaint = False
-            ParentBackground = False
-            ShowCaption = False
-            TabOrder = 0
-            object Label3: TLabel
-              Left = 236
-              Top = 0
-              Width = 4
-              Height = 498
-              Align = alRight
-              Color = 5051678
-              ParentColor = False
-              Transparent = False
-              ExplicitHeight = 21
-            end
-            object Panel15: TPanel
-              Left = 0
-              Top = 0
-              Width = 236
-              Height = 498
-              Align = alClient
-              BevelOuter = bvNone
-              Caption = 'Panel15'
-              FullRepaint = False
-              ShowCaption = False
-              TabOrder = 0
-              object SubView_Cover: CImage
-                AlignWithMargins = True
-                Left = 20
-                Top = 10
-                Width = 196
-                Height = 200
-                Margins.Left = 20
-                Margins.Top = 10
-                Margins.Right = 20
-                Margins.Bottom = 10
-                Align = alTop
-                GifSettings.Enable = False
-                GifSettings.AnimationSpeed = 100
-                ExplicitLeft = 21
-                ExplicitTop = -159
-                ExplicitWidth = 143
-              end
-              object Panel4: TPanel
-                AlignWithMargins = True
-                Left = 6
-                Top = 226
-                Width = 224
-                Height = 266
-                Margins.Left = 6
-                Margins.Top = 6
-                Margins.Right = 6
-                Margins.Bottom = 6
-                Align = alClient
-                BevelOuter = bvNone
-                Caption = 'Panel2'
-                Color = 2886678
-                FullRepaint = False
-                ParentBackground = False
-                ShowCaption = False
-                TabOrder = 0
-                object SubView_Type: TLabel
-                  Left = 0
-                  Top = 42
-                  Width = 224
-                  Height = 32
-                  Align = alTop
-                  Caption = 'Album View'
-                  Font.Charset = DEFAULT_CHARSET
-                  Font.Color = clWhite
-                  Font.Height = -24
-                  Font.Name = 'Segoe UI Semibold'
-                  Font.Style = []
-                  ParentFont = False
-                  Layout = tlBottom
-                  ExplicitWidth = 130
-                end
-                object Label5: TLabel
-                  Left = 0
-                  Top = 74
-                  Width = 224
-                  Height = 192
-                  Align = alClient
-                  Caption = 'More information here'
-                  WordWrap = True
-                  ExplicitWidth = 158
-                  ExplicitHeight = 21
-                end
-                object Panel10: TPanel
-                  Left = 0
-                  Top = 0
-                  Width = 224
-                  Height = 42
-                  Align = alTop
-                  BevelOuter = bvNone
-                  Caption = 'Panel10'
-                  ParentColor = True
-                  ShowCaption = False
-                  TabOrder = 0
-                  object Download_SubView: CButton
-                    AlignWithMargins = True
-                    Left = 3
-                    Top = 1
-                    Width = 172
-                    Height = 40
-                    Margins.Top = 1
-                    Margins.Bottom = 1
-                    OnEnter = ChangeIconDownload
-                    OnClick = DownloadItem
-                    TabOrder = 0
-                    Align = alClient
-                    BSegoeIcon = #59542
-                    ButtonIcon = cicSegoeFluent
-                    UseAccentColor = None
-                    GradientOptions.Enabled = False
-                    GradientOptions.Enter = clFuchsia
-                    GradientOptions.Leave = clRed
-                    GradientOptions.Down = clMaroon
-                    ControlStyle = []
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = 14123546
-                    Font.Height = -16
-                    Font.Name = 'Segoe UI Semibold'
-                    Font.Style = []
-                    SubTextFont.Charset = DEFAULT_CHARSET
-                    SubTextFont.Color = 14123546
-                    SubTextFont.Height = -13
-                    SubTextFont.Name = 'Segoe UI'
-                    SubTextFont.Style = []
-                    FontAutoSize.Enabled = False
-                    FontAutoSize.Max = -1
-                    FontAutoSize.Min = -1
-                    Text = 'Download'
-                    SubText = 'Hello World!'
-                    AutoExtendImage = False
-                    State = mbsLeave
-                    Colors.Enter = 5771359
-                    Colors.Leave = 4853328
-                    Colors.Down = 3539258
-                    Colors.BLine = 3539258
-                    Preset.Color = clBlue
-                    Preset.Kind = cbprCustom
-                    Preset.PenColorAuto = True
-                    Preset.ApplyOnce = False
-                    Preset.IgnoreGlobalSync = False
-                    UnderLine.Enable = True
-                    UnderLine.UnderLineRound = True
-                    UnderLine.UnderLineThicknes = 6
-                    TextColors.Enter = clWhite
-                    TextColors.Leave = clWhite
-                    TextColors.Down = clWhite
-                    TextColors.BLine = clBlack
-                    Pen.Color = 2886678
-                    Pen.Width = 0
-                    Pen.EnableAlternativeColors = False
-                    Pen.FormSyncedColor = False
-                    Pen.AltHoverColor = clBlack
-                    Pen.AltPressColor = clBlack
-                    Pen.GlobalPresetExcept = False
-                    Animations.PressAnimation = True
-                    Animations.PADelay = 2
-                    Animations.PAShrinkAmount = 4
-                    Animations.PAAnimateEngine = cbneAtDraw
-                    Animations.FadeAnimation = True
-                    Animations.FASpeed = 10
-                  end
-                  object CButton27: CButton
-                    AlignWithMargins = True
-                    Left = 181
-                    Top = 1
-                    Width = 40
-                    Height = 40
-                    Margins.Top = 1
-                    Margins.Bottom = 1
-                    OnClick = CButton27Click
-                    TabOrder = 1
-                    Align = alRight
-                    BSegoeIcon = #59542
-                    UseAccentColor = None
-                    GradientOptions.Enabled = False
-                    GradientOptions.Enter = clFuchsia
-                    GradientOptions.Leave = clRed
-                    GradientOptions.Down = clMaroon
-                    ControlStyle = []
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = 14123546
-                    Font.Height = -16
-                    Font.Name = 'Segoe Fluent Icons'
-                    Font.Style = []
-                    SubTextFont.Charset = DEFAULT_CHARSET
-                    SubTextFont.Color = 14123546
-                    SubTextFont.Height = -13
-                    SubTextFont.Name = 'Segoe UI'
-                    SubTextFont.Style = []
-                    FontAutoSize.Enabled = False
-                    FontAutoSize.Max = -1
-                    FontAutoSize.Min = -1
-                    Text = #59718
-                    SubText = 'Hello World!'
-                    AutoExtendImage = False
-                    State = mbsLeave
-                    Colors.Enter = 5771359
-                    Colors.Leave = 4853328
-                    Colors.Down = 3539258
-                    Colors.BLine = 3539258
-                    Preset.Color = clBlue
-                    Preset.Kind = cbprCustom
-                    Preset.PenColorAuto = True
-                    Preset.ApplyOnce = False
-                    Preset.IgnoreGlobalSync = False
-                    UnderLine.Enable = True
-                    UnderLine.UnderLineRound = True
-                    UnderLine.UnderLineThicknes = 6
-                    TextColors.Enter = clWhite
-                    TextColors.Leave = clWhite
-                    TextColors.Down = clWhite
-                    TextColors.BLine = clBlack
-                    Pen.Color = 2886678
-                    Pen.Width = 0
-                    Pen.EnableAlternativeColors = False
-                    Pen.FormSyncedColor = False
-                    Pen.AltHoverColor = clBlack
-                    Pen.AltPressColor = clBlack
-                    Pen.GlobalPresetExcept = False
-                    Animations.PressAnimation = True
-                    Animations.PADelay = 2
-                    Animations.PAShrinkAmount = 4
-                    Animations.PAAnimateEngine = cbneAtDraw
-                    Animations.FadeAnimation = True
-                    Animations.FASpeed = 10
-                  end
-                end
-              end
-            end
-          end
-          object Scrollbar_1: CScrollbar
-            Left = 868
-            Top = 0
-            Width = 12
-            Height = 498
-            Colors.Foreground = clGray
-            Colors.Buttons = clDarkslategray
-            Colors.Content = 5051678
-            OnChange = ScrollPositionChange
-            Position = 0
-            Animation = True
-            Minimised = True
-            AutoRoundness = True
-            Roundness = 0
-            CustomScrollbarSize = 0
-            Align = alRight
-            TabOrder = 1
-            Color = 2886678
-            ParentColor = False
-          end
-        end
-        object Page_Account: TPanel
-          Left = 0
-          Top = 0
-          Width = 880
-          Height = 498
-          Align = alClient
-          BevelOuter = bvNone
-          Caption = 'Account'
-          Color = 2886678
-          FullRepaint = False
-          ParentBackground = False
-          ShowCaption = False
-          TabOrder = 2
-          object ScrollBox2: TScrollBox
-            Left = 0
-            Top = 0
-            Width = 880
-            Height = 498
-            HorzScrollBar.Tracking = True
-            VertScrollBar.Tracking = True
-            Align = alClient
-            BorderStyle = bsNone
-            TabOrder = 0
-            OnMouseWheel = ScrollBox1MouseWheel
-            DesignSize = (
-              863
-              498)
-            object Label8: TLabel
-              AlignWithMargins = True
-              Left = 8
-              Top = 19
-              Width = 260
-              Height = 40
-              Margins.Left = 8
-              Caption = 'About your account'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -29
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-            end
-            object Complete_Email: TLabel
-              AlignWithMargins = True
-              Left = 8
-              Top = 75
-              Width = 173
-              Height = 30
-              Cursor = crHandPoint
-              Margins.Left = 8
-              Caption = 'Your email adress: '
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -21
-              Font.Name = 'Segoe UI'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-              OnClick = Complete_EmailClick
-            end
-            object Complete_User: TLabel
-              AlignWithMargins = True
-              Left = 8
-              Top = 111
-              Width = 194
-              Height = 30
-              Margins.Left = 8
-              Caption = 'iBroadcast user since'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -21
-              Font.Name = 'Segoe UI'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-            end
-            object Complete_Verify: TLabel
-              AlignWithMargins = True
-              Left = 41
-              Top = 153
-              Width = 196
-              Height = 25
-              Margins.Left = 8
-              Caption = 'Your account is verified'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -19
-              Font.Name = 'Segoe UI'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-            end
-            object Label9: TLabel
-              AlignWithMargins = True
-              Left = 8
-              Top = 619
-              Width = 178
-              Height = 40
-              Margins.Left = 8
-              Caption = 'Subscriptions'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -29
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-            end
-            object Complete_Premium: TLabel
-              AlignWithMargins = True
-              Left = 8
-              Top = 665
-              Width = 165
-              Height = 30
-              Margins.Left = 8
-              Caption = 'Premium is yours!'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -21
-              Font.Name = 'Segoe UI'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-            end
-            object Label33: TLabel
-              AlignWithMargins = True
-              Left = 8
-              Top = 784
-              Width = 235
-              Height = 40
-              Margins.Left = 8
-              Caption = 'Logged in devices'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -29
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-            end
-            object Label14: TLabel
-              AlignWithMargins = True
-              Left = 407
-              Top = 211
-              Width = 112
-              Height = 25
-              Margins.Left = 8
-              Caption = 'User Settings'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -19
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-            end
-            object Label40: TLabel
-              AlignWithMargins = True
-              Left = 8
-              Top = 205
-              Width = 117
-              Height = 25
-              Margins.Left = 8
-              Caption = 'Library Status'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -19
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-            end
-            object CStandardIcon1: CStandardIcon
-              Left = 8
-              Top = 156
-              Width = 22
-              Height = 22
-              ParentBackground = False
-              Proportional = True
-              SelectedIcon = ciconCheckmark
-              PenWidth = 10
-            end
-            object CButton11: CButton
-              AlignWithMargins = True
-              Left = 3
-              Top = 715
-              Width = 265
-              Height = 38
-              OnClick = CButton11Click
-              Allignment = taLeftJustify
-              TabOrder = 1
-              BSegoeIcon = #59189
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'About iBroadcast premium'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8388863
-              Colors.Leave = 5439654
-              Colors.Down = 3997817
-              Colors.BLine = 4722507
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = False
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 2
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object CButton12: CButton
-              AlignWithMargins = True
-              Left = 3
-              Top = 506
-              Width = 265
-              Height = 38
-              OnClick = CButton12Click
-              Allignment = taLeftJustify
-              TabOrder = 2
-              BSegoeIcon = #59961
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Log off'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8388863
-              Colors.Leave = 5439654
-              Colors.Down = 3997817
-              Colors.BLine = 4722507
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = False
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 2
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object CButton1: CButton
-              AlignWithMargins = True
-              Left = 3
-              Top = 552
-              Width = 265
-              Height = 38
-              OnClick = Button_ReloadLibClick
-              Allignment = taLeftJustify
-              TabOrder = 3
-              BSegoeIcon = #59633
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Reload library'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8388863
-              Colors.Leave = 5439654
-              Colors.Down = 3997817
-              Colors.BLine = 4722507
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = False
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 2
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object LoginItems: TControlList
-              Left = 3
-              Top = 839
-              Width = 851
-              Height = 324
-              Anchors = [akLeft, akTop, akRight]
-              BorderStyle = bsNone
-              Color = 2886678
-              ItemHeight = 80
-              ItemMargins.Left = 0
-              ItemMargins.Top = 0
-              ItemMargins.Right = 0
-              ItemMargins.Bottom = 0
-              ParentColor = False
-              TabOrder = 4
-              OnBeforeDrawItem = LoginItemsBeforeDrawItem
-              object Label34: TLabel
-                Left = 64
-                Top = 1
-                Width = 223
-                Height = 28
-                Caption = 'Device Name (location)'
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWhite
-                Font.Height = -20
-                Font.Name = 'Segoe UI Bold'
-                Font.Style = []
-                ParentFont = False
-              end
-              object Label35: TLabel
-                Left = 64
-                Top = 36
-                Width = 231
-                Height = 23
-                Caption = 'Connected, Joinable, Lastlogin'
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWhite
-                Font.Height = -17
-                Font.Name = 'Segoe UI'
-                Font.Style = []
-                ParentFont = False
-              end
-              object ICON_CONNECT: TLabel
-                AlignWithMargins = True
-                Left = 3
-                Top = 3
-                Width = 40
-                Height = -6
-                Align = alLeft
-                Caption = #60421
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = clWhite
-                Font.Height = -40
-                Font.Name = 'Segoe Fluent Icons'
-                Font.Style = []
-                ParentFont = False
-                Layout = tlCenter
-                ExplicitHeight = 40
-              end
-            end
-            object Panel8: TPanel
-              Left = 3
-              Top = 242
-              Width = 432
-              Height = 235
-              BevelOuter = bvNone
-              Caption = 'Panel8'
-              DoubleBuffered = False
-              ParentDoubleBuffered = False
-              TabOrder = 5
-              object Shape7: TShape
-                AlignWithMargins = True
-                Left = 0
-                Top = 0
-                Width = 382
-                Height = 235
-                Margins.Left = 0
-                Margins.Top = 0
-                Margins.Right = 50
-                Margins.Bottom = 0
-                Align = alClient
-                Brush.Color = 6167086
-                Pen.Style = psClear
-                Shape = stRoundRect
-                ExplicitWidth = 408
-                ExplicitHeight = 238
-              end
-              object Panel9: TPanel
-                AlignWithMargins = True
-                Left = 10
-                Top = 10
-                Width = 347
-                Height = 215
-                Margins.Left = 10
-                Margins.Top = 10
-                Margins.Right = 75
-                Margins.Bottom = 10
-                Align = alClient
-                BevelOuter = bvNone
-                Caption = 'Panel8'
-                ShowCaption = False
-                TabOrder = 0
-                object Panel18: TPanel
-                  Left = 0
-                  Top = 172
-                  Width = 347
-                  Height = 43
-                  Align = alTop
-                  BevelOuter = bvNone
-                  Caption = 'Panel8'
-                  ShowCaption = False
-                  TabOrder = 0
-                  object Label43: TLabel
-                    Left = 0
-                    Top = 0
-                    Width = 46
-                    Height = 43
-                    Align = alLeft
-                    Alignment = taCenter
-                    AutoSize = False
-                    Caption = #59708
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -27
-                    Font.Name = 'Segoe Fluent Icons'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 11
-                    ExplicitTop = 3
-                    ExplicitHeight = 40
-                  end
-                  object Label44: TLabel
-                    Left = 46
-                    Top = 0
-                    Width = 285
-                    Height = 43
-                    Align = alLeft
-                    AutoSize = False
-                    Caption = 'Albums'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 52
-                    ExplicitTop = -2
-                  end
-                  object Data_Albums: TLabel
-                    Left = 265
-                    Top = 0
-                    Width = 82
-                    Height = 43
-                    Align = alRight
-                    Alignment = taRightJustify
-                    AutoSize = False
-                    Caption = '0'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 318
-                    ExplicitTop = -6
-                  end
-                end
-                object Panel20: TPanel
-                  Left = 0
-                  Top = 129
-                  Width = 347
-                  Height = 43
-                  Align = alTop
-                  BevelOuter = bvNone
-                  Caption = 'Panel8'
-                  ShowCaption = False
-                  TabOrder = 1
-                  object Label41: TLabel
-                    Left = 0
-                    Top = 0
-                    Width = 46
-                    Height = 43
-                    Align = alLeft
-                    Alignment = taCenter
-                    AutoSize = False
-                    Caption = #59240
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -27
-                    Font.Name = 'Segoe Fluent Icons'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 11
-                    ExplicitTop = 3
-                    ExplicitHeight = 40
-                  end
-                  object Label42: TLabel
-                    Left = 46
-                    Top = 0
-                    Width = 285
-                    Height = 43
-                    Align = alLeft
-                    AutoSize = False
-                    Caption = 'Plays'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 52
-                    ExplicitTop = -2
-                  end
-                  object Data_Plays: TLabel
-                    Left = 265
-                    Top = 0
-                    Width = 82
-                    Height = 43
-                    Align = alRight
-                    Alignment = taRightJustify
-                    AutoSize = False
-                    Caption = '0'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 291
-                    ExplicitTop = -6
-                  end
-                end
-                object Panel21: TPanel
-                  Left = 0
-                  Top = 86
-                  Width = 347
-                  Height = 43
-                  Align = alTop
-                  BevelOuter = bvNone
-                  Caption = 'Panel8'
-                  ShowCaption = False
-                  TabOrder = 2
-                  object Label45: TLabel
-                    Left = 0
-                    Top = 0
-                    Width = 46
-                    Height = 43
-                    Align = alLeft
-                    Alignment = taCenter
-                    AutoSize = False
-                    Caption = #59259
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -27
-                    Font.Name = 'Segoe Fluent Icons'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 11
-                    ExplicitTop = 3
-                    ExplicitHeight = 40
-                  end
-                  object Label46: TLabel
-                    Left = 46
-                    Top = 0
-                    Width = 285
-                    Height = 43
-                    Align = alLeft
-                    AutoSize = False
-                    Caption = 'Artists'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 62
-                    ExplicitTop = -6
-                  end
-                  object Data_Artists: TLabel
-                    Left = 265
-                    Top = 0
-                    Width = 82
-                    Height = 43
-                    Align = alRight
-                    Alignment = taRightJustify
-                    AutoSize = False
-                    Caption = '0'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 318
-                    ExplicitTop = -6
-                  end
-                end
-                object Panel22: TPanel
-                  Left = 0
-                  Top = 43
-                  Width = 347
-                  Height = 43
-                  Align = alTop
-                  BevelOuter = bvNone
-                  Caption = 'Panel8'
-                  ShowCaption = False
-                  TabOrder = 3
-                  object Label47: TLabel
-                    Left = 0
-                    Top = 0
-                    Width = 46
-                    Height = 43
-                    Align = alLeft
-                    Alignment = taCenter
-                    AutoSize = False
-                    Caption = #59708
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -27
-                    Font.Name = 'Segoe Fluent Icons'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 11
-                    ExplicitTop = 3
-                    ExplicitHeight = 40
-                  end
-                  object Label48: TLabel
-                    Left = 46
-                    Top = 0
-                    Width = 285
-                    Height = 43
-                    Align = alLeft
-                    AutoSize = False
-                    Caption = 'Playlists'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 52
-                    ExplicitTop = -2
-                  end
-                  object Data_Playlists: TLabel
-                    Left = 265
-                    Top = 0
-                    Width = 82
-                    Height = 43
-                    Align = alRight
-                    Alignment = taRightJustify
-                    AutoSize = False
-                    Caption = '0'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 318
-                    ExplicitTop = -6
-                  end
-                end
-                object Panel23: TPanel
-                  Left = 0
-                  Top = 0
-                  Width = 347
-                  Height = 43
-                  Align = alTop
-                  BevelOuter = bvNone
-                  Caption = 'Panel8'
-                  ShowCaption = False
-                  TabOrder = 4
-                  object Label49: TLabel
-                    Left = 0
-                    Top = 0
-                    Width = 46
-                    Height = 43
-                    Align = alLeft
-                    Alignment = taCenter
-                    AutoSize = False
-                    Caption = #60495
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -27
-                    Font.Name = 'Segoe Fluent Icons'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 11
-                    ExplicitTop = 3
-                    ExplicitHeight = 40
-                  end
-                  object Label50: TLabel
-                    Left = 46
-                    Top = 0
-                    Width = 285
-                    Height = 43
-                    Align = alLeft
-                    AutoSize = False
-                    Caption = 'Tracks'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 52
-                    ExplicitTop = -2
-                  end
-                  object Data_Tracks: TLabel
-                    Left = 265
-                    Top = 0
-                    Width = 82
-                    Height = 43
-                    Align = alRight
-                    Alignment = taRightJustify
-                    AutoSize = False
-                    Caption = '0'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 318
-                    ExplicitTop = -6
-                  end
-                end
-              end
-            end
-            object Panel24: TPanel
-              Left = 407
-              Top = 242
-              Width = 370
-              Height = 235
-              BevelOuter = bvNone
-              Caption = 'Panel8'
-              DoubleBuffered = False
-              ParentColor = True
-              ParentDoubleBuffered = False
-              TabOrder = 6
-              object Shape8: TShape
-                AlignWithMargins = True
-                Left = 0
-                Top = 0
-                Width = 320
-                Height = 235
-                Margins.Left = 0
-                Margins.Top = 0
-                Margins.Right = 50
-                Margins.Bottom = 0
-                Align = alClient
-                Brush.Color = 6167086
-                Pen.Style = psClear
-                Shape = stRoundRect
-                ExplicitWidth = 408
-                ExplicitHeight = 238
-              end
-              object Panel25: TPanel
-                AlignWithMargins = True
-                Left = 10
-                Top = 10
-                Width = 285
-                Height = 215
-                Margins.Left = 10
-                Margins.Top = 10
-                Margins.Right = 75
-                Margins.Bottom = 10
-                Align = alClient
-                BevelOuter = bvNone
-                Caption = 'Panel8'
-                ParentColor = True
-                ShowCaption = False
-                TabOrder = 0
-                object Panel27: TPanel
-                  Left = 0
-                  Top = 86
-                  Width = 285
-                  Height = 43
-                  Align = alTop
-                  BevelOuter = bvNone
-                  Caption = 'Panel8'
-                  ParentColor = True
-                  ShowCaption = False
-                  TabOrder = 0
-                  object Label54: TLabel
-                    Left = 0
-                    Top = 0
-                    Width = 46
-                    Height = 43
-                    Align = alLeft
-                    Alignment = taCenter
-                    AutoSize = False
-                    Caption = #59189
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -27
-                    Font.Name = 'Segoe Fluent Icons'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 11
-                    ExplicitTop = 3
-                    ExplicitHeight = 40
-                  end
-                  object Label55: TLabel
-                    Left = 46
-                    Top = 0
-                    Width = 285
-                    Height = 43
-                    Align = alLeft
-                    AutoSize = False
-                    Caption = 'Beta Tester'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 52
-                    ExplicitTop = -2
-                  end
-                  object CStandardIcon3: CStandardIcon
-                    AlignWithMargins = True
-                    Left = 252
-                    Top = 10
-                    Width = 23
-                    Height = 23
-                    Margins.Left = 10
-                    Margins.Top = 10
-                    Margins.Right = 10
-                    Margins.Bottom = 10
-                    Color = 6167086
-                    ParentColor = False
-                    ParentBackground = False
-                    Align = alRight
-                    Proportional = True
-                    SelectedIcon = ciconCheckmark
-                    PenWidth = 10
-                  end
-                end
-                object Panel28: TPanel
-                  Left = 0
-                  Top = 43
-                  Width = 285
-                  Height = 43
-                  Align = alTop
-                  BevelOuter = bvNone
-                  Caption = 'Panel8'
-                  ParentColor = True
-                  ShowCaption = False
-                  TabOrder = 1
-                  object Label57: TLabel
-                    Left = 0
-                    Top = 0
-                    Width = 46
-                    Height = 43
-                    Align = alLeft
-                    Alignment = taCenter
-                    AutoSize = False
-                    Caption = #59148
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -27
-                    Font.Name = 'Segoe Fluent Icons'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 11
-                    ExplicitTop = 3
-                    ExplicitHeight = 40
-                  end
-                  object Label58: TLabel
-                    Left = 46
-                    Top = 0
-                    Width = 285
-                    Height = 43
-                    Align = alLeft
-                    AutoSize = False
-                    Caption = 'One Queue'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 52
-                    ExplicitTop = -2
-                  end
-                  object CStandardIcon2: CStandardIcon
-                    AlignWithMargins = True
-                    Left = 252
-                    Top = 10
-                    Width = 23
-                    Height = 23
-                    Margins.Left = 10
-                    Margins.Top = 10
-                    Margins.Right = 10
-                    Margins.Bottom = 10
-                    Color = 6167086
-                    ParentColor = False
-                    ParentBackground = False
-                    Align = alRight
-                    Proportional = True
-                    SelectedIcon = ciconCheckmark
-                    PenWidth = 10
-                  end
-                end
-                object Panel29: TPanel
-                  Left = 0
-                  Top = 0
-                  Width = 285
-                  Height = 43
-                  Align = alTop
-                  BevelOuter = bvNone
-                  Caption = 'Panel8'
-                  ParentColor = True
-                  ShowCaption = False
-                  TabOrder = 2
-                  object Label60: TLabel
-                    Left = 0
-                    Top = 0
-                    Width = 46
-                    Height = 43
-                    Align = alLeft
-                    Alignment = taCenter
-                    AutoSize = False
-                    Caption = #60488
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -27
-                    Font.Name = 'Segoe Fluent Icons'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 11
-                    ExplicitTop = 3
-                    ExplicitHeight = 40
-                  end
-                  object Label61: TLabel
-                    Left = 46
-                    Top = 0
-                    Width = 285
-                    Height = 43
-                    Align = alLeft
-                    AutoSize = False
-                    Caption = 'Audio Bitrate:'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 52
-                    ExplicitTop = -2
-                  end
-                  object Status_Bitrate: TLabel
-                    Left = 203
-                    Top = 0
-                    Width = 82
-                    Height = 43
-                    Align = alRight
-                    Alignment = taRightJustify
-                    AutoSize = False
-                    Caption = '128'
-                    Font.Charset = DEFAULT_CHARSET
-                    Font.Color = clWhite
-                    Font.Height = -20
-                    Font.Name = 'Segoe UI'
-                    Font.Style = []
-                    ParentFont = False
-                    Layout = tlCenter
-                    ExplicitLeft = 318
-                    ExplicitTop = -6
-                  end
-                end
-              end
-            end
-          end
-        end
-        object Page_Search: TPanel
-          Left = 0
-          Top = 0
-          Width = 880
-          Height = 498
-          Align = alClient
-          BevelOuter = bvNone
-          Caption = 'Search'
-          Color = 2886678
-          FullRepaint = False
-          ParentBackground = False
-          ShowCaption = False
-          TabOrder = 4
-          object Label30: TLabel
-            AlignWithMargins = True
-            Left = 15
-            Top = 10
-            Width = 855
-            Height = 40
-            Margins.Left = 15
-            Margins.Top = 10
-            Margins.Right = 10
-            Margins.Bottom = 10
-            Align = alTop
-            Caption = 'Search for'
-            Color = 2886678
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWhite
-            Font.Height = -29
-            Font.Name = 'Segoe UI Bold'
-            Font.Style = []
-            ParentColor = False
-            ParentFont = False
-            Layout = tlCenter
-            ExplicitWidth = 140
-          end
-          object SearchDraw: TPaintBox
-            Left = 0
-            Top = 246
-            Width = 868
-            Height = 252
-            Align = alClient
-            Color = 2886678
-            ParentColor = False
-            OnMouseDown = DrawItemMouseDown
-            OnMouseMove = DrawItemMouseMove
-            OnMouseUp = DrawItemMouseUp
-            OnPaint = SearchDrawPaint
-            ExplicitLeft = 12
-            ExplicitTop = 194
-            ExplicitWidth = 813
-            ExplicitHeight = 243
-          end
-          object Panel19: TPanel
-            Left = 0
-            Top = 60
-            Width = 880
-            Height = 62
-            Align = alTop
-            BevelOuter = bvNone
-            Caption = 'Panel19'
-            ParentColor = True
-            ShowCaption = False
-            TabOrder = 0
-            object SearchBox1: TSearchBox
-              AlignWithMargins = True
-              Left = 15
-              Top = 15
-              Width = 187
-              Height = 32
-              Margins.Left = 15
-              Margins.Top = 15
-              Margins.Right = 10
-              Margins.Bottom = 15
-              Align = alLeft
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clBlack
-              Font.Height = -16
-              Font.Name = 'Segoe UI'
-              Font.Style = []
-              ParentFont = False
-              TabOrder = 0
-              TextHint = 'Type here to search'
-              OnInvokeSearch = SearchBox1InvokeSearch
-              ExplicitHeight = 29
-            end
-            object CButton19: CButton
-              AlignWithMargins = True
-              Left = 217
-              Top = 12
-              Width = 104
-              Height = 38
-              Margins.Left = 5
-              Margins.Top = 12
-              Margins.Right = 5
-              Margins.Bottom = 12
-              OnClick = CButton19Click
-              TabOrder = 1
-              Align = alLeft
-              BSegoeIcon = #57651
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Filters'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 5771359
-              Colors.Leave = 4853328
-              Colors.Down = 3539258
-              Colors.BLine = 3539258
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object CButton20: CButton
-              AlignWithMargins = True
-              Left = 331
-              Top = 12
-              Width = 104
-              Height = 38
-              Margins.Left = 5
-              Margins.Top = 12
-              Margins.Right = 5
-              Margins.Bottom = 12
-              OnClick = CButton20Click
-              TabOrder = 2
-              Align = alLeft
-              BSegoeIcon = #57651
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Types'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 5771359
-              Colors.Leave = 4853328
-              Colors.Down = 3539258
-              Colors.BLine = 3539258
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-          end
-          object Search_Types: TPanel
-            Left = 0
-            Top = 122
-            Width = 880
-            Height = 62
-            Align = alTop
-            BevelOuter = bvNone
-            Caption = 'Panel19'
-            FullRepaint = False
-            ParentColor = True
-            ShowCaption = False
-            TabOrder = 1
-            Visible = False
-            object Label36: TLabel
-              AlignWithMargins = True
-              Left = 3
-              Top = 3
-              Width = 42
-              Height = 56
-              Margins.Right = 15
-              Align = alLeft
-              Caption = 'Types:'
-              Layout = tlCenter
-              ExplicitHeight = 21
-            end
-            object SType_Album: CButton
-              AlignWithMargins = True
-              Left = 169
-              Top = 12
-              Width = 100
-              Height = 38
-              Margins.Top = 12
-              Margins.Bottom = 12
-              OnClick = SType_SongClick
-              TabOrder = 0
-              Align = alLeft
-              BSegoeIcon = #59708
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Albums'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object SType_Song: CButton
-              AlignWithMargins = True
-              Left = 63
-              Top = 12
-              Width = 100
-              Height = 38
-              Margins.Top = 12
-              Margins.Bottom = 12
-              OnClick = SType_SongClick
-              TabOrder = 1
-              Align = alLeft
-              BSegoeIcon = #60495
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Songs'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object SType_Artist: CButton
-              AlignWithMargins = True
-              Left = 275
-              Top = 12
-              Width = 100
-              Height = 38
-              Margins.Top = 12
-              Margins.Bottom = 12
-              OnClick = SType_SongClick
-              TabOrder = 2
-              Align = alLeft
-              BSegoeIcon = #59259
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Artists'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object SType_Playlist: CButton
-              AlignWithMargins = True
-              Left = 381
-              Top = 12
-              Width = 100
-              Height = 38
-              Margins.Top = 12
-              Margins.Bottom = 12
-              OnClick = SType_SongClick
-              TabOrder = 3
-              Align = alLeft
-              BSegoeIcon = #59659
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Playlists'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-          end
-          object Scrollbar_4: CScrollbar
-            Left = 868
-            Top = 246
-            Width = 12
-            Height = 252
-            Colors.Foreground = clGray
-            Colors.Buttons = clDarkslategray
-            Colors.Content = 5051678
-            OnChange = ScrollPositionChange
-            Position = 0
-            Animation = True
-            Minimised = True
-            AutoRoundness = True
-            Roundness = 0
-            CustomScrollbarSize = 0
-            Align = alRight
-            TabOrder = 2
-            Color = 2886678
-            ParentColor = False
-            ExplicitTop = 370
-            ExplicitHeight = 128
-          end
-          object Search_Filters: TFlowPanel
-            Left = 0
-            Top = 184
-            Width = 880
-            Height = 62
-            Align = alTop
-            AutoSize = True
-            BevelOuter = bvNone
-            Caption = 'FlowPanel1'
-            FullRepaint = False
-            ParentBackground = False
-            ParentColor = True
-            ShowCaption = False
-            TabOrder = 3
-            object Label31: TLabel
-              AlignWithMargins = True
-              Left = 3
-              Top = 3
-              Width = 45
-              Height = 56
-              Margins.Right = 15
-              AutoSize = False
-              Caption = 'Filters:'
-              Layout = tlCenter
-            end
-            object CCheckBox2: CCheckBox
-              AlignWithMargins = True
-              Left = 66
-              Top = 3
-              Width = 125
-              Height = 56
-              TabStop = True
-              TabOrder = 0
-              ParentBackground = False
-              Allignment = taLeftJustify
-              Text = 'Exact Match'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object CCheckBox3: CCheckBox
-              AlignWithMargins = True
-              Left = 197
-              Top = 3
-              Width = 125
-              Height = 56
-              TabStop = True
-              TabOrder = 1
-              ParentBackground = False
-              Allignment = taLeftJustify
-              Text = 'Case sensitive'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-            object CCheckBox1: CCheckBox
-              AlignWithMargins = True
-              Left = 328
-              Top = 3
-              Width = 157
-              Height = 56
-              TabStop = True
-              TabOrder = 2
-              ParentBackground = False
-              Allignment = taLeftJustify
-              Text = 'Search properties'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = True
-              State = cbChecked
-            end
-            object CCheckBox4: CCheckBox
-              AlignWithMargins = True
-              Left = 491
-              Top = 3
-              Width = 157
-              Height = 56
-              TabStop = True
-              TabOrder = 3
-              ParentBackground = False
-              Allignment = taLeftJustify
-              Text = 'Search Trashed'
-              Presets.Color = 12940567
-              Presets.Kind = ccpNone
-              Presets.PenColorAuto = True
-              TrueTransparency = True
-              AccentColor = AccentCustom
-              Animation.Enable = True
-              Animation.Interval = 1
-              Animation.Step = 4
-              Options.DrawStyle = cdmFluent
-              Options.Roundness = 5
-              Options.Width = 3
-              AllowGrayed = False
-              BoxSize.EnableProportional = True
-              BoxSize.Horizontal = 16
-              BoxSize.Vertical = 16
-              Colors.AutomaticFontColor = True
-              Colors.Leave = 16250866
-              Colors.Enter = 15658729
-              Colors.Down = 15066593
-              Colors.Checked = 12940567
-              Colors.CheckIndicator = clWhite
-              Colors.TransparentCenter = True
-              ColorsBorder.Leave = 9013638
-              ColorsBorder.Enter = 9013638
-              ColorsBorder.Down = 12434873
-              ColorsBorder.Checked = 12940567
-              Checked = False
-              State = cbUnchecked
-            end
-          end
-        end
-        object ControlBarContainer: TPanel
-          Left = 0
-          Top = 0
-          Width = 880
-          Height = 498
-          Align = alClient
-          BevelOuter = bvNone
-          Caption = 'Panel2'
-          Color = 2886678
-          FullRepaint = False
-          ParentBackground = False
-          ShowCaption = False
-          TabOrder = 5
-          object Controlbar_Playlist: TPanel
-            Left = 0
-            Top = 201
-            Width = 880
-            Height = 62
-            Align = alTop
-            BevelOuter = bvNone
-            Caption = 'Panel19'
-            FullRepaint = False
-            ParentBackground = False
-            ParentColor = True
-            ShowCaption = False
-            TabOrder = 0
-            object Label4: TLabel
-              AlignWithMargins = True
-              Left = 3
-              Top = 3
-              Width = 102
-              Height = 56
-              Margins.Right = 15
-              Align = alLeft
-              Caption = 'Playlist control'
-              Layout = tlCenter
-              ExplicitHeight = 21
-            end
-            object CButton31: CButton
-              AlignWithMargins = True
-              Left = 123
-              Top = 12
-              Width = 172
-              Height = 38
-              Margins.Top = 12
-              Margins.Right = 15
-              Margins.Bottom = 12
-              OnClick = CButton31Click
-              TabOrder = 0
-              Align = alLeft
-              BSegoeIcon = #60621
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Add new playlist'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-          end
-          object Controlbar_Downloads: TPanel
-            Left = 0
-            Top = 0
-            Width = 880
-            Height = 141
-            Align = alTop
-            BevelOuter = bvNone
-            Caption = 'Panel19'
-            FullRepaint = False
-            ParentBackground = False
-            ParentColor = True
-            ShowCaption = False
-            TabOrder = 1
-            object Label_Storage: TLabel
-              AlignWithMargins = True
-              Left = 15
-              Top = 50
-              Width = 855
-              Height = 21
-              Margins.Left = 15
-              Margins.Top = 0
-              Margins.Right = 10
-              Margins.Bottom = 10
-              Align = alTop
-              Caption = '%S of internal storage used'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -16
-              Font.Name = 'Segoe UI'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-              ExplicitWidth = 190
-            end
-            object Label18: TLabel
-              AlignWithMargins = True
-              Left = 15
-              Top = 10
-              Width = 855
-              Height = 40
-              Margins.Left = 15
-              Margins.Top = 10
-              Margins.Right = 10
-              Margins.Bottom = 0
-              Align = alTop
-              Caption = 'Your downloads'
-              Color = 2886678
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = clWhite
-              Font.Height = -29
-              Font.Name = 'Segoe UI Bold'
-              Font.Style = []
-              ParentColor = False
-              ParentFont = False
-              Layout = tlCenter
-              ExplicitWidth = 221
-            end
-            object Download_Filters: TPanel
-              Left = 0
-              Top = 81
-              Width = 880
-              Height = 60
-              Align = alTop
-              BevelOuter = bvNone
-              Caption = 'Panel19'
-              FullRepaint = False
-              ParentColor = True
-              ShowCaption = False
-              TabOrder = 0
-              object Label38: TLabel
-                AlignWithMargins = True
-                Left = 3
-                Top = 3
-                Width = 34
-                Height = 54
-                Margins.Right = 15
-                Align = alLeft
-                Caption = 'View'
-                Layout = tlCenter
-                ExplicitHeight = 21
-              end
-              object DownFilder_3: CButton
-                Tag = 2
-                AlignWithMargins = True
-                Left = 289
-                Top = 12
-                Width = 100
-                Height = 36
-                Margins.Top = 12
-                Margins.Bottom = 12
-                OnClick = DownloadsFilterSel
-                TabOrder = 0
-                Align = alLeft
-                BSegoeIcon = #59708
-                ButtonIcon = cicSegoeFluent
-                UseAccentColor = None
-                GradientOptions.Enabled = False
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = clRed
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = 'Albums'
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                Colors.Enter = 8985494
-                Colors.Leave = 7935876
-                Colors.Down = 5640542
-                Colors.BLine = 6685295
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = True
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 4
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-              object DownFilder_2: CButton
-                Tag = 1
-                AlignWithMargins = True
-                Left = 183
-                Top = 12
-                Width = 100
-                Height = 36
-                Margins.Top = 12
-                Margins.Bottom = 12
-                OnClick = DownloadsFilterSel
-                TabOrder = 1
-                Align = alLeft
-                BSegoeIcon = #60495
-                ButtonIcon = cicSegoeFluent
-                UseAccentColor = None
-                GradientOptions.Enabled = False
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = clRed
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = 'Songs'
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                Colors.Enter = 8985494
-                Colors.Leave = 7935876
-                Colors.Down = 5640542
-                Colors.BLine = 6685295
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = True
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 4
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-              object DownFilder_4: CButton
-                Tag = 3
-                AlignWithMargins = True
-                Left = 395
-                Top = 12
-                Width = 100
-                Height = 36
-                Margins.Top = 12
-                Margins.Bottom = 12
-                OnClick = DownloadsFilterSel
-                TabOrder = 2
-                Align = alLeft
-                BSegoeIcon = #59259
-                ButtonIcon = cicSegoeFluent
-                UseAccentColor = None
-                GradientOptions.Enabled = False
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = clRed
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = 'Artists'
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                Colors.Enter = 8985494
-                Colors.Leave = 7935876
-                Colors.Down = 5640542
-                Colors.BLine = 6685295
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = True
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 4
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-              object DownFilder_5: CButton
-                Tag = 4
-                AlignWithMargins = True
-                Left = 501
-                Top = 12
-                Width = 100
-                Height = 36
-                Margins.Top = 12
-                Margins.Bottom = 12
-                OnClick = DownloadsFilterSel
-                TabOrder = 3
-                Align = alLeft
-                BSegoeIcon = #59659
-                ButtonIcon = cicSegoeFluent
-                UseAccentColor = None
-                GradientOptions.Enabled = False
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = clRed
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = 'Playlists'
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                Colors.Enter = 8985494
-                Colors.Leave = 7935876
-                Colors.Down = 5640542
-                Colors.BLine = 6685295
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = True
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 4
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-              object DownFilder_1: CButton
-                AlignWithMargins = True
-                Left = 55
-                Top = 12
-                Width = 110
-                Height = 36
-                Margins.Top = 12
-                Margins.Right = 15
-                Margins.Bottom = 12
-                OnClick = DownloadsFilterSel
-                TabOrder = 4
-                Align = alLeft
-                BSegoeIcon = #59606
-                ButtonIcon = cicSegoeFluent
-                UseAccentColor = None
-                GradientOptions.Enabled = False
-                GradientOptions.Enter = clFuchsia
-                GradientOptions.Leave = clRed
-                GradientOptions.Down = clMaroon
-                ControlStyle = []
-                Font.Charset = DEFAULT_CHARSET
-                Font.Color = 14123546
-                Font.Height = -16
-                Font.Name = 'Segoe UI Semibold'
-                Font.Style = []
-                SubTextFont.Charset = DEFAULT_CHARSET
-                SubTextFont.Color = 14123546
-                SubTextFont.Height = -13
-                SubTextFont.Name = 'Segoe UI'
-                SubTextFont.Style = []
-                FontAutoSize.Enabled = False
-                FontAutoSize.Max = -1
-                FontAutoSize.Min = -1
-                Text = 'All Songs'
-                SubText = 'Hello World!'
-                AutoExtendImage = False
-                State = mbsLeave
-                FlatButton = True
-                Colors.Enter = 8985494
-                Colors.Leave = 7935876
-                Colors.Down = 5640542
-                Colors.BLine = 6685295
-                Preset.Color = clBlue
-                Preset.Kind = cbprCustom
-                Preset.PenColorAuto = True
-                Preset.ApplyOnce = False
-                Preset.IgnoreGlobalSync = False
-                UnderLine.Enable = True
-                UnderLine.UnderLineRound = True
-                UnderLine.UnderLineThicknes = 6
-                TextColors.Enter = clWhite
-                TextColors.Leave = clWhite
-                TextColors.Down = clWhite
-                TextColors.BLine = clBlack
-                Pen.Color = 2886678
-                Pen.Width = 0
-                Pen.EnableAlternativeColors = False
-                Pen.FormSyncedColor = False
-                Pen.AltHoverColor = clBlack
-                Pen.AltPressColor = clBlack
-                Pen.GlobalPresetExcept = False
-                Animations.PressAnimation = True
-                Animations.PADelay = 2
-                Animations.PAShrinkAmount = 4
-                Animations.PAAnimateEngine = cbneAtDraw
-                Animations.FadeAnimation = True
-                Animations.FASpeed = 10
-              end
-            end
-          end
-          object Controlbar_Trash: TPanel
-            Left = 0
-            Top = 141
-            Width = 880
-            Height = 60
-            Align = alTop
-            BevelOuter = bvNone
-            Caption = 'Delete_Filterbar'
-            FullRepaint = False
-            ParentColor = True
-            ShowCaption = False
-            TabOrder = 2
-            object Label6: TLabel
-              AlignWithMargins = True
-              Left = 3
-              Top = 3
-              Width = 73
-              Height = 54
-              Margins.Right = 15
-              Align = alLeft
-              Caption = 'Trash view'
-              Layout = tlCenter
-              ExplicitHeight = 21
-            end
-            object CButton30: CButton
-              Tag = 2
-              AlignWithMargins = True
-              Left = 200
-              Top = 12
-              Width = 100
-              Height = 36
-              Margins.Top = 12
-              Margins.Bottom = 12
-              OnClick = DeleteFilterSel
-              TabOrder = 0
-              Align = alLeft
-              BSegoeIcon = #59708
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Albums'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object CButton32: CButton
-              Tag = 1
-              AlignWithMargins = True
-              Left = 94
-              Top = 12
-              Width = 100
-              Height = 36
-              Margins.Top = 12
-              Margins.Bottom = 12
-              OnClick = DeleteFilterSel
-              TabOrder = 1
-              Align = alLeft
-              BSegoeIcon = #60495
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Songs'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              FlatButton = True
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object CButton33: CButton
-              Tag = 3
-              AlignWithMargins = True
-              Left = 306
-              Top = 12
-              Width = 100
-              Height = 36
-              Margins.Top = 12
-              Margins.Bottom = 12
-              OnClick = DeleteFilterSel
-              TabOrder = 2
-              Align = alLeft
-              BSegoeIcon = #59259
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Artists'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object CButton34: CButton
-              AlignWithMargins = True
-              Left = 424
-              Top = 12
-              Width = 135
-              Height = 36
-              Margins.Left = 15
-              Margins.Top = 12
-              Margins.Bottom = 12
-              OnClick = CButton34Click
-              TabOrder = 3
-              Align = alLeft
-              BSegoeIcon = #57607
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Empty trash'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-          end
-          object Controlbar_ArtistManage: TPanel
-            Left = 0
-            Top = 263
-            Width = 880
-            Height = 62
-            Align = alTop
-            BevelOuter = bvNone
-            Caption = 'Panel19'
-            FullRepaint = False
-            ParentBackground = False
-            ParentColor = True
-            ShowCaption = False
-            TabOrder = 3
-            object Label7: TLabel
-              AlignWithMargins = True
-              Left = 831
-              Top = 3
-              Width = 34
-              Height = 56
-              Margins.Right = 15
-              Align = alRight
-              Caption = 'View'
-              Layout = tlCenter
-              ExplicitHeight = 21
-            end
-            object CButton36: CButton
-              AlignWithMargins = True
-              Left = 619
-              Top = 12
-              Width = 100
-              Height = 38
-              Margins.Top = 12
-              Margins.Bottom = 12
-              OnClick = ArtistViewSel
-              TabOrder = 0
-              Align = alRight
-              BSegoeIcon = #60495
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Songs'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              FlatButton = True
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
-              Animations.PAAnimateEngine = cbneAtDraw
-              Animations.FadeAnimation = True
-              Animations.FASpeed = 10
-            end
-            object CButton37: CButton
-              Tag = 1
-              AlignWithMargins = True
-              Left = 725
-              Top = 12
-              Width = 100
-              Height = 38
-              Margins.Top = 12
-              Margins.Bottom = 12
-              OnClick = ArtistViewSel
-              TabOrder = 1
-              Align = alRight
-              BSegoeIcon = #59708
-              ButtonIcon = cicSegoeFluent
-              UseAccentColor = None
-              GradientOptions.Enabled = False
-              GradientOptions.Enter = clFuchsia
-              GradientOptions.Leave = clRed
-              GradientOptions.Down = clMaroon
-              ControlStyle = []
-              Font.Charset = DEFAULT_CHARSET
-              Font.Color = 14123546
-              Font.Height = -16
-              Font.Name = 'Segoe UI Semibold'
-              Font.Style = []
-              SubTextFont.Charset = DEFAULT_CHARSET
-              SubTextFont.Color = 14123546
-              SubTextFont.Height = -13
-              SubTextFont.Name = 'Segoe UI'
-              SubTextFont.Style = []
-              FontAutoSize.Enabled = False
-              FontAutoSize.Max = -1
-              FontAutoSize.Min = -1
-              Text = 'Albums'
-              SubText = 'Hello World!'
-              AutoExtendImage = False
-              State = mbsLeave
-              Colors.Enter = 8985494
-              Colors.Leave = 7935876
-              Colors.Down = 5640542
-              Colors.BLine = 6685295
-              Preset.Color = clBlue
-              Preset.Kind = cbprCustom
-              Preset.PenColorAuto = True
-              Preset.ApplyOnce = False
-              Preset.IgnoreGlobalSync = False
-              UnderLine.Enable = True
-              UnderLine.UnderLineRound = True
-              UnderLine.UnderLineThicknes = 6
-              TextColors.Enter = clWhite
-              TextColors.Leave = clWhite
-              TextColors.Down = clWhite
-              TextColors.BLine = clBlack
-              Pen.Color = 2886678
-              Pen.Width = 0
-              Pen.EnableAlternativeColors = False
-              Pen.FormSyncedColor = False
-              Pen.AltHoverColor = clBlack
-              Pen.AltPressColor = clBlack
-              Pen.GlobalPresetExcept = False
-              Animations.PressAnimation = True
-              Animations.PADelay = 2
-              Animations.PAShrinkAmount = 4
               Animations.PAAnimateEngine = cbneAtDraw
               Animations.FadeAnimation = True
               Animations.FASpeed = 10
@@ -45947,5 +45706,16 @@ object UIForm: TUIForm
     OnTimer = PeriodicCheck100msTimer
     Left = 1093
     Top = 222
+  end
+  object IdHTTPServer1: TIdHTTPServer
+    Bindings = <>
+    Left = 397
+    Top = 222
+  end
+  object PeriodicAccessTokenRefresh: TTimer
+    Interval = 360000
+    OnTimer = PeriodicAccessTokenRefreshTimer
+    Left = 1077
+    Top = 302
   end
 end

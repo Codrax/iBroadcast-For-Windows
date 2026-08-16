@@ -68,19 +68,10 @@ begin
 
       if Param = '-logging' then
         EnableLogging := true;
-
-      if Param = '-logtoken' then
-        PrivacyEnabled := false;
-
-      if Param = '-exportpost' then
-        ExportPost := true;
-
-      if Param = '-log32' then
-        EnableLog32 := true;
     end;
 
   AddToLog('======================');
-  AddToLog('Started iBroadcast version ' + VERSION.ToString);
+  AddToLog('Started iBroadcast version ' + APP_VERSION.ToString);
   AddToLog('Started creating forms');
 
   Application.MainFormOnTaskbar := True;
@@ -94,7 +85,7 @@ begin
   end;
 
   // Log
-  if EnableLog32 then
+  if AllowDebug then
     begin
       Application.CreateForm(TLogging, Logging);
       Logging.Show;
