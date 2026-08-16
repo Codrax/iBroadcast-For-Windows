@@ -5,13 +5,15 @@ unit SpectrumVis3D;
 }
 
 interface
-  uses Windows, Dialogs, Graphics, SysUtils, CommonTypes, Classes;
 
- type
+uses
+  Windows, Dialogs, Graphics, SysUtils, CommonTypes, Classes;
+
+type
  TWaveData = array [0..2048] of DWORD;
  TFFTData  = array [0..512] of Single;
 
- TSpectrum = Class(TObject)
+  TSpectrum = Class(TObject)
     private
       VisBuff : TBitmap;
       BackBmp : TBitmap;

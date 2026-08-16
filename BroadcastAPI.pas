@@ -3,323 +3,323 @@ unit BroadcastAPI;
 {$SCOPEDENUMS ON}
 
 interface
-  uses
-    // Required Units
-    Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
-    Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL, IdURI,
-    IdHTTP, IdGlobal, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
-    Cod.Helpers, Cod.Helpers.Vcl, Cod.Dialogs, Cod.SysUtils, Cod.Files, Cod.ArrayHelpers;
+uses
+  // Required Units
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
+  Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL, IdURI,
+  IdHTTP, IdGlobal, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
+  Cod.Helpers, Cod.Helpers.Vcl, Cod.Dialogs, Cod.SysUtils, Cod.Files, Cod.ArrayHelpers;
 
-  type
-    // Cardinals
-    TArtSize = (Small, Medium, Large);
-    TWorkItem = (DownloadingImage);
-    TWorkItems = set of TWorkItem;
+type
+  // Cardinals
+  TArtSize = (Small, Medium, Large);
+  TWorkItem = (DownloadingImage);
+  TWorkItems = set of TWorkItem;
 
-    // Source
-    TDataSource = (None, Tracks, Albums, Artists, Playlists);
-    TDataSources = set of TDataSource;
+  // Source
+  TDataSource = (None, Tracks, Albums, Artists, Playlists);
+  TDataSources = set of TDataSource;
 
-    // Loading
-    TLoad = (Track, Album, Artist, PlayList);
-    TLoadSet = set of TLoad;
+  // Loading
+  TLoad = (Track, Album, Artist, PlayList);
+  TLoadSet = set of TLoad;
 
-    // Procs
-    TDataTypeUpdate = procedure(AUpdate: TDataSource) of object;
+  // Procs
+  TDataTypeUpdate = procedure(AUpdate: TDataSource) of object;
 
-    // Records
-    ResultType = record
-      Error: boolean;
-      LoggedIn: boolean;
-      ServerMessage: string;
+  // Records
+  ResultType = record
+    Error: boolean;
+    LoggedIn: boolean;
+    ServerMessage: string;
 
-      function Success: boolean;
+    function Success: boolean;
 
-      procedure TerminateSession;
-      procedure AnaliseFrom(JSON: TJSONValue);
-    end;
+    procedure TerminateSession;
+    procedure AnaliseFrom(JSON: TJSONValue);
+  end;
 
-    THistoryItem = record
-      TrackID: string;
-      TimeStamp: TDateTime;
-    end;
+  THistoryItem = record
+    TrackID: string;
+    TimeStamp: TDateTime;
+  end;
 
-    TLibraryStatus = record
-      TotalTracks: integer;
-      TotalPlays: integer;
+  TLibraryStatus = record
+    TotalTracks: integer;
+    TotalPlays: integer;
 
-      TokenExpireDate: TDateTime;
-      LastLibraryModified: TDateTime;
-      UpdateTimestamp: TDateTime;
+    TokenExpireDate: TDateTime;
+    LastLibraryModified: TDateTime;
+    UpdateTimestamp: TDateTime;
 
-      (* Loading *)
-      procedure LoadFrom(JSON: TJSONValue);
-    end;
+    (* Loading *)
+    procedure LoadFrom(JSON: TJSONValue);
+  end;
 
-    TAccount = record
-      Username: string;
-      OneQueue: boolean;
-      BitRate: string;
+  TAccount = record
+    Username: string;
+    OneQueue: boolean;
+    BitRate: string;
 
-      UserID: integer;
-      CreationDate: TDateTime;
+    UserID: integer;
+    CreationDate: TDateTime;
 
-      Verified: boolean;
-      BetaTester: boolean;
+    Verified: boolean;
+    BetaTester: boolean;
 
-      EmailAdress: string;
-      Premium: boolean;
-      VerificationDate: TDateTime;
+    EmailAdress: string;
+    Premium: boolean;
+    VerificationDate: TDateTime;
 
-      (* Loading *)
-      procedure LoadFrom(JSON: TJSONValue);
-    end;
+    (* Loading *)
+    procedure LoadFrom(JSON: TJSONValue);
+  end;
 
-    TTrackItem = record
-      (* Song properties in their JSON order, "?" is a unknown property *)
-      ID: string;
+  TTrackItem = record
+    (* Song properties in their JSON order, "?" is a unknown property *)
+    ID: string;
 
-      TrackNumber: cardinal;
+    TrackNumber: cardinal;
 
-      Year: cardinal;
-      Title: string;
+    Year: cardinal;
+    Title: string;
 
-      Genre: string;
+    Genre: string;
 
-      LengthSeconds: cardinal;
-      AlbumID: string;
-      ArtworkID: string;
-      ArtistID: string;
+    LengthSeconds: cardinal;
+    AlbumID: string;
+    ArtworkID: string;
+    ArtistID: string;
 
-      // ??? Some ID integer
-      DayUploaded: TDate;
-      IsInTrash: boolean;
-      FileSize: integer;
+    // ??? Some ID integer
+    DayUploaded: TDate;
+    IsInTrash: boolean;
+    FileSize: integer;
 
-      UploadLocation: string;
-      // ??? empty string
+    UploadLocation: string;
+    // ??? empty string
 
-      Rating: cardinal;
-      Plays: cardinal;
+    Rating: cardinal;
+    Plays: cardinal;
 
-      StreamLocations: string;
-      AudioType: string;
+    StreamLocations: string;
+    AudioType: string;
 
-      ReplayGain: string;
-      UploadTime: TTime;
-      // ??? Tag Array
+    ReplayGain: string;
+    UploadTime: TTime;
+    // ??? Tag Array
 
-      // Extra Data
-      CachedImage,
-      CachedImageLarge: TJpegImage;
-      Status: TWorkItems;
+    // Extra Data
+    CachedImage,
+    CachedImageLarge: TJpegImage;
+    Status: TWorkItems;
 
-      (* Utils *)
-      function GetStreamingURL: string;
+    (* Utils *)
+    function GetStreamingURL: string;
 
-      (* Artwork *)
-      function ArtworkLoaded(Large: boolean = false): boolean;
-      function GetArtwork(Large: boolean = false): TJPEGImage;
+    (* Artwork *)
+    function ArtworkLoaded(Large: boolean = false): boolean;
+    function GetArtwork(Large: boolean = false): TJPEGImage;
 
-      (* Loading *)
-      procedure LoadFrom(JSONPair: TJSONPair);
-    end;
+    (* Loading *)
+    procedure LoadFrom(JSONPair: TJSONPair);
+  end;
 
-    TAlbumItem = record
-      (* Album properties in their JSON order, "?" is a unknown property *)
-      ID: string;
+  TAlbumItem = record
+    (* Album properties in their JSON order, "?" is a unknown property *)
+    ID: string;
 
-      AlbumName: string;
+    AlbumName: string;
 
-      TracksID: TArray<string>;
-      ArtistID: string;
+    TracksID: TArray<string>;
+    ArtistID: string;
 
-      IsInTrash: boolean;
+    IsInTrash: boolean;
 
-      Rating: cardinal;
-      Disk: cardinal;
-      Year: cardinal;
+    Rating: cardinal;
+    Disk: cardinal;
+    Year: cardinal;
 
-      // ??? - Artist_aditional
-      // ??? - ICatID
+    // ??? - Artist_aditional
+    // ??? - ICatID
 
-      CachedImage: TJpegImage;
-      Status: TWorkItems;
+    CachedImage: TJpegImage;
+    Status: TWorkItems;
 
-      (* Artwork *)
-      function ArtworkLoaded: boolean;
-      function GetArtwork: TJPEGImage;
+    (* Artwork *)
+    function ArtworkLoaded: boolean;
+    function GetArtwork: TJPEGImage;
 
-      (* Loading *)
-      procedure LoadFrom(JSONPair: TJSONPair);
-    end;
+    (* Loading *)
+    procedure LoadFrom(JSONPair: TJSONPair);
+  end;
 
-    TArtistItem = record
-      (* Album properties in their JSON order, "?" is a unknown property *)
-      ID: string;
+  TArtistItem = record
+    (* Album properties in their JSON order, "?" is a unknown property *)
+    ID: string;
 
-      ArtistName: string;
+    ArtistName: string;
 
-      TracksID: TArray<string>;
-      IsInTrash: boolean;
+    TracksID: TArray<string>;
+    IsInTrash: boolean;
 
-      Rating: cardinal;
-      ArtworkID: string;
+    Rating: cardinal;
+    ArtworkID: string;
 
-      // ??? - ICatID
+    // ??? - ICatID
 
-      // Extra Data
-      HasArtwork: boolean;
+    // Extra Data
+    HasArtwork: boolean;
 
-      CachedImage: TJpegImage;
-      Status: TWorkItems;
+    CachedImage: TJpegImage;
+    Status: TWorkItems;
 
-      (* Artwork *)
-      function ArtworkLoaded: boolean;
-      function GetArtwork: TJPEGImage;
+    (* Artwork *)
+    function ArtworkLoaded: boolean;
+    function GetArtwork: TJPEGImage;
 
-      (* Loading *)
-      procedure LoadFrom(JSONPair: TJSONPair);
-    end;
+    (* Loading *)
+    procedure LoadFrom(JSONPair: TJSONPair);
+  end;
 
-    TPlaylistItem = record
-      (* Album properties in their JSON order, "?" is a unknown property *)
-      ID: string;
+  TPlaylistItem = record
+    (* Album properties in their JSON order, "?" is a unknown property *)
+    ID: string;
 
-      Name: string;
+    Name: string;
 
-      TracksID: TArray<string>;
-      // ??? UID
-      // ??? system_created
-      // ??? public_id
+    TracksID: TArray<string>;
+    // ??? UID
+    // ??? system_created
+    // ??? public_id
 
-      PlaylistType: string;
+    PlaylistType: string;
 
-      Description: string;
-      ArtworkID: string;
-      // ??? SortType
+    Description: string;
+    ArtworkID: string;
+    // ??? SortType
 
-      // Extra Data
-      HasArtwork: boolean;
+    // Extra Data
+    HasArtwork: boolean;
 
-      CachedImage: TJpegImage;
-      Status: TWorkItems;
+    CachedImage: TJpegImage;
+    Status: TWorkItems;
 
-      (* Artwork *)
-      function ArtworkLoaded: boolean;
-      function GetArtwork: TJPEGImage;
+    (* Artwork *)
+    function ArtworkLoaded: boolean;
+    function GetArtwork: TJPEGImage;
 
-      (* Loading *)
-      procedure LoadFrom(JSONPair: TJSONPair);
-    end;
+    (* Loading *)
+    procedure LoadFrom(JSONPair: TJSONPair);
+  end;
 
-    TSession = record
-      DeviceName: string;
+  TSession = record
+    DeviceName: string;
 
-      Joinable: boolean;
-      Connected: boolean;
+    Joinable: boolean;
+    Connected: boolean;
 
-      Client: string;
-      LastLogin: TDateTime;
-      Location: string;
+    Client: string;
+    LastLogin: TDateTime;
+    Location: string;
 
-      (* Loading *)
-      procedure LoadFrom(JSON: TJSONValue);
-    end;
+    (* Loading *)
+    procedure LoadFrom(JSON: TJSONValue);
+  end;
 
-    // Arrays
-    TArtists = TArray<TArtistItem>;
-    TAlbums = TArray<TAlbumItem>;
-    TTracks = TArray<TTrackItem>;
-    TPlaylists = TArray<TPlaylistItem>;
-    TSessions = TArray<TSession>;
+  // Arrays
+  TArtists = TArray<TArtistItem>;
+  TAlbums = TArray<TAlbumItem>;
+  TTracks = TArray<TTrackItem>;
+  TPlaylists = TArray<TPlaylistItem>;
+  TSessions = TArray<TSession>;
 
-  // Get Data
-  function GetTrack(ID: string): integer;
-  function GetAlbum(ID: string): integer;
-  function GetArtist(ID: string): integer;
-  function GetPlaylist(ID: string): integer;
+// Get Data
+function GetTrack(ID: string): integer;
+function GetAlbum(ID: string): integer;
+function GetArtist(ID: string): integer;
+function GetPlaylist(ID: string): integer;
 
-  function GetPlaylistOfType(AType: string): integer; (* thumbsup, recently-played, recently-uploaded *)
+function GetPlaylistOfType(AType: string): integer; (* thumbsup, recently-played, recently-uploaded *)
 
-  // Utils
-  function StringToDateTime(const ADateTimeStr: string; CovertUTC: boolean = true): TDateTime;
-  function DateTimeToString(ADateTime: TDateTime; CovertUTC: boolean = true): string;
-  function DateToString(ADateTime: TDate; CovertUTC: boolean = true): string;
-  function Yearify(Year: cardinal): string;
+// Utils
+function StringToDateTime(const ADateTimeStr: string; CovertUTC: boolean = true): TDateTime;
+function DateTimeToString(ADateTime: TDateTime; CovertUTC: boolean = true): string;
+function DateToString(ADateTime: TDate; CovertUTC: boolean = true): string;
+function Yearify(Year: cardinal): string;
 
-  // Main Request
-  function SendClientRequest(RequestJSON: string; Endpoint: string = ''): TJSONValue;
+// Main Request
+function SendClientRequest(RequestJSON: string; Endpoint: string = ''): TJSONValue;
 
-  // User
-  function LoginUser: boolean;
-  function LogOffUser: boolean;
+// User
+function LoginUser: boolean;
+function LogOffUser: boolean;
 
-  function IsAuthenthicated: boolean;
+function IsAuthenthicated: boolean;
 
-  procedure ReturnToLogin;
+procedure ReturnToLogin;
 
-  // Memory
-  procedure APIFreeMemory;
+// Memory
+procedure APIFreeMemory;
 
-  // Artwork Store
-  procedure AddToArtworkStore(ID: string; Cache: TJpegImage; AType: TDataSource);
-  function ExistsInStore(ID: string; AType: TDataSource): boolean;
-  function GetArtStoreCache(ID: string; AType: TDataSource): TJpegImage;
-  function GetArtworkStore(AType: TDataSource = TDataSource.None): string;
-  procedure ClearArtworkStore;
-  procedure InitiateArtworkStore;
+// Artwork Store
+procedure AddToArtworkStore(ID: string; Cache: TJpegImage; AType: TDataSource);
+function ExistsInStore(ID: string; AType: TDataSource): boolean;
+function GetArtStoreCache(ID: string; AType: TDataSource): TJpegImage;
+function GetArtworkStore(AType: TDataSource = TDataSource.None): string;
+procedure ClearArtworkStore;
+procedure InitiateArtworkStore;
 
-  // Tracks
-  function UpdateTrackRating(ID: string; Rating: integer; ReloadLibrary: boolean): boolean;
-  function GetSongPlaylists(ID: string): TArray<string>;
+// Tracks
+function UpdateTrackRating(ID: string; Rating: integer; ReloadLibrary: boolean): boolean;
+function GetSongPlaylists(ID: string): TArray<string>;
 
-  function TrackRatingToLikedPlaylist(ID: string): boolean;
+function TrackRatingToLikedPlaylist(ID: string): boolean;
 
-  // Albums
-  function UpdateAlbumRating(ID: string; Rating: integer; ReloadLibrary: boolean): boolean;
+// Albums
+function UpdateAlbumRating(ID: string; Rating: integer; ReloadLibrary: boolean): boolean;
 
-  // Artists
-  function UpdateArtistRating(ID: string; Rating: integer; ReloadLibrary: boolean): boolean;
+// Artists
+function UpdateArtistRating(ID: string; Rating: integer; ReloadLibrary: boolean): boolean;
 
-  // Playlist
-  function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Tracks: TArray<string>): boolean; overload;
-  function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Mood: string): boolean; overload;
-  function AppentToPlaylist(ID: string; Tracks: TArray<string>): boolean;
-  function PreappendToPlaylist(ID: string; Tracks: TArray<string>): boolean;
-  function ChangePlayList(ID: string; Tracks: TArray<string>): boolean;
-  function DeleteFromPlaylist(ID: string; Tracks: TArray<string>): boolean;
-  function TouchupPlaylist(ID: string): boolean;
-  function UpdatePlayList(ID: string; Name, Description: string; ReloadLibrary: boolean): boolean;
-  function DeletePlayList(ID: string): boolean;
-  function DeleteTracks(Tracks: TArray<string>): boolean;
-  function DeleteTrack(ID: string): boolean;
-  function DeleteAlbum(ID: string): boolean;
-  function DeleteArtist(ID: string): boolean;
-  function RestoreTracks(Tracks: TArray<string>): boolean;
-  function RestoreTrack(ID: string): boolean;
-  function RestoreAlbum(ID: string): boolean;
-  function RestoreArtist(ID: string): boolean;
-  function EmptyTrash(Tracks: TArray<string>): boolean;
-  function CompleteEmptyTrash: boolean;
+// Playlist
+function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Tracks: TArray<string>): boolean; overload;
+function CreateNewPlayList(Name, Description: string; MakePublic: boolean; Mood: string): boolean; overload;
+function AppentToPlaylist(ID: string; Tracks: TArray<string>): boolean;
+function PreappendToPlaylist(ID: string; Tracks: TArray<string>): boolean;
+function ChangePlayList(ID: string; Tracks: TArray<string>): boolean;
+function DeleteFromPlaylist(ID: string; Tracks: TArray<string>): boolean;
+function TouchupPlaylist(ID: string): boolean;
+function UpdatePlayList(ID: string; Name, Description: string; ReloadLibrary: boolean): boolean;
+function DeletePlayList(ID: string): boolean;
+function DeleteTracks(Tracks: TArray<string>): boolean;
+function DeleteTrack(ID: string): boolean;
+function DeleteAlbum(ID: string): boolean;
+function DeleteArtist(ID: string): boolean;
+function RestoreTracks(Tracks: TArray<string>): boolean;
+function RestoreTrack(ID: string): boolean;
+function RestoreAlbum(ID: string): boolean;
+function RestoreArtist(ID: string): boolean;
+function EmptyTrash(Tracks: TArray<string>): boolean;
+function CompleteEmptyTrash: boolean;
 
-  // History
-  function PushHistory(Items: TArray<THistoryItem>): boolean;
+// History
+function PushHistory(Items: TArray<THistoryItem>): boolean;
 
-  // Library
-  procedure LoadStatus;
-  procedure LoadLibrary;
-  procedure LoadLibraryAdvanced(LoadSet: TLoadSet);
+// Library
+procedure LoadStatus;
+procedure LoadLibrary;
+procedure LoadLibraryAdvanced(LoadSet: TLoadSet);
 
-  // Additional Data
-  function GetSongArtwork(ID: string; Size: TArtSize = TArtSize.Small): TJpegImage;
-  function SongArtCollage(ID1, ID2, ID3, ID4: string): TJpegImage;
+// Additional Data
+function GetSongArtwork(ID: string; Size: TArtSize = TArtSize.Small): TJpegImage;
+function SongArtCollage(ID1, ID2, ID3, ID4: string): TJpegImage;
 
-  // Status
-  procedure SetWorkStatus(Status: string);
-  procedure SetDataWorkStatus(Status: string);
+// Status
+procedure SetWorkStatus(Status: string);
+procedure SetDataWorkStatus(Status: string);
 
-  procedure ResetWork;
+procedure ResetWork;
 
 var
   // Formattable Strings
