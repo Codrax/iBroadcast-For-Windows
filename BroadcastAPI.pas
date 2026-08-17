@@ -310,7 +310,7 @@ const
   WELCOME_STRING_SPECIAL = 'Happy holidays, %S';
 
   // App
-  APP_NAME = 'Cod'#39's iBroadcast';
+  APP_NAME = 'Cod''s iBroadcast';
   APP_VERSION: TVersion = (Major:1; Minor:12; Maintenance: 0);
 
   APP_USERMODELID = 'com.codrutsoft.ibroadcast';
@@ -329,6 +329,7 @@ const
   OAUTH2_CLIENT_ID = '9ad81c4a98db11f1b50eb49691aa2236';
   OAUTH2_CLIENT_SECRET = '6ef778c35907804c3babcd3f98e5f4c1d38301de50efbfc6fbd403c82bb99a06';
   OAUTH2_REDIRECT_URI = 'http://127.0.0.1:49321/';
+  OAUTH2_SCOPE = 'user.account:read user.devices:read user.library:read user.library:write';
   OAUTH2_LISTEN_PORT: word = 49321;
 
   // Artwork Store
@@ -485,7 +486,7 @@ begin
       // Parse response and extract numbers
       if (ResponseStream.Size > 0) and (ResponseStream.DataString <> 'OK') then
         Result := TJValue.ParseJson(ResponseStream.DataString);
-      if AllowDebug then AddToLog('RESPONSE:'+ResponseStream.DataString);
+      if AllowDebug then AddToLog('RESPONSE:'+ResponseStream.DataString+sLineBreak+sLineBreak);
     except
       on E: Exception do begin
         AddToLog(E.ClassName+': '+E.Message);
@@ -531,7 +532,7 @@ begin
           Exit( TJNull.CreateNew );
         Result := TJValue.ParseJson(ResponseStream.DataString);
       end;
-      if AllowDebug then AddToLog('RESPONSE:'+ResponseStream.DataString);
+      if AllowDebug then AddToLog('RESPONSE:'+ResponseStream.DataString+sLineBreak+sLineBreak);
     except
       on E: Exception do begin
         AddToLog(E.ClassName+': '+E.Message);
@@ -552,9 +553,7 @@ begin
     '&response_type=' + TIdURI.ParamsEncode('code') +
     '&code_challenge=' + TIdURI.ParamsEncode(ACodeChallange) +
     '&code_challenge_method=S256' +
-    '&scope=' + TIdURI.ParamsEncode(
-      'user.account:read user.devices:read user.library:read user.library:write'
-    );
+    '&scope=' + TIdURI.ParamsEncode(OAUTH2_SCOPE);
 end;
 
 function V2_Login_Token_GetFromCode(const HTTP: TIdHTTP; const ACode: string; const ACodeVerifier: string): boolean;

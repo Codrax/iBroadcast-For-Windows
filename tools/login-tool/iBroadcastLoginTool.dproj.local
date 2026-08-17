@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<BorlandProject>
+	<Transactions>
+    <Transaction>1899.12.30 00:00:00.000.208,C:\Users\Codrut\Repositories\iBroadcast-For-Windows\tools\login-tool\iBroadcastLoginTool.dproj=C:\Users\Codrut\Sync\Development\Delphi\Current\Project1.dproj</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.656,=C:\Users\Codrut\Sync\Development\Delphi\Current\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.259,C:\Users\Codrut\Repositories\iBroadcast-For-Windows\tools\login-tool\MainUI.dfm=C:\Users\Codrut\Sync\Development\Delphi\Current\Unit1.dfm</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.259,C:\Users\Codrut\Repositories\iBroadcast-For-Windows\tools\login-tool\MainUI.pas=C:\Users\Codrut\Sync\Development\Delphi\Current\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.982,C:\Users\Codrut\Repositories\iBroadcast-For-Windows\tools\login-tool\MiniBroacastAPI.pas=</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.746,C:\Users\Codrut\Repositories\iBroadcast-For-Windows\tools\login-tool\MiniBroacastAPI.pas=C:\Users\Codrut\Repositories\iBroadcast-For-Windows\tools\login-tool\Unit1.pas</Transaction>
+    <Transaction>1899.12.30 00:00:00.000.626,=C:\Users\Codrut\Repositories\iBroadcast-For-Windows\tools\login-tool\Unit1.pas</Transaction>
+  </Transactions>
+</BorlandProject>
