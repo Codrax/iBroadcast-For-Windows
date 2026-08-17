@@ -6,11 +6,10 @@ This is a native Windows client for the [iBroadcast](https://ibroadcast.com) mus
 
 ### Also try the crossplatform [iBroadcast](https://github.com/Codrax/iBroadcast)!
 
-## To obtain the login token:
-Go to media.ibroadcast.com -> Account -> Apps, and create a token for Cod's iBroadcast Player.
 
-iBroadcast Apps Page
-![Screenshot_1](https://user-images.githubusercontent.com/68193064/235357872-fc1900b2-bb1c-410d-b47f-14a574c27b31.png)
+## Installation
+Download the installer from the [official website](https://www.codrutsoft.com/apps/ibroadcast-windows/) and follow the setup instructions.
+
 
 ## Main Features
 - Browse library songs, albums, artists, playlists
@@ -31,13 +30,6 @@ iBroadcast Apps Page
 - Create & Edit playlists
 - Volume Mixer for App and System
 - Performance graph
-
-### Dependencies
-- Codrut Visual Library - https://github.com/Codrax/CodrutsVisualLibrary/
-- Codrut Fluent Design System - https://github.com/Codrax/CodrutFluentDesignSystem
-- Codrut Windows Runtime - https://github.com/Codrax/Cod-Windows-Runtime
-- Delphi BASS Audio Library - https://github.com/TDDung/Delphi-BASS
-- Units in the Dependencies folder
 
 ### Parameters
 | Parameter  | Description |
@@ -63,3 +55,9 @@ iBroadcast Apps Page
 ![Screenshot 2023-05-01 175508](https://user-images.githubusercontent.com/68193064/235472002-9db00583-0c24-4eb7-920c-ef9042e8b06f.png)
 ![Screenshot 2023-04-29 164326](https://user-images.githubusercontent.com/68193064/235306816-f513b165-f72b-46db-ab0a-1faaa44e7092.png)
 ![Screenshot 2023-04-29 164338](https://user-images.githubusercontent.com/68193064/235306826-371cd980-6631-4943-ae6c-f6c970b126fb.png)
+
+### Dependencies
+- Codrut Visual Library - https://github.com/Codrax/CodrutsVisualLibrary/
+- Codrut Windows Runtime - https://github.com/Codrax/Cod-Windows-Runtime
+- Delphi BASS Audio Library - https://github.com/TDDung/Delphi-BASS
+- Units in the Dependencies folder
