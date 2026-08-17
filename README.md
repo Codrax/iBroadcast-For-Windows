@@ -57,6 +57,7 @@ Download the installer from the [official website](https://www.codrutsoft.com/ap
 ![Screenshot 2023-04-29 164338](https://user-images.githubusercontent.com/68193064/235306826-371cd980-6631-4943-ae6c-f6c970b126fb.png)
 
 ### Dependencies
+- Indy Internet Direct
 - Codrut Visual Library - https://github.com/Codrax/CodrutsVisualLibrary/
 - Codrut Windows Runtime - https://github.com/Codrax/Cod-Windows-Runtime
 - Delphi BASS Audio Library - https://github.com/TDDung/Delphi-BASS
