@@ -679,10 +679,12 @@ begin
   // Logged in
   Result := Obj.KeyExists('authenticated') and Obj['authenticated'].AsBoolean;
 
-  // Migrate refresh token
-  if Succeeded and not Result and (OAuth2_RefreshToken <> '') then begin
-    Result := V2_Login_Token_Refresh(HTTP);
-  end;
+  // Migrate refresh token (if access token failed, or it expired/expires in the next 30 minutes)
+  if OAuth2_RefreshToken <> '' then
+    if (Succeeded and not Result)
+      or (IncMinute(Now, 30) >= OAuth2_Expiry) then begin
+      Result := V2_Login_Token_Refresh(HTTP);
+    end;
 
   // Clear login on server confirmation
   if Succeeded and not Result then begin
@@ -805,8 +807,8 @@ begin
   // Search
   Result := [];
   for I := 0 to High(Playlists) do
-    if Playlists[I].TracksID.Find(ID) <> -1 then
-      Result.AddValue(Playlists[I].ID);
+    if TArray.Contains<string>(Playlists[I].TracksID, ID) then
+      Result := Result + [Playlists[I].ID];
 end;
 
 function TrackRatingToLikedPlaylist(const HTTP: TIdHTTP; ID: string): boolean;
@@ -820,7 +822,7 @@ begin
 
   if (Index <> -1) and (SongIndex <> -1) then
     begin
-      const Fav = Playlists[Index].TracksID.Find(ID) <> -1;
+      const Fav = TArray.Contains<string>(Playlists[Index].TracksID, ID);
       var IsFav: boolean;
       if ValueRatingMode then
         IsFav := Tracks[SongIndex].Rating = 10
@@ -1072,7 +1074,7 @@ begin
   ATracks := [];
   for I := 0 to High(Tracks) do
     if Tracks[I].IsInTrash then
-      ATracks.AddValue(Tracks[I].ID);
+      ATracks := ATracks + [Tracks[I].ID];
 
   // Empty
   Result := EmptyTrash(HTTP, ATracks);
@@ -1297,7 +1299,7 @@ begin
       Albums[Index].LoadFrom(Key, Item.AsArray);
 
       // Invalid entry, delete from index
-      if Albums[Index].TracksID.Count = 0 then
+      if Length(Albums[Index].TracksID) = 0 then
         SetLength(Albums, Index);
     end);
 
@@ -1329,7 +1331,7 @@ begin
       Artists[Index].LoadFrom(Key, Item.AsArray);
 
       // Invalid entry, delete from index
-      if Artists[Index].TracksID.Count = 0 then
+      if Length(Artists[Index].TracksID) = 0 then
         SetLength(Artists, Index);
     end);
 

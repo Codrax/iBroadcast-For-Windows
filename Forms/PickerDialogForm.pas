@@ -9,7 +9,7 @@ uses
   System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.Dialogs, Vcl.TitleBarCtrls, Cod.SysUtils,
   Vcl.StdCtrls, Vcl.ExtCtrls, BroadcastAPI, Cod.Visual.Button, Cod.Helpers, Cod.Helpers.Vcl,
   Cod.Types, Math, Imaging.jpeg, Vcl.WinXCtrls, Types, UITypes, Cod.Forms,
-  iBroadcastUtils, Cod.ArrayHelpers, GDIPOBJ;
+  iBroadcastUtils, Cod.ArrayHelpers, GDIPOBJ, System.Generics.Collections;
 
 type
   TPickType = (Song, Album, Artist, Playlist);
@@ -136,10 +136,10 @@ begin
   // Filter
   if Value = '' then
     for I := 0 to High(Items) do
-      Items[I].Hidden := FAlwaysHidden.Find(Items[I].ID) <> -1
+      Items[I].Hidden := TArray.Contains<string>(FAlwaysHidden, Items[I].ID)
     else
       for I := 0 to High(Items) do
-        Items[I].Hidden := (Pos(Value, MashString(Items[I].Name)) = 0) or (FAlwaysHidden.Find(Items[I].ID) <> -1);
+        Items[I].Hidden := (Pos(Value, MashString(Items[I].Name)) = 0) or TArray.Contains<string>(FAlwaysHidden, Items[I].ID);
 
   // Rects
   UpdateRects;
@@ -330,7 +330,7 @@ begin
   Result := [];
   for I := 0 to High(Items) do
     if Items[I].Checked then
-      Result.AddValue(Items[I].ID);
+      Result := Result + [Items[I].ID];
 end;
 
 procedure TPickerDialog.SetHidden(IDs: TArray<string>);
@@ -352,7 +352,7 @@ var
   I: Integer;
 begin
   for I := 0 to High(Items) do
-    Items[I].Checked := IDs.Find(Items[I].ID) <> -1;
+    Items[I].Checked := TArray.Contains<string>(IDs, Items[I].ID);
 end;
 
 procedure TPickerDialog.UpdateList;

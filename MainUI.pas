@@ -1010,7 +1010,7 @@ var
   Location,
   LocationExtra,
   LocationROOT: string;
-  LocationPath: TStringArray;
+  LocationPath: TArray<string>;
 
   // View settings
   ViewStyle: TViewStyle = TViewStyle.Cover;
@@ -1155,7 +1155,7 @@ end;
 
 procedure TUIForm.Action_PlayExecute(Sender: TObject);
 begin
-  if Player.PlayStatus = psPlaying then
+  if Player.PlayStatus = TPlayStatus.Playing then
     Player.Pause
   else
     Player.Play;
@@ -1216,7 +1216,7 @@ procedure TUIForm.AddQueue(MusicIndex: integer; StartPlay: boolean);
 var
   WasStopped: boolean;
 begin
-  WasStopped := (Player.PlayStatus = TPlayStatus.psStopped)
+  WasStopped := (Player.PlayStatus = TPlayStatus.Stopped)
     and (QueuePos = PlayQueue.Count - 1) and (PlayQueue.Count <> 0);
 
   PlayQueue.Add( MusicIndex );
@@ -1290,7 +1290,7 @@ begin
     begin
       Index := GetPlaylistOfType(Items[I]);
       if Index <> -1 then
-        Hidden.AddValue(Playlists[Index].ID);
+        Hidden := Hidden + [Playlists[Index].ID];
     end;
 end;
 begin
@@ -1307,13 +1307,13 @@ begin
   // Remove same
   for I := High(Existing) downto 0 do
     begin
-      AIndex := Selected.Find(Existing[I]);
+      AIndex := TArray.IndexOf<string>(Selected, Existing[I]);
 
       if AIndex <> -1 then
         begin
           // Remove from playlists
-          Selected.Delete(AIndex);
-          Existing.Delete(I);
+          TArrayUtils<string>.Delete(AIndex, Selected);
+          TArrayUtils<string>.Delete(I, Existing);
         end;
     end;
 
@@ -1391,13 +1391,13 @@ begin
   // Remove same
   for I := High(Existing) downto 0 do
     begin
-      AIndex := Selected.Find(Existing[I]);
+      AIndex := TArray.IndexOf<string>(Selected, Existing[I]);
 
       if AIndex <> -1 then
         begin
           // Remove from playlists
-          Selected.Delete(AIndex);
-          Existing.Delete(I);
+          TArrayUtils<string>.Delete(AIndex, Selected);
+          TArrayUtils<string>.Delete(I, Existing);
         end;
     end;
 
@@ -1565,7 +1565,7 @@ begin
       AIndex := PlayQueue[I];
 
       if AIndex <> -1 then
-        ATracks.AddValue( Tracks[AIndex].ID );
+        ATracks := ATracks + [Tracks[AIndex].ID];
     end;
 
   // Create
@@ -1673,14 +1673,14 @@ begin
     end);
 end;
 const
-  ANY_UPD: TStringArray = ['trash', 'search'];
+  ANY_UPD: TArray<string> = ['trash', 'search'];
 var
   ARoot: string;
 begin
   ARoot := BareRoot;
 
   // Update for any view
-  if ANY_UPD.Find(ARoot) <> -1 then
+  if TArray.Contains<string>(ANY_UPD, ARoot) then
     begin
       UpdateAndDraw;
 
@@ -1691,7 +1691,7 @@ begin
   if ARoot <> '' then
     case AUpdate of
       TDataSource.Tracks: begin
-        if (SubViewCompatibile.Find(ARoot) <> -1) or (ARoot = 'tracks') then
+        if TArray.Contains<string>(SubViewCompatibile, ARoot) or (ARoot = 'tracks') then
           UpdateAndDraw;
       end;
 
@@ -1750,7 +1750,7 @@ begin
   end;
 
   // Stop Audio
-  if Player.PlayStatus = psPlaying then
+  if Player.PlayStatus = TPlayStatus.Playing then
     QueueClear;
 
   // Delete Token
@@ -2215,7 +2215,7 @@ procedure TUIForm.QueueClear;
 begin
   PlayQueue.Clear;
 
-  if Player.PlayStatus = TPlayStatus.psPlaying then
+  if Player.PlayStatus = TPlayStatus.Playing then
     Player.Stop;
 
   QueuePos := -1;
@@ -5195,7 +5195,7 @@ var
   I, index: integer;
 begin
   // Empty
-  NextPlay := (PlayQueue.Count = 0) and (Player.PlayStatus <> psPlaying);
+  NextPlay := (PlayQueue.Count = 0) and (Player.PlayStatus <> TPlayStatus.Playing);
 
   // Add Tracks
   AIndex := PopupDrawItem.Index;
@@ -5234,7 +5234,7 @@ var
   I, index: integer;
 begin
   // Empty
-  NextPlay := (PlayQueue.Count = 0) and (Player.PlayStatus <> psPlaying);
+  NextPlay := (PlayQueue.Count = 0) and (Player.PlayStatus <> TPlayStatus.Playing);
 
   // Add Tracks
   AIndex := PopupDrawItem.Index;
@@ -6049,7 +6049,7 @@ procedure TUIForm.RenderVisualisations;
 var
   FFTFata: TFFTData;
 begin
-  if (Player = nil) or (not Player.IsFileOpen) or (Player.PlayStatus <> TPlayStatus.psPlaying) then
+  if (Player = nil) or (not Player.IsFileOpen) or (Player.PlayStatus <> TPlayStatus.Playing) then
     Exit;
   BASS_ChannelGetData(Player.Stream, @FFTFata, BASS_DATA_FFT1024);
 
@@ -7194,10 +7194,10 @@ begin
     MediaControls.PlaybackStatus := TMediaPlaybackStatus.Stopped
   else
     case Player.PlayStatus of
-      TPlayStatus.psStopped: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Stopped;
-      TPlayStatus.psPaused: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Paused;
-      TPlayStatus.psPlaying: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Playing;
-      TPlayStatus.psStalled: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Changing;
+      TPlayStatus.Stopped: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Stopped;
+      TPlayStatus.Paused: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Paused;
+      TPlayStatus.Playing: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Playing;
+      TPlayStatus.Stalled: MediaControls.PlaybackStatus := TMediaPlaybackStatus.Changing;
     end;
 
   MediaControlsUpdateTimeline;
@@ -7327,7 +7327,7 @@ procedure TUIForm.TickUpdate;
 begin
   // Icon
   if not NeedSeekUpdate then
-    if Player.PlayStatus = psPlaying then
+    if Player.PlayStatus = TPlayStatus.Playing then
       begin
         Button_Play.BSegoeIcon := ICON_PAUSE;
 
@@ -7362,7 +7362,7 @@ begin
     MediaControlsUpdateTimeline;
 
   // Fix data
-  if NeedSeekUpdate and (player.PlayStatus = psPlaying) and (SeekPoint <> -1) and Player.IsFileOpen then
+  if NeedSeekUpdate and (player.PlayStatus = TPlayStatus.Playing) and (SeekPoint <> -1) and Player.IsFileOpen then
     begin
       Player.Position := SeekPoint;
 
@@ -7374,7 +7374,7 @@ begin
           SeekTimeout := 0;
 
           // Was paused in Audio Stream
-          if SeekUpdateStatus = psPaused then
+          if SeekUpdateStatus = TPlayStatus.Paused then
             Player.Pause;
         end;
     end;
@@ -8049,7 +8049,7 @@ begin
 
   case Source of
     TDataSource.Tracks: begin
-      if (ItemID <> PlayID) or (Player.PlayStatus <> psPlaying) then
+      if (ItemID <> PlayID) or (Player.PlayStatus <> TPlayStatus.Playing) then
         begin
           // Add to queue ONLY
           if OnlyQueue then
@@ -8060,7 +8060,7 @@ begin
               UIForm.QueueUpdated;
 
               // Play
-              if (PlayQueue.Count = 1) and (Player.PlayStatus <> psPlaying) then
+              if (PlayQueue.Count = 1) and (Player.PlayStatus <> TPlayStatus.Playing) then
                 begin
                   QueuePos := -1;
                   UIForm.QueueSetTo(0);
@@ -8712,7 +8712,10 @@ begin
     // Create server
     const Server = TIdHTTPServer.Create(nil);
     try
-      Server.DefaultPort := OAUTH2_LISTEN_PORT;
+      with Server.Bindings.Add do begin
+        IP := '127.0.0.1';
+        Port := OAUTH2_LISTEN_PORT;
+      end;
       Server.Active := true;
 
       Server.OnCommandGet := DoHTTPServerCommandGet;

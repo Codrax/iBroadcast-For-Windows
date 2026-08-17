@@ -40,7 +40,7 @@ object PickerDialog: TPickerDialog
       AlignWithMargins = True
       Left = 25
       Top = 5
-      Width = 334
+      Width = 291
       Height = 37
       Margins.Left = 25
       Margins.Top = 5
@@ -55,7 +55,6 @@ object PickerDialog: TPickerDialog
       Font.Style = []
       ParentFont = False
       WordWrap = True
-      ExplicitWidth = 291
     end
     object Panel3: TPanel
       AlignWithMargins = True
