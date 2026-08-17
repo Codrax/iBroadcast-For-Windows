@@ -14,8 +14,8 @@ uses
   SysUtils, Classes, Graphics, Generics.Collections,
   IdHTTP, IdGlobal, IdSSLOpenSSL, IdURI, DateUtils, Forms,
   {$IFDEF FPC}fpjson, {$ELSE}Imaging.jpeg,{$ENDIF}
-  Cod.Types, Cod.Helpers, Cod.Helpers.Vcl, Cod.SysUtils, Cod.Files,
-  Cod.ArrayHelpers, Cod.JSON, Cod.JSON.Utils, Cod.Version, UnitInfo
+  Cod.Types, Cod.Files, Cod.ArrayHelpers, Cod.JSON, Cod.JSON.Utils,
+  Cod.Version, UnitInfo
   {$IFDEF FPC}, Cod.Platform.Lazarus{$ELSE}, IOUtils{$ENDIF};
 
 type
@@ -31,6 +31,10 @@ type
   // Loading
   TLoad = (Track, Album, Artist, PlayList);
   TLoadSet = set of TLoad;
+
+  // Flags
+  TAPIOperationFlag = (ConnectionFailed, TokenRefreshed);
+  TAPIOperationFlags = set of TAPIOperationFlag;
 
 const
   LOAD_SET_ALL = [Low(TLoad)..High(TLoad)];
@@ -330,7 +334,7 @@ function TouchupPlaylist(const HTTP: TIdHTTP; ID: string): boolean;
 function UpdatePlayList(const HTTP: TIdHTTP; ID: string; Name, Description: string; ReloadLibrary: boolean): boolean;
 function DeletePlayList(const HTTP: TIdHTTP; ID: string): boolean;
 {$IFDEF GENRES}
-function DeleteGenre(ID: string): boolean;
+function DeleteGenre(const HTTP: TIdHTTP; ID: string): boolean;
 {$ENDIF}
 function DeleteTracks(const HTTP: TIdHTTP; Tracks: TArray<string>): boolean;
 function DeleteAlbum(const HTTP: TIdHTTP; ID: string): boolean;
@@ -382,7 +386,7 @@ function V2_Login_Token_Refresh(const HTTP: TIdHTTP): boolean;
 function V2_Login_Token_Revoke(const HTTP: TIdHTTP): boolean;
 
 // Login - processer & modifier
-function V2_Login_LoggedIn(const HTTP: TIdHTTP; out Succeeded: boolean): boolean;
+function V2_Login_LoggedIn(const HTTP: TIdHTTP; out Flags: TAPIOperationFlags): boolean;
 
 const
   // Formattable Strings
@@ -392,7 +396,7 @@ const
 
   // App
   APP_NAME = 'Cod''s iBroadcast';
-  APP_VERSION: TVersion = (Major:APP_VERSION_MAJOR; Minor:APP_VERSION_MINOR; Maintenance: APP_VERSION_MAINTENANCE);
+  APP_VERSION: TVersion = (Major:APP_VERSION_MAJOR; Minor:APP_VERSION_MINOR; Maintenance: APP_VERSION_MAINTENANCE; Build: 0);
 
   APP_USERMODELID = 'com.codrutsoft.ibroadcast';
   APP_IDENTIFIER = APP_USERMODELID;
@@ -713,19 +717,24 @@ begin
   OAuth2_Expiry := 0;
 end;
 
-function V2_Login_LoggedIn(const HTTP: TIdHTTP; out Succeeded: boolean): boolean;
+function V2_Login_LoggedIn(const HTTP: TIdHTTP; out Flags: TAPIOperationFlags): boolean;
 var
   Response: IJValue;
   Body: IJObject;
   Obj: IJObject;
+
+  Succeeded: boolean;
 begin
   Result := false;
+  Flags := [];
 
   Body := V2_GetBody;
   Body.Put('mode', 'status');
 
   Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   Succeeded := Response <> nil;
+  if not Succeeded then
+    Flags := Flags + [TAPIOperationFlag.ConnectionFailed];
   if (Response = nil) or not Response.IsObject then
     Exit;
   Obj := Response.AsObject;
@@ -738,6 +747,8 @@ begin
     if (Succeeded and not Result)
       or (IncMinute(Now, 30) >= OAuth2_Expiry) then begin
       Result := V2_Login_Token_Refresh(HTTP);
+
+      Flags := Flags + [TAPIOperationFlag.TokenRefreshed];
     end;
 
   // Clear login on server confirmation
@@ -999,7 +1010,7 @@ begin
   Body := V2_GetBody;
   Body.Put('mode', 'createplaylist');
   Body.Put('name', Name);
-  Body.Put('description', Name);
+  Body.Put('description', Description);
   Body.Put('make_public', MakePublic);
   Body.Put('tracks', ArrayToJArray(Tracks));
 
@@ -1073,12 +1084,15 @@ begin
 end;
 
 function TouchupPlaylist(const HTTP: TIdHTTP; ID: string): boolean;
+var
+  Tracks: TArray<string>;
+  I: integer;
 begin
   SetWorkStatus('Repairing playlist');
   
   //
-  var Tracks := Playlists[GetPlaylist(ID)].TracksID;
-  for var I := High(Tracks) downto 0 do
+  Tracks := Playlists[GetPlaylist(ID)].TracksID;
+  for I := High(Tracks) downto 0 do
     if GetTrack(Tracks[I]) = -1 then
       TArrayUtils<string>.Delete(I, Tracks);
   
@@ -1134,6 +1148,19 @@ begin
   // Re-load
   LoadLibrary(HTTP, [TLoad.PlayList]);
 end;
+
+{$IFDEF GENRES}
+function DeleteGenre(const HTTP: TIdHTTP; ID: string): boolean;
+var
+  Index: integer;
+begin
+  Result := false;
+  Index := GetGenre(ID);
+
+  if Index <> -1 then
+    Result := DeleteTracks(HTTP, Genres[Index].TracksID);
+end;
+{$ENDIF}
 
 function DeleteTracks(const HTTP: TIdHTTP; Tracks: TArray<string>): boolean;
 var
@@ -1270,6 +1297,12 @@ var
   Body: IJObject;
   Response: IJValue;
   Obj: IJObject;
+
+  CurrentCount: int64;
+  I: integer;
+
+  ObjHistory, ObjDetail, ObjTrackEvent: IJObject;
+  ArrHistory, ObjTrackEvents: IJArray;
 begin
   Result := false;
   SetWorkStatus('Pushing history to server');
@@ -1284,9 +1317,8 @@ begin
   PlaysMap := TDictionary<string, int64>.Create;
   try
     Day := Items[0].Timestamp;
-    for var I := 0 to High(Items) do
+    for I := 0 to High(Items) do
       begin
-        var CurrentCount: int64;
         if not PlaysMap.TryGetValue(Items[I].TrackID, CurrentCount) then
           CurrentCount := 0;
         Inc(CurrentCount);
@@ -1294,19 +1326,19 @@ begin
         PlaysMap.AddOrSetValue(Items[I].TrackID, CurrentCount);
       end;
 
-    const ArrHistory = TJArray.CreateNew;
+    ArrHistory := TJArray.CreateNew;
     begin
-      const ObjHistory = TJObject.CreateNew;
+      ObjHistory := TJObject.CreateNew;
       begin
         ObjHistory.Put('day', DateToString(Day));
         ObjHistory.Put('plays', DictionaryToJObject(PlaysMap));
 
-        const ObjDetail = TJObject.CreateNew;
+        ObjDetail := TJObject.CreateNew;
         begin
-          for var I := 0 to High(Items) do begin
-            const ObjTrackEvents = TJArray.CreateNew;
+          for I := 0 to High(Items) do begin
+            ObjTrackEvents := TJArray.CreateNew;
             begin
-              const ObjTrackEvent = TJObject.CreateNew;
+              ObjTrackEvent := TJObject.CreateNew;
               begin
                 ObjTrackEvent.Put('event', 'play');
                 ObjTrackEvent.Put('ts', DateTimeToString(Items[I].TimeStamp));
@@ -1374,6 +1406,14 @@ var
   Body: IJObject;
   Response: IJValue;
   Obj: IJObject;
+
+  ObjLibrary, ObjLibItem: IJObject;
+
+  I: integer;
+  Key: string;
+  Item: IJValue;
+
+  Index: integer;
 begin
   Result := false;
   SetWorkStatus('Downloading iBroadcast Library...');
@@ -1394,9 +1434,7 @@ begin
 
   if not Obj.KeyExists('library') then
     Exit;
-  const ObjLibrary = Obj.Memory['library'].AsObject;
-
-  var ObjLibItem: IJObject;
+  ObjLibrary := Obj.Memory['library'].AsObject;
 
   // Tracks
   if (TLoad.Track in LoadSet) and ObjLibrary.KeyExists('tracks') then begin
@@ -1407,19 +1445,22 @@ begin
 
     // Enumerate
     Tracks := [];
-    ObjLibItem.MemoryForEach(procedure(Key: string; const Item: IJValue) begin
+    for I := 0 to ObjLibItem.Count-1 do begin
       Inc(WorkCount);
+
+      Key := ObjLibItem.GetItemKey(I);
+      Item := ObjLibItem.GetMemory(I);
 
       // Skip
       if (Key = 'map') or not Item.IsArray then
-        Exit;
+        continue;
 
       // Add
-      const Index = Length(Tracks);
+      Index := Length(Tracks);
       SetLength( Tracks, Index + 1 );
 
       Tracks[Index].LoadFrom(Key, Item.AsArray);
-    end);
+    end;
 
     // Updated
     if Assigned(OnUpdateType) then
@@ -1435,15 +1476,18 @@ begin
 
     // Enumerate
     Albums := [];
-    ObjLibItem.MemoryForEach(procedure(Key: string; const Item: IJValue) begin
+    for I := 0 to ObjLibItem.Count-1 do begin
       Inc(WorkCount);
+
+      Key := ObjLibItem.GetItemKey(I);
+      Item := ObjLibItem.GetMemory(I);
 
       // Skip
       if (Key = 'map') or not Item.IsArray then
-        Exit;
+        continue;
 
       // Add
-      const Index = Length(Albums);
+      Index := Length(Albums);
       SetLength( Albums, Index + 1 );
 
       Albums[Index].LoadFrom(Key, Item.AsArray);
@@ -1451,7 +1495,7 @@ begin
       // Invalid entry, delete from index
       if Length(Albums[Index].TracksID) = 0 then
         SetLength(Albums, Index);
-    end);
+    end;
 
     // Updated
     if Assigned(OnUpdateType) then
@@ -1467,15 +1511,18 @@ begin
 
     // Enumerate
     Artists := [];
-    ObjLibItem.MemoryForEach(procedure(Key: string; const Item: IJValue) begin
+    for I := 0 to ObjLibItem.Count-1 do begin
       Inc(WorkCount);
+
+      Key := ObjLibItem.GetItemKey(I);
+      Item := ObjLibItem.GetMemory(I);
 
       // Skip
       if (Key = 'map') or not Item.IsArray then
-        Exit;
+        continue;
 
       // Add
-      const Index = Length(Artists);
+      Index := Length(Artists);
       SetLength( Artists, Index + 1 );
 
       Artists[Index].LoadFrom(Key, Item.AsArray);
@@ -1483,7 +1530,7 @@ begin
       // Invalid entry, delete from index
       if Length(Artists[Index].TracksID) = 0 then
         SetLength(Artists, Index);
-    end);
+    end;
 
     // Updated
     if Assigned(OnUpdateType) then
@@ -1499,25 +1546,33 @@ begin
 
     // Enumerate
     Playlists := [];
-    ObjLibItem.MemoryForEach(procedure(Key: string; const Item: IJValue) begin
+    for I := 0 to ObjLibItem.Count-1 do begin
       Inc(WorkCount);
+
+      Key := ObjLibItem.GetItemKey(I);
+      Item := ObjLibItem.GetMemory(I);
 
       // Skip
       if (Key = 'map') or not Item.IsArray then
-        Exit;
+        continue;
 
       // Add
-      const Index = Length(PlayLists);
+      Index := Length(PlayLists);
       SetLength( PlayLists, Index + 1 );
 
       PlayLists[Index].LoadFrom(Key, Item.AsArray);
-    end);
+    end;
 
     // Updated
     if Assigned(OnUpdateType) then
       OnUpdateType(TDataSource.Playlists);
   end;
 
+  // Genres
+  {$IFDEF GENRES}
+  if TLoad.Track in LoadSet then
+     LoadLibraryGenres;
+  {$ENDIF}
 
   //
   ResetWork;
@@ -1984,6 +2039,22 @@ begin
 end;
 
 { TTrackItem }
+function TTrackItem.GetStreamingURL: string;
+begin
+  Result := ENDPOINT_STREAMING+StreamLocations
+    +Format('?Signature=%S&file_id=%S&user_id=%S&platform=%S&version=%S',
+    [OAuth2_AccessToken, ID, Account.UserID, APP_IDENTIFIER, APP_VERSION.ToString]);
+  (*
+    Signature - user token - string
+    file_id - song ID - integer
+    user_id = user ID - integer
+    platform - app name - string
+    version - this app version - string
+  *)
+
+  // Encode result
+  Result := TIdUrI.URLEncode(Result);
+end;
 
 function TTrackItem.ArtworkLoaded(Large: boolean): boolean;
 begin
@@ -2030,29 +2101,13 @@ begin
   Status := Status - [TWorkItem.DownloadingImage];
 end;
 
-function TTrackItem.GetStreamingURL: string;
-begin
-  Result := ENDPOINT_STREAMING+StreamLocations
-    +Format('?Signature=%S&file_id=%S&user_id=%S&platform=%S&version=%S',
-    [OAuth2_AccessToken, ID, Account.UserID, APP_IDENTIFIER, APP_VERSION.ToString]);
-  (*
-    Signature - user token - string
-    file_id - song ID - integer
-    user_id = user ID - integer
-    platform - app name - string
-    version - this app version - string
-  *)
 
-  // Encode result
-  Result := TIdUrI.URLEncode(Result);
-end;
 
 procedure TTrackItem.LoadFrom(Key: string; AArr: IJArray);
 begin
-  SetDataWorkStatus(Format('Loading song with ID of %S', [ID]));
-
-  // Data
   ID := Key;
+  SetDataWorkStatus(Format('Loading song with ID of %S', [ID]));
+  //
 
   TrackNumber := AArr.Memory[0].AsInteger;
   Year := AArr.Memory[1].AsInteger;
@@ -2175,19 +2230,20 @@ begin
 end;
 
 procedure TAlbumItem.LoadFrom(Key: string; AArr: IJArray);
+var
+  AID: string;
 begin
-  SetDataWorkStatus(Format('Loading album with ID of %S', [ID]));
-
   ID := Key;
+  SetDataWorkStatus(Format('Loading album with ID of %S', [ID]));
   //
 
   AlbumName := AArr.Memory[0].AsString;
 
   // TRACKS
   TracksID := [];
-  for var ID in JArrayToStringArray(AArr.Memory[1]) do begin
-    if GetTrack(ID) <> -1 then
-      TracksID := TracksID + [ID];
+  for AID in JArrayToStringArray(AArr.Memory[1]) do begin
+    if GetTrack(AID) <> -1 then
+      TracksID := TracksID + [AID];
   end;
 
   // Data 2
@@ -2275,19 +2331,20 @@ begin
 end;
 
 procedure TArtistItem.LoadFrom(Key: string; AArr: IJArray);
+var
+  AID: string;
 begin
-  SetDataWorkStatus(Format('Loading artist with ID of %S', [ID]));
-
   ID := Key;
+  SetDataWorkStatus(Format('Loading artist with ID of %S', [ID]));
   //
 
   ArtistName := AArr.Memory[0].AsString;
 
   // TRACKS
   TracksID := [];
-  for var ID in JArrayToStringArray(AArr.Memory[1]) do begin
-    if GetTrack(ID) <> -1 then
-      TracksID := TracksID + [ID];
+  for AID in JArrayToStringArray(AArr.Memory[1]) do begin
+    if GetTrack(AID) <> -1 then
+      TracksID := TracksID + [AID];
   end;
 
   // Data 2
@@ -2364,19 +2421,20 @@ begin
 end;
 
 procedure TPlaylistItem.LoadFrom(Key: string; AArr: IJArray);
+var
+  AID: string;
 begin
-  SetDataWorkStatus(Format('Loading playlist with ID of %S', [ID]));
-
   ID := Key;
+  SetDataWorkStatus(Format('Loading playlist with ID of %S', [ID]));
   //
 
   Name := AArr.Memory[0].AsString;
 
   // TRACKS
   TracksID := [];
-  for var ID in JArrayToStringArray(AArr.Memory[1]) do begin
-    if GetTrack(ID) <> -1 then
-      TracksID := TracksID + [ID];
+  for AID in JArrayToStringArray(AArr.Memory[1]) do begin
+    if GetTrack(AID) <> -1 then
+      TracksID := TracksID + [AID];
   end;
 
   // ?

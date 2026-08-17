@@ -446,7 +446,6 @@ object Form1: TForm1
     Anchors = [akLeft, akTop, akRight]
     ScrollBars = ssVertical
     TabOrder = 16
-    ExplicitWidth = 315
   end
   object Button3: TButton
     Left = 322
@@ -477,7 +476,7 @@ object Form1: TForm1
   object Edit13: TEdit
     Left = 263
     Top = 630
-    Width = 150
+    Width = 115
     Height = 23
     TabOrder = 20
     OnChange = Edit13Change
@@ -579,7 +578,6 @@ object Form1: TForm1
     Caption = 'Clear'
     TabOrder = 30
     OnClick = Button11Click
-    ExplicitLeft = 664
   end
   object CheckBox3: TCheckBox
     Left = 556
@@ -590,6 +588,15 @@ object Form1: TForm1
     Checked = True
     State = cbChecked
     TabOrder = 31
+  end
+  object Button12: TButton
+    Left = 384
+    Top = 629
+    Width = 29
+    Height = 25
+    Caption = 'C'
+    TabOrder = 32
+    OnClick = Button12Click
   end
   object IdHTTPServer1: TIdHTTPServer
     Bindings = <>

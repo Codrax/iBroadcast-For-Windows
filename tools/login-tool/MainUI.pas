@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, Vcl.ExtCtrls, Math,
   Vcl.NumberBox, IdBaseComponent, IdComponent, IdCustomTCPServer, IdSSLOpenSSL,
   IdCustomHTTPServer, IdHTTPServer, IdGlobal, IdContext, IdHTTP, IdURI,
   Cod.JSON, Cod.JSON.Utils, Hash, NetEncoding, Cod.SysUtils, DateUtils,
@@ -77,6 +77,7 @@ type
     Button10: TButton;
     Button11: TButton;
     CheckBox3: TCheckBox;
+    Button12: TButton;
     procedure CheckBox1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure IdHTTPServer1AfterBind(Sender: TObject);
@@ -116,6 +117,7 @@ type
     procedure Button8Click(Sender: TObject);
     procedure Button9Click(Sender: TObject);
     procedure Button10Click(Sender: TObject);
+    procedure Button12Click(Sender: TObject);
   private
     function Get_OAuth2_AccessToken: string;
     function Get_OAUTH2_CLIENT_ID: string;
@@ -466,6 +468,13 @@ begin
   Memo2.Clear;
 end;
 
+procedure TForm1.Button12Click(Sender: TObject);
+begin
+  Edit13.Text := TNetEncoding.Base64URL.EncodeBytesToString(
+    THashSHA2.GetHashBytes(Edit12.Text, THashSHA2.TSHA2Version.SHA256)
+  );
+end;
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   NumberBox2.ValueInt := Random(100000);
@@ -493,9 +502,7 @@ begin
   Edit12.Text := TNetEncoding.Base64URL.EncodeBytesToString(TEncoding.UTF8.GetBytes(TGUID.NewGuid.ToString));
 
   // Challange
-  Edit13.Text := TNetEncoding.Base64URL.EncodeBytesToString(
-    THashSHA2.GetHashBytes(Edit12.Text, THashSHA2.TSHA2Version.SHA256)
-  );
+  Button12.OnClick(Button12);
 end;
 
 procedure TForm1.Button5Click(Sender: TObject);
@@ -860,6 +867,7 @@ begin
   if NewDate <= Now then
     Label28.Caption := Label28.Caption + ' (expired)';
 end;
+
 
 initialization
   SettingsSession := TSectionSettingsManager.Create(

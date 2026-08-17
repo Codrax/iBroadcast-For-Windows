@@ -825,6 +825,9 @@ type
     procedure MusicSeekTo(Value: int64);
     procedure MusicSeekBy(Value: int64);
 
+    // Ran after everything is loaded (account, libary, offline, ...);;
+    procedure DoInitializingSetupDone;
+
     // Searching
     procedure FiltrateSearch(Term: string; Flags: TSearchFlags = [TSearchFlag.SearchInfo]);
 
@@ -918,7 +921,7 @@ const
 
   UPDATE_CHECK_DAY_INTERVAL = 2; // every two days
 
-  FILENAME_TOKEN = 'oauth2.json';
+  FILENAME_TOKEN = 'credentials.json';
 
 resourcestring
   ARTIST_UNKNOWN = 'Unknown Artist';
@@ -2350,6 +2353,27 @@ end;
 procedure TUIForm.DoException(Sender: TObject; E: Exception);
 begin
   AddToLog('[EXCEPTION] '+E.ClassName+': '+E.Message);
+end;
+
+procedure TUIForm.DoInitializingSetupDone;
+begin
+  // Queue
+  if OptionQueueSave and (PlayQueue.Count = 0) then begin
+    UIForm.QueueSettings(true);
+
+    // Invalid
+    if QueuePos >= PlayQueue.Count then begin
+      UIForm.QueueClear;
+    end;
+
+    // Load
+    if QueuePos <> -1 then
+      try
+        UIForm.QueuePlay(false);
+      except
+        UIForm.QueueClear;
+      end;
+  end;
 end;
 
 procedure TUIForm.DownloadItem(Sender: TObject);
@@ -4980,9 +5004,13 @@ end;
 
 procedure TUIForm.PeriodicAccessTokenRefreshTimer(Sender: TObject);
 var
-  Success: boolean;
+  Flags: TAPIOperationFlags;
 begin
-  V2_Login_LoggedIn(V2_HTTP, Success);;
+  if V2_Login_LoggedIn(V2_HTTP, Flags) then begin
+    // Write new creds
+    if TAPIOperationFlag.TokenRefreshed in Flags then
+      TokenLoginInfo(false);
+  end;
 end;
 
 procedure TUIForm.PeriodicCheck100msTimer(Sender: TObject);
@@ -5348,15 +5376,19 @@ end;
 procedure TUIForm.Popup_AlbumPopup(Sender: TObject);
 begin
   // Trash
-  Restore2.Visible := not IsOffline and PopupDrawItem.Trashed;
-  Trash2.Visible := not IsOffline and not Restore2.Visible;
+  Restore2.Visible := PopupDrawItem.Trashed;
+  Trash2.Visible := not Restore2.Visible;
+  Restore2.Enabled := not IsOffline;
+  Trash2.Enabled := not IsOffline;
 end;
 
 procedure TUIForm.Popup_ArtistPopup(Sender: TObject);
 begin
   // Trash
-  Restore3.Visible := not IsOffline and PopupDrawItem.Trashed;
-  Trash3.Visible := not IsOffline and not Restore3.Visible;
+  Restore3.Visible := PopupDrawItem.Trashed;
+  Trash3.Visible := not Restore3.Visible;
+  Restore3.Enabled := not IsOffline;
+  Trash3.Enabled := not IsOffline;
 end;
 
 procedure TUIForm.Popup_PlaylistPopup(Sender: TObject);
@@ -5379,8 +5411,10 @@ begin
   PlayQueue1.Visible := Popup_Track.Tag = 0;
 
   // Trash
-  Restore1.Visible := not IsOffline and PopupDrawItem.Trashed;
-  Trash1.Visible := not IsOffline and not Restore1.Visible;
+  Restore1.Visible := PopupDrawItem.Trashed;
+  Trash1.Visible := not Restore1.Visible;
+  Restore1.Enabled := not IsOffline;
+  Trash1.Enabled := not IsOffline;
 
   //
   Addtoplaylist1.Enabled := not IsOffline;
@@ -5552,7 +5586,7 @@ var
   ST: TStringList;
   I, ATrack, APosition: Integer;
 begin
-  FileName := AppData + 'lastqueue.ini';
+  FileName := AppData + 'lastqueue.dat';
   if Load then
     // Load Data
     begin
@@ -7501,21 +7535,21 @@ end;
 procedure TUIForm.TokenLoginInfo(Load: boolean);
 var
   Obj: IJObject;
-  FileName: string;
+  FilePath: string;
 begin
   // Invalid
   if not Load and (OAuth2_RefreshToken = '') then
     Exit;
 
   // File Name
-  FileName := AppData + FILENAME_TOKEN;
+  FilePath := AppData + FILENAME_TOKEN;
   if Load then
     // Load Token
     begin
-      if not TFile.Exists(FileName) then
+      if not TFile.Exists(FilePath) then
         Exit;
 
-      Obj := TJValue.LoadFromFile(FileName) as IJObject;
+      Obj := TJValue.LoadFromFile(FilePath) as IJObject;
 
       OAuth2_RefreshToken := Obj['refresh_token'].AsString;
       OAuth2_AccessToken := Obj['access_token'].AsString;
@@ -7530,7 +7564,7 @@ begin
       Obj.Put('access_token', OAuth2_AccessToken);
       Obj.Put('expiry', double(OAuth2_Expiry));
 
-      TJValue.SaveToFile(Obj, Filename, [TJValueWriteToFileFlag.FlushFileToDisk]);
+      TJValue.SaveToFile(Obj, FilePath, [TJValueWriteToFileFlag.FlushFileToDisk]);
     end;
 end;
 
@@ -8655,6 +8689,9 @@ end;
 
 procedure TLoginThread.DoHTTPServerCommandGet(AContext: TIdContext;
   ARequestInfo: TIdHTTPRequestInfo; AResponseInfo: TIdHTTPResponseInfo);
+var
+  OAuth2State_Fetched: string;
+  OAuth2State_ErrorDesc: string;
 begin
   if ARequestInfo.CommandType <> hcGET then
     Exit;
@@ -8663,8 +8700,8 @@ begin
   AResponseInfo.ContentType := 'text/plain';
 
   // Get
-  const OAuth2State_Fetched = ARequestInfo.Params.Values['state'];
-  const OAuth2State_ErrorDesc = ARequestInfo.Params.Values['error_description'];
+  OAuth2State_Fetched := ARequestInfo.Params.Values['state'];
+  OAuth2State_ErrorDesc := ARequestInfo.Params.Values['error_description'];
 
   // Validate
   if OAuth2State_ErrorDesc <> '' then begin
@@ -8752,18 +8789,14 @@ begin
   end;
 
   // Log in
-  var Succeeded: boolean;
-  LoggedIn := V2_Login_LoggedIn(HTTP, Succeeded);
+  var Flags: TAPIOperationFlags;
+  LoggedIn := V2_Login_LoggedIn(HTTP, Flags);
 
   // Offline mode
-  if not LoggedIn and not Succeeded then begin
+  if not LoggedIn and (TAPIOperationFlag.ConnectionFailed in Flags) then begin
     // Load offline mode if avalabile
     if UIForm.HasOfflineBackup then begin
-      Synchronize(procedure begin
-        AddToLog('TLoginThread.Task: Offline Mode... Form.InitiateLogin.InitiateOfflineMode');
-        WORK_STATUS := 'Loading Offline Mode...';
-        UIForm.InitiateOfflineMode;
-      end);
+      IsOffline := true;
     end
     else
       // Network Error
@@ -8772,20 +8805,35 @@ begin
     Exit;
   end;
 
-  // Logon succeded
+  // Logon failed
   if not LoggedIn then begin
     AddToLog('TLoginThread.Task: Login failed!');
     ThreadTaskError := 'Login failed!';
     Exit;
   end;
 
+  // Update creds
+  AddToLog('TLoginThread.Task: Token refreshed, writing creds');
+  if TAPIOperationFlag.TokenRefreshed in Flags then
+    UIForm.TokenLoginInfo(false);
+
   AddToLog('TLoginThread.Task: Logged In!');
 end;
 
 procedure TLoginThread.TaskDone;
 begin
-  if not LoggedIn then
+  if not LoggedIn then begin
+    if IsOffline then
+      Synchronize(procedure begin
+        AddToLog('TLoginThread.Task: Offline Mode... Form.InitiateLogin.InitiateOfflineMode');
+        WORK_STATUS := 'Loading Offline Mode...';
+        UIForm.InitiateOfflineMode;
+
+        // Done
+        UIForm.DoInitializingSetupDone;
+      end);
     Exit;
+  end;
 
   Synchronize(procedure begin
     TLoadLibraryThread.Create;
@@ -8837,31 +8885,16 @@ begin
 
     // Default Artwork
     WORK_STATUS := 'Loading Artwork...';
-    AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
+    AddToLog('Form.ReloadArtwork Status:' + WORK_STATUS);
     UIForm.ReloadArtwork;
 
     // Home
     UIForm.NavigatePath('Home');
 
-    // Get last queue
-    WORK_STATUS := 'Updating Queue...';
-    AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
-    if OptionQueueSave and (PlayQueue.Count = 0) then begin
-      UIForm.QueueSettings(true);
-
-      // Invalid
-      if QueuePos >= PlayQueue.Count then begin
-        UIForm.QueueClear;
-      end;
-
-      // Load
-      if QueuePos <> -1 then
-        try
-          UIForm.QueuePlay(false);
-        except
-          UIForm.QueueClear;
-        end;
-    end;
+    // Done
+    WORK_STATUS := 'Finishing up...';
+    AddToLog('Form.DoInitializingSetupDone Status:' + WORK_STATUS);
+    UIForm.DoInitializingSetupDone;
   end);
 end;
 
