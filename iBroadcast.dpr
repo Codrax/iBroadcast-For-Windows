@@ -22,7 +22,8 @@ uses
   PickerDialogForm in 'Forms\PickerDialogForm.pas' {PickerDialog},
   RatingPopup in 'Forms\RatingPopup.pas' {RatingPopupForm},
   CodeSources in 'Forms\CodeSources.pas' {SourceUI},
-  LoggingForm in 'Forms\LoggingForm.pas' {Logging};
+  LoggingForm in 'Forms\LoggingForm.pas' {Logging},
+  UnitInfo in 'utils\UnitInfo.pas';
 
 {$R *.res}
 
@@ -47,7 +48,7 @@ begin
   Application.Run;     }
 
   // Initiate Default
-  AllowDebug := false;
+  DebugMode := false;
   EnableLogging := false;
 
   // Parameter String
@@ -55,7 +56,7 @@ begin
     begin
       Param := GetParameter(I);
       if Param = '-debug' then
-        AllowDebug := true;
+        DebugMode := true;
 
       if Param = '-offline' then
         OverrideOffline := true;
@@ -85,7 +86,7 @@ begin
   end;
 
   // Log
-  if AllowDebug then
+  if DebugMode then
     begin
       Application.CreateForm(TLogging, Logging);
       Logging.Show;
@@ -94,7 +95,7 @@ begin
 
   // Debug
   AddToLog('Checking debug mode');
-  if AllowDebug then
+  if DebugMode then
     begin
       // Debug form
       DebugUI := TDebugUI.Create(Application);

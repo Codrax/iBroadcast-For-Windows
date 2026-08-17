@@ -1,15 +1,22 @@
 unit BroadcastAPI;
 
 {$SCOPEDENUMS ON}
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+//{$DEFINE GENRES}
+{$DEFINE LOG}
 
 interface
 uses
   // Required Units
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes,
-  Vcl.Graphics, IOUtils, System.Generics.Collections, IdSSLOpenSSL, IdURI,
-  IdHTTP, IdGlobal, JSON, Vcl.Clipbrd, DateUtils, Cod.Types, Imaging.jpeg,
-  Cod.Helpers, Cod.Helpers.Vcl, Cod.Dialogs, Cod.SysUtils, Cod.Files,
-  Cod.ArrayHelpers, Cod.JSON, Cod.JSON.Utils, Cod.Version, Vcl.Dialogs;
+  SysUtils, Classes, Graphics, Generics.Collections,
+  IdHTTP, IdGlobal, IdSSLOpenSSL, IdURI, DateUtils, Forms,
+  {$IFDEF FPC}fpjson, {$ELSE}Imaging.jpeg,{$ENDIF}
+  Cod.Types, Cod.Helpers, Cod.Helpers.Vcl, Cod.SysUtils, Cod.Files,
+  Cod.ArrayHelpers, Cod.JSON, Cod.JSON.Utils, Cod.Version, UnitInfo
+  {$IFDEF FPC}, Cod.Platform.Lazarus{$ELSE}, IOUtils{$ENDIF};
 
 type
   // Cardinals
@@ -18,7 +25,7 @@ type
   TWorkItems = set of TWorkItem;
 
   // Source
-  TDataSource = (None, Tracks, Albums, Artists, Playlists);
+  TDataSource = (None, Tracks, Albums, Artists, Playlists{$IFDEF GENRES}, Genres{$ENDIF});
   TDataSources = set of TDataSource;
 
   // Loading
@@ -31,8 +38,35 @@ type
   // Procs
   TDataTypeUpdate = procedure(AUpdate: TDataSource) of object;
 
+  { TCollageMaker }
+  TCollageMaker = class
+  private
+    TempResult: TJPEGImage;
+
+    procedure Build;
+  public
+    Image1,
+    Image2,
+    Image3,
+    Image4: TJPEGImage;
+
+    function Make: TJPEGImage;
+  end;
+
+  { TSaveArtClass }
+
+  TSaveArtClass = class
+  private
+    procedure SaveFile;
+  public
+    Image: TJPEGImage;
+    FilePath: string;
+
+    procedure Save;
+  end;
+
   // Records
-  THistoryItem = record
+  TTrackHistoryItem = record
     TrackID: string;
     TimeStamp: TDateTime;
   end;
@@ -67,6 +101,8 @@ type
     (* Loading *)
     procedure LoadFrom(AObj: IJObject);
   end;
+
+  { TTrackItem }
 
   TTrackItem = record
     (* Song properties in their JSON order, "?" is a unknown property *)
@@ -147,6 +183,8 @@ type
     procedure LoadFrom(Key: string; AArr: IJArray);
   end;
 
+  { TArtistItem }
+
   TArtistItem = record
     (* Album properties in their JSON order, "?" is a unknown property *)
     ID: string;
@@ -162,17 +200,20 @@ type
     // ??? - ICatID
 
     // Extra Data
-    CachedImage: TJpegImage;
+    CachedImage,
+    CachedImageLarge: TJpegImage;
     Status: TWorkItems;
 
     (* Artwork *)
     function HasArtwork: boolean;
-    function ArtworkLoaded: boolean;
-    function GetArtwork: TJPEGImage;
+    function ArtworkLoaded(Large: boolean = false): boolean;
+    function GetArtwork(Large: boolean = false): TJPEGImage;
 
     (* Loading *)
     procedure LoadFrom(Key: string; AArr: IJArray);
   end;
+
+  { TPlaylistItem }
 
   TPlaylistItem = record
     (* Album properties in their JSON order, "?" is a unknown property *)
@@ -192,34 +233,62 @@ type
     // ??? SortType
 
     // Extra Data
-    CachedImage: TJpegImage;
+    CachedImage,
+    CachedImageLarge: TJpegImage;
     Status: TWorkItems;
 
-    (* Artwork *)
+    (* Artwork *)          
     function HasArtwork: boolean;
-    function ArtworkLoaded: boolean;
-    function GetArtwork: TJPEGImage;
+    function ArtworkLoaded(Large: boolean = false): boolean;
+    function GetArtwork(Large: boolean = false): TJPEGImage;
 
     (* Loading *)
     procedure LoadFrom(Key: string; AArr: IJArray);
   end;
+
+  { TGenreItem }
+  {$IFDEF GENRES}
+  TGenreItem = record
+    (* Album properties in their JSON order, "?" is a unknown property *)
+    ID: string;
+
+    TracksID: TStringArray;
+
+    CachedImage: TJpegImage;
+    Status: TWorkItems;
+
+    (* Artwork *)
+    function ArtworkLoaded: boolean;
+    function GetArtwork: TJPEGImage;
+  end;
+  {$ENDIF}
 
   // Arrays
   TArtists = TArray<TArtistItem>;
   TAlbums = TArray<TAlbumItem>;
   TTracks = TArray<TTrackItem>;
   TPlaylists = TArray<TPlaylistItem>;
+  {$IFDEF GENRES}
+  TGenres = TArray<TGenreItem>;
+  {$ENDIF}
 
 // Get Data
 function GetTrack(ID: string): integer;
 function GetAlbum(ID: string): integer;
 function GetArtist(ID: string): integer;
 function GetPlaylist(ID: string): integer;
+{$IFDEF GENRES}
+function GetGenre(ID: string): integer;
+{$ENDIF}
+
+function GetData(ID: string; Source: TDataSource): integer;
+function GetItemID(Index: integer; Source: TDataSource): string;
 
 function GetPlaylistOfType(AType: string): integer; (* thumbsup, recently-played, recently-uploaded *)
 
 // Utils
 function StringToDateTime(const ADateTimeStr: string; CovertUTC: boolean = true): TDateTime;
+function StringToTime(const ADateTimeStr: string; CovertUTC: boolean = true): TTime;
 function DateTimeToString(ADateTime: TDateTime; CovertUTC: boolean = true): string;
 function DateToString(ADateTime: TDate; CovertUTC: boolean = true): string;
 function Yearify(Year: cardinal): string;
@@ -230,6 +299,7 @@ procedure APIFreeMemory;
 // Artwork Store
 procedure AddToArtworkStore(ID: string; Cache: TJpegImage; AType: TDataSource);
 function ExistsInStore(ID: string; AType: TDataSource): boolean;
+function GetArtStoreCachePath(ID: string; Extension: string; AType: TDataSource): string;
 function GetArtStoreCache(ID: string; AType: TDataSource): TJpegImage;
 function GetArtworkStore(AType: TDataSource = TDataSource.None): string;
 procedure ClearArtworkStore;
@@ -240,6 +310,9 @@ function UpdateTrackRating(const HTTP: TIdHTTP; ID: string; Rating: integer; Rel
 function GetSongPlaylists(ID: string): TArray<string>;
 
 function TrackRatingToLikedPlaylist(const HTTP: TIdHTTP; ID: string): boolean;
+
+// Rating
+function RatingToString(Rating: integer): string;
 
 // Albums
 function UpdateAlbumRating(const HTTP: TIdHTTP; ID: string; Rating: integer; ReloadLibrary: boolean): boolean;
@@ -256,6 +329,9 @@ function DeleteFromPlaylist(const HTTP: TIdHTTP; ID: string; Tracks: TArray<stri
 function TouchupPlaylist(const HTTP: TIdHTTP; ID: string): boolean;
 function UpdatePlayList(const HTTP: TIdHTTP; ID: string; Name, Description: string; ReloadLibrary: boolean): boolean;
 function DeletePlayList(const HTTP: TIdHTTP; ID: string): boolean;
+{$IFDEF GENRES}
+function DeleteGenre(ID: string): boolean;
+{$ENDIF}
 function DeleteTracks(const HTTP: TIdHTTP; Tracks: TArray<string>): boolean;
 function DeleteAlbum(const HTTP: TIdHTTP; ID: string): boolean;
 function DeleteArtist(const HTTP: TIdHTTP; ID: string): boolean;
@@ -266,11 +342,15 @@ function EmptyTrash(const HTTP: TIdHTTP; Tracks: TArray<string>): boolean;
 function CompleteEmptyTrash(const HTTP: TIdHTTP): boolean;
 
 // History
-function PushHistory(const HTTP: TIdHTTP; Items: TArray<THistoryItem>): boolean;
+function PushHistory(const HTTP: TIdHTTP; Items: TArray<TTrackHistoryItem>): boolean;
 
 // Library
 function LoadStatus(const HTTP: TIdHTTP): boolean;
 function LoadLibrary(const HTTP: TIdHTTP; LoadSet: TLoadSet=LOAD_SET_ALL): boolean;
+{$IFDEF GENRES}
+procedure LoadLibraryGenres;
+{$ENDIF}
+procedure EmptyLibrary;
 
 // Additional Data
 function GetSongArtwork(ID: string; Size: TArtSize = TArtSize.Small): TJpegImage;
@@ -282,13 +362,15 @@ procedure SetDataWorkStatus(Status: string);
 
 procedure ResetWork;
 
+// Utils
+function CalculateLength(Seconds: cardinal): string;
+
 ///  V2
 // Builders
 function V2_CreateHTTP: TIdHTTP;
 function V2_GetBody: IJObject;
 
 // Requests
-//function V2_RequestGet(const HTTP: TIdHTTP; const Endpoint: string; const Authorization: string=''): IJValue;
 function V2_RequestPost(const HTTP: TIdHTTP; const Body: IJValue; const Endpoint: string; const Authorization: string=''): IJValue; overload;
 function V2_RequestPost(const HTTP: TIdHTTP; const Body: TStringList; const Endpoint: string; const Authorization: string=''): IJValue; overload;
 
@@ -305,13 +387,12 @@ function V2_Login_LoggedIn(const HTTP: TIdHTTP; out Succeeded: boolean): boolean
 const
   // Formattable Strings
   DEVICE_NAME_CONST = '%S' + ' iBroadcast for Windows';
-
   WELCOME_STRING = 'Welcome, %S';
   WELCOME_STRING_SPECIAL = 'Happy holidays, %S';
 
   // App
   APP_NAME = 'Cod''s iBroadcast';
-  APP_VERSION: TVersion = (Major:1; Minor:12; Maintenance: 0);
+  APP_VERSION: TVersion = (Major:APP_VERSION_MAJOR; Minor:APP_VERSION_MINOR; Maintenance: APP_VERSION_MAINTENANCE);
 
   APP_USERMODELID = 'com.codrutsoft.ibroadcast';
   APP_IDENTIFIER = APP_USERMODELID;
@@ -364,12 +445,13 @@ var
 
   // Setings
   ValueRatingMode: boolean = false; // use rating stars
+  AllowArtCollage: boolean = true; { Bug fixed, error is no more }
 
   // Notify Events
   OnUpdateType: TDataTypeUpdate;
 
   // Artwork Store
-  ArtworkStore: boolean=true;
+  ArtworkStore: boolean = true;
   MediaStoreLocation: string;
 
   // Library
@@ -380,12 +462,15 @@ var
   Albums: TAlbums;
   Artists: TArtists;
   Playlists: TPlaylists;
+  {$IFDEF GENRES}
+  Genres: TGenres;
+  {$ENDIF}
 
   DefaultPicture: TJPEGImage;
 
   // Debug & logs
   EnableLogging: boolean = false;
-  AllowDebug: boolean;
+  DebugMode: boolean;
 
 var
   V2_HTTP: TIdHTTP;
@@ -396,11 +481,13 @@ uses
   MainUI;
 
 function V2_CreateHTTP: TIdHTTP;
+var
+  V2_SSL: TIdSSLIOHandlerSocketOpenSSL;
 begin
   Result := TIdHTTP.Create(nil);
 
   // Init SSL
-  const V2_SSL = TIdSSLIOHandlerSocketOpenSSL.Create(Result);
+  V2_SSL := TIdSSLIOHandlerSocketOpenSSL.Create(Result);
   V2_SSL.SSLOptions.SSLVersions := [sslvTLSv1_2];
   Result.IOHandler := V2_SSL;
 end;
@@ -413,45 +500,6 @@ begin
   Result.Put('device_name', APP_NAME);
   Result.Put('user_agent', Format(APP_USERAGENT, [APP_VERSION.ToString]));
 end;
-
-//function V2_RequestGet(const HTTP: TIdHTTP; const Endpoint: string; const Authorization: string=''): IJValue;
-//var
-//  ResponseStream: TStringStream;
-//begin
-//  Result := nil;
-//
-//  // Set options
-//  HTTP.HTTPOptions := HTTP.HTTPOptions + [hoNoProtocolErrorException, hoWantProtocolErrorContent, hoWaitForUnexpectedData];
-//
-//  // Set headers
-//  HTTP.Request.CustomHeaders.Clear;
-//
-//  HTTP.Request.ContentType := 'application/x-www-form-urlencoded';
-//
-//  if Authorization <> '' then
-//    HTTP.Request.CustomHeaders.AddValue('Authorization', 'Bearer ' + Authorization);
-//
-//  // Send request and receive response
-//  ResponseStream := TStringStream.Create('', TEncoding.UTF8);
-//  try
-//    try
-//      if AllowDebug then AddToLog('GET: '+Endpoint);
-//      HTTP.Get(Endpoint, ResponseStream);
-//
-//      // Parse response and extract numbers
-//      if (ResponseStream.Size > 0) and (ResponseStream.DataString <> 'OK') then
-//        Result := TJValue.ParseJson(ResponseStream.DataString);
-//      if AllowDebug then AddToLog(ResponseStream.DataString);
-//    except
-//      on E: Exception do begin
-//        AddToLog(E.ClassName+': '+E.Message);
-//        Exit;
-//      end;
-//    end;
-//  finally
-//    ResponseStream.Free;
-//  end;
-//end;
 
 function V2_RequestPost(const HTTP: TIdHTTP; const Body: IJValue; const Endpoint: string; const Authorization: string): IJValue;
 var
@@ -478,18 +526,18 @@ begin
     RequestStream.WriteString(Body.ToJSON);
   try
     try
-      if AllowDebug then AddToLog('POST: '+Endpoint);
+      {$IFDEF LOG}if DebugMode then AddToLog('POST: '+Endpoint);{$ENDIF}
       HTTP.Post(Endpoint, RequestStream, ResponseStream);
-      if AllowDebug then AddToLog('HEADERS:'+sLineBreak+string.Join(sLineBreak, HTTP.Request.RawHeaders.ToStringArray));
-      if AllowDebug then AddToLog('BODY:'+sLineBreak+RequestStream.DataString);
+      {$IFDEF LOG}if DebugMode then AddToLog('HEADERS:'+sLineBreak+string.Join(sLineBreak, HTTP.Request.RawHeaders.ToStringArray));{$ENDIF}
+      {$IFDEF LOG}if DebugMode then AddToLog('BODY:'+sLineBreak+RequestStream.DataString);{$ENDIF}
 
       // Parse response and extract numbers
       if (ResponseStream.Size > 0) and (ResponseStream.DataString <> 'OK') then
         Result := TJValue.ParseJson(ResponseStream.DataString);
-      if AllowDebug then AddToLog('RESPONSE:'+ResponseStream.DataString+sLineBreak+sLineBreak);
+      {$IFDEF LOG}if DebugMode then AddToLog('RESPONSE:'+ResponseStream.DataString+sLineBreak+sLineBreak);{$ENDIF}
     except
       on E: Exception do begin
-        AddToLog(E.ClassName+': '+E.Message);
+        {$IFDEF LOG}AddToLog(E.ClassName+': '+E.Message);{$ENDIF}
         Exit;
       end;
     end;
@@ -521,10 +569,10 @@ begin
   ResponseStream := TStringStream.Create('', TEncoding.UTF8);
   try
     try
-      if AllowDebug then AddToLog('POST: '+Endpoint);
+      if DebugMode then AddToLog('POST: '+Endpoint);
       HTTP.Post(Endpoint, Body, ResponseStream);
-      if AllowDebug then AddToLog('HEADERS:'+sLineBreak+string.Join(sLineBreak, HTTP.Request.RawHeaders.ToStringArray));
-      if AllowDebug then AddToLog('BODY:'+sLineBreak+Body.Text);
+      if DebugMode then AddToLog('HEADERS:'+sLineBreak+string.Join(sLineBreak, HTTP.Request.RawHeaders.ToStringArray));
+      if DebugMode then AddToLog('BODY:'+sLineBreak+Body.Text);
 
       // Parse response and extract numbers
       if (ResponseStream.Size > 0) then begin
@@ -532,10 +580,10 @@ begin
           Exit( TJNull.CreateNew );
         Result := TJValue.ParseJson(ResponseStream.DataString);
       end;
-      if AllowDebug then AddToLog('RESPONSE:'+ResponseStream.DataString+sLineBreak+sLineBreak);
+      if DebugMode then AddToLog('RESPONSE:'+ResponseStream.DataString+sLineBreak+sLineBreak);
     except
       on E: Exception do begin
-        AddToLog(E.ClassName+': '+E.Message);
+        {$IFDEF LOG}AddToLog(E.ClassName+': '+E.Message);{$ENDIF}
         Exit;
       end;
     end;
@@ -560,6 +608,7 @@ function V2_Login_Token_GetFromCode(const HTTP: TIdHTTP; const ACode: string; co
 var
   Params: TStringList;
   Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;
   //
@@ -580,7 +629,7 @@ begin
   //
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   if not (Obj.KeyExists('access_token') and Obj.KeyExists('expires_in') and Obj.KeyExists('refresh_token')) then
     Exit;
 
@@ -597,6 +646,7 @@ function V2_Login_Token_Refresh(const HTTP: TIdHTTP): boolean;
 var
   Params: TStringList;
   Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;
   //
@@ -616,7 +666,7 @@ begin
   //
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   if not (Obj.KeyExists('access_token') and Obj.KeyExists('expires_in') and Obj.KeyExists('refresh_token')) then
     Exit;
 
@@ -632,7 +682,8 @@ end;
 function V2_Login_Token_Revoke(const HTTP: TIdHTTP): boolean;
 var
   Params: TStringList;
-  Response: IJValue;
+  Response: IJValue;        
+  Obj: IJObject;
 begin
   Result := false;
   //
@@ -651,7 +702,7 @@ begin
   if Response = nil then
     Exit;
   if Response.IsObject then begin
-    const Obj = Response.AsObject;
+    Obj := Response.AsObject;
     Result := not Obj.KeyExists('error');
     if not Result then Exit;
   end;
@@ -663,17 +714,21 @@ begin
 end;
 
 function V2_Login_LoggedIn(const HTTP: TIdHTTP; out Succeeded: boolean): boolean;
+var
+  Response: IJValue;
+  Body: IJObject;
+  Obj: IJObject;
 begin
   Result := false;
 
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'status');
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   Succeeded := Response <> nil;
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
 
   // Logged in
   Result := Obj.KeyExists('authenticated') and Obj['authenticated'].AsBoolean;
@@ -725,6 +780,16 @@ begin
   Path := GetArtworkStore(AType) + ID + ART_EXT;
 
   Result := TFile.Exists( Path );
+end;
+
+function GetArtStoreCachePath(ID: string; Extension: string; AType: TDataSource
+  ): string;
+begin
+  {$IFDEF GENRES}
+  if AType in [TDataSource.Genres] then
+      ID := ValidateFileName(ID);
+  {$ENDIF}
+  Result := GetArtworkStore(AType) + ID + Extension;
 end;
 
 function GetArtStoreCache(ID: string; AType: TDataSource): TJpegImage;
@@ -835,6 +900,23 @@ begin
           else
             Result := DeleteFromPlaylist(HTTP, Playlists[Index].ID, [ID]);
         end;
+    end;
+end;
+
+function RatingToString(Rating: integer): string;
+begin
+  if ValueRatingMode then
+    begin
+      if Rating <> 0 then
+        Result := Format('%D/%D', [Rating, 10])
+      else
+        Result := 'Not rated';
+    end
+  else
+    case Rating of
+      10, 5: Result := 'Liked';
+      1: Result := 'Disliked';
+      else Result := 'Not rated';
     end;
 end;
 
@@ -1123,7 +1205,7 @@ begin
     Result := DeleteTracks(HTTP, Artists[Index].TracksID);
 end;
 
-function PushHistory(const HTTP: TIdHTTP; Items: TArray<THistoryItem>): boolean;
+function PushHistory(const HTTP: TIdHTTP; Items: TArray<TTrackHistoryItem>): boolean;
 var
   PlaysMap: TDictionary<string, int64>;
   Day: TDate;
@@ -1372,6 +1454,51 @@ begin
   ResetWork;
 end;
 
+{$IFDEF GENRES}
+procedure LoadLibraryGenres;
+var
+  Name: string;
+  Index, I: integer;
+begin
+  // Parse from tracks
+  Genres := [];
+
+  for I := 0 to High(Tracks) do
+    begin
+      // Get name
+      Name := Tracks[I].Genre;
+
+      // Add to index
+      Index := GetGenre(Name);
+      if Index <> -1 then
+        begin
+          Genres[Index].TracksID := Genres[Index].TracksID + [Tracks[I].ID];
+          continue;
+        end;
+
+      // Add new
+      Index := Length(Genres);
+      SetLength(Genres, Index+1);
+      with Genres[Index] do
+        begin
+          ID := Name;
+          TracksID := [Tracks[I].ID];
+        end;
+    end;
+end;
+{$ENDIF}
+
+procedure EmptyLibrary;
+begin
+  SetLength(Tracks, 0);
+  SetLength(Albums, 0);
+  SetLength(Artists, 0);
+  SetLength(Playlists, 0);
+  {$IFDEF GENRES}
+  SetLength(Genres, 0);
+  {$ENDIF}
+end;
+
 function GetSongArtwork(ID: string; Size: TArtSize): TJpegImage;
 var
   URL: string;
@@ -1497,6 +1624,23 @@ begin
   TotalWorkCount := 0;
 end;
 
+
+function CalculateLength(Seconds: cardinal): string;
+var
+  Minutes, Hours: cardinal;
+begin
+  Minutes := Seconds div 60;
+  Seconds := Seconds - Minutes * 60;
+
+  Hours := Minutes div 60;
+  Minutes := Minutes - Hours * 60;
+
+  Result := IntToStrIncludePrefixZeros(Minutes, 2) + ':' + IntToStrIncludePrefixZeros(Seconds, 2);
+
+  if Hours > 0 then
+    Result := IntToStrIncludePrefixZeros(Hours, 2) + ':' + Result;
+end;
+
 function GetTrack(ID: string): integer;
 var
   I: Integer;
@@ -1537,6 +1681,31 @@ begin
       Exit( I );
 end;
 
+function GetData(ID: string; Source: TDataSource): integer;
+begin
+  Result := -1;
+  case Source of
+    TDataSource.Tracks: Exit(GetTrack(ID));
+    TDataSource.Albums: Exit(GetAlbum(ID));
+    TDataSource.Artists: Exit(GetArtist(ID));
+    TDataSource.Playlists: Exit(GetPlaylist(ID));
+    {$IFDEF GENRES}TDataSource.Genres: Exit(GetGenre(ID));{$ENDIF}
+  end;
+end;
+
+function GetItemID(Index: integer; Source: TDataSource): string;
+begin
+  Result := '';
+  if Index <> -1 then
+    case Source of
+      TDataSource.Tracks: Exit(Tracks[Index].ID);
+      TDataSource.Albums: Exit(Albums[Index].ID);
+      TDataSource.Artists: Exit(Artists[Index].ID);
+      TDataSource.Playlists: Exit(Playlists[Index].ID);
+      {$IFDEF GENRES}TDataSource.Genres: Exit(Genres[Index].ID);{$ENDIF}
+    end;
+end;
+
 function GetPlaylistOfType(AType: string): integer;
 var
   I: Integer;
@@ -1554,8 +1723,6 @@ end;
 function StringToDateTime(const ADateTimeStr: string; CovertUTC: boolean = true): TDateTime;
 var
   DateTimeFormat: TFormatSettings;
-
-  TimeZone: TTimeZone;
 begin                     
   DateTimeFormat := TFormatSettings.Create('en-us');
   DateTimeFormat.ShortDateFormat := 'yyyy-mm-dd';
@@ -1567,18 +1734,35 @@ begin
 
   // Unversal Coordinated Time
   if CovertUTC then
-    begin
-      TimeZone := TTimeZone.Local;
+    {$IFDEF FPC}
+    Result := UniversalTimeToLocal(Result);
+    {$ELSE}
+    Result := TTimeZone.Local.ToLocalTime(Result);
+    {$ENDIF}
+end;
 
-      Result := TimeZone.ToLocalTime(Result);
-    end;
+function StringToTime(const ADateTimeStr: string; CovertUTC: boolean = true): TTime;
+var
+  DateTimeFormat: TFormatSettings;
+begin
+  DateTimeFormat.ShortTimeFormat := 'hh:nn:ss';
+  DateTimeFormat.LongTimeFormat := 'hh:nn:ss.zzzzzz';
+  DateTimeFormat.DateSeparator := '-';
+  DateTimeFormat.TimeSeparator:= ':';
+  Result := StrToTime(trim(ADateTimeStr), DateTimeFormat);
+
+  // Unversal Coordinated Time
+  if CovertUTC then
+    {$IFDEF FPC}
+    Result := UniversalTimeToLocal(Result);
+    {$ELSE}
+    Result := TTimeZone.Local.ToLocalTime(Result);
+    {$ENDIF}
 end;
 
 function DateTimeToString(ADateTime: TDateTime; CovertUTC: boolean = true): string;
 var
   DateTimeFormat: TFormatSettings;
-
-  TimeZone: TTimeZone;
 begin
   DateTimeFormat := TFormatSettings.Create;
   DateTimeFormat.ShortDateFormat := 'yyyy-mm-dd';
@@ -1587,11 +1771,11 @@ begin
 
   // Unversal Coordinated Time
   if CovertUTC then
-    begin
-      TimeZone := TTimeZone.Local;
-
-      ADateTime := TimeZone.ToUniversalTime(ADateTime);
-    end;
+    {$IFDEF FPC}
+    ADateTime := UniversalTimeToLocal(ADateTime);
+    {$ELSE}
+    ADateTime := TTimeZone.Local.ToLocalTime(ADateTime);
+    {$ENDIF}
 
   // Convert
   Result := DateTimeToStr(ADateTime, DateTimeFormat);
@@ -1600,8 +1784,6 @@ end;
 function DateToString(ADateTime: TDate; CovertUTC: boolean = true): string;
 var
   DateTimeFormat: TFormatSettings;
-
-  TimeZone: TTimeZone;
 begin
   DateTimeFormat := TFormatSettings.Create;
   DateTimeFormat.ShortDateFormat := 'yyyy-mm-dd';
@@ -1610,11 +1792,11 @@ begin
 
   // Unversal Coordinated Time
   if CovertUTC then
-    begin
-      TimeZone := TTimeZone.Local;
-
-      ADateTime := TimeZone.ToUniversalTime(ADateTime);
-    end;
+    {$IFDEF FPC}
+    ADateTime := UniversalTimeToLocal(ADateTime);
+    {$ELSE}
+    ADateTime := TTimeZone.Local.ToLocalTime(ADateTime);
+    {$ENDIF}
 
   // Convert
   Result := DateToStr(ADateTime, DateTimeFormat);
@@ -1855,54 +2037,47 @@ end;
 
 { TArtistItem }
 
-function TArtistItem.ArtworkLoaded: boolean;
+function TArtistItem.ArtworkLoaded(Large: boolean): boolean;
 begin
-  Result := (CachedImage <> nil) and (not CachedImage.Empty);
+  if TWorkItem.DownloadingImage in Status then
+    Exit(false);
+  if not Large then
+    Result := (CachedImage <> nil) and (not CachedImage.Empty)
+  else
+    Result := (CachedImageLarge <> nil) and (not CachedImageLarge.Empty);
 end;
 
-function TArtistItem.GetArtwork: TJPEGImage;
-var
-  AIndex: integer;
+function TArtistItem.GetArtwork(Large: boolean): TJPEGImage;
 begin
   Status := Status + [TWorkItem.DownloadingImage];
 
-  if (CachedImage = nil) or CachedImage.Empty then
+  if Large then
     begin
-      // Load from Artwork Store
-      if ExistsInStore(ID, TDataSource.Artists) then
-        CachedImage := GetArtStoreCache(ID, TDataSource.Artists)
-      else
-      // Load from server, save to artowork store
+      if (CachedImageLarge = nil) or CachedImageLarge.Empty then
+        CachedImageLarge := GetSongArtwork(ArtworkID, TArtSize.Large);
+
+      Result := CachedImageLarge;
+    end
+  else
+    begin
+      if (CachedImage = nil) or ((CachedImage <> nil) and CachedImage.Empty) then
         begin
-          if HasArtwork then
-            // Get premade
-            CachedImage := GetSongArtwork(ArtworkID, DefaultArtSize)
+          // Load from Artwork Store
+          if ExistsInStore(ID, TDataSource.Tracks) then
+            CachedImage := GetArtStoreCache(ID, TDataSource.Tracks)
           else
+            // Load from server, save to artowork store
             begin
-              if Length(TracksID) >= 4 then
-                begin
-                  CachedImage := SongArtCollage(TracksID[0], TracksID[1], TracksID[2], TracksID[3]);
-                end
-              else
-                if Length(TracksID) > 0 then
-                  begin
-                    AIndex := GetTrack( TracksID[0] );
-                    if AIndex <> -1 then
-                      CachedImage := Tracks[AIndex].GetArtwork()
-                    else
-                      CachedImage := DefaultPicture;
-                  end
-                    else
-                      CachedImage := DefaultPicture;
+              CachedImage := GetSongArtwork(ArtworkID, DefaultArtSize);
+
+              // Save artstore
+              if ArtworkStore then
+                AddToArtworkStore(ID, CachedImage, TDataSource.Tracks);
             end;
-
-          // Save artstore
-          if ArtworkStore and (CachedImage <> DefaultPicture) then
-            AddToArtworkStore(ID, CachedImage, TDataSource.Artists);
         end;
-    end;
 
-  Result := CachedImage;
+      Result := CachedImage;
+    end;
 
   Status := Status - [TWorkItem.DownloadingImage];
 end;
@@ -1939,46 +2114,59 @@ end;
 
 { TPlaylistItem }
 
-function TPlaylistItem.ArtworkLoaded: boolean;
+function TPlaylistItem.ArtworkLoaded(Large: boolean): boolean;
 begin
-  Result := (CachedImage <> nil) and (not CachedImage.Empty);
+  if TWorkItem.DownloadingImage in Status then
+    Exit(false);
+  if not Large then
+    Result := (CachedImage <> nil) and (not CachedImage.Empty)
+  else
+    Result := (CachedImageLarge <> nil) and (not CachedImageLarge.Empty);
 end;
 
-function TPlaylistItem.GetArtwork: TJPEGImage;
+function TPlaylistItem.GetArtwork(Large: boolean): TJPEGImage;
 begin
   Status := Status + [TWorkItem.DownloadingImage];
 
-  if (CachedImage = nil) or CachedImage.Empty then
-    begin
-      if ExistsInStore(ID, TDataSource.Playlists) then
-        CachedImage := GetArtStoreCache(ID, TDataSource.Playlists)
-      else
-        begin
-          // Load from Artwork Store
-          if HasArtwork then
-            // Get premade
-            CachedImage := GetSongArtwork(ArtworkID, DefaultArtSize)
-          else
-            // Load from server, save to artowork store
-            begin
-              if Length(TracksID) >= 4 then
-                begin
-                  CachedImage := SongArtCollage(TracksID[0], TracksID[1], TracksID[2], TracksID[3]);
-                end
-              else
-                if Length(TracksID) > 0 then
-                  CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork()
+  if Large then begin
+      if (CachedImageLarge = nil) or CachedImageLarge.Empty then
+        CachedImageLarge := GetSongArtwork(ArtworkID, TArtSize.Large);
+
+      Result := CachedImageLarge;
+  end
+  else begin
+    if (CachedImage = nil) or CachedImage.Empty then
+      begin
+        if ExistsInStore(ID, TDataSource.Playlists) then
+          CachedImage := GetArtStoreCache(ID, TDataSource.Playlists)
+        else
+          begin
+            // Load from Artwork Store
+            if HasArtwork then
+              // Get premade
+              CachedImage := GetSongArtwork(ArtworkID, DefaultArtSize)
+            else
+              // Load from server, save to artowork store
+              begin
+                if (Length(TracksID) >= 4) and AllowArtCollage then
+                  begin
+                    CachedImage := SongArtCollage(TracksID[0], TracksID[1], TracksID[2], TracksID[3]);
+                  end
                 else
-                  CachedImage := DefaultPicture;
-            end;
+                  if Length(TracksID) > 0 then
+                    CachedImage := Tracks[GetTrack( TracksID[0] )].GetArtwork()
+                  else
+                    CachedImage := DefaultPicture;
+              end;
 
-          // Save artstore
-          if ArtworkStore and (CachedImage <> DefaultPicture) then
-            AddToArtworkStore(ID, CachedImage, TDataSource.Playlists);
-        end;
-    end;
+            // Save artstore
+            if ArtworkStore and (CachedImage <> DefaultPicture) then
+              AddToArtworkStore(ID, CachedImage, TDataSource.Playlists);
+          end;
+      end;
 
-  Result := CachedImage;
+      Result := CachedImage;
+  end;
 
   Status := Status - [TWorkItem.DownloadingImage];
 end;
@@ -2019,6 +2207,30 @@ begin
     ArtworkID := AArr[7].AsString;
 
   // ?
+end;
+
+{ TCollageMaker }
+
+procedure TCollageMaker.Build;
+begin
+
+end;
+
+function TCollageMaker.Make: TJPEGImage;
+begin
+
+end;
+
+{ TSaveArtClass }
+
+procedure TSaveArtClass.Save;
+begin
+
+end;
+
+procedure TSaveArtClass.SaveFile;
+begin
+
 end;
 
 initialization

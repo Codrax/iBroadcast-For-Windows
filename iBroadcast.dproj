@@ -194,6 +194,7 @@
         <DCCReference Include="Forms\LoggingForm.pas">
             <Form>Logging</Form>
         </DCCReference>
+        <DCCReference Include="utils\UnitInfo.pas"/>
         <RcItem Include="Artwork\Box.jpg">
             <ResourceType>RCDATA</ResourceType>
             <ResourceId>Artwork0</ResourceId>
@@ -336,12 +337,6 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Output\Win64\iBroadcast.exe" Configuration="Debug" Class="ProjectOutput">
-                    <Platform Name="Win64">
-                        <RemoteName>iBroadcast.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
                 <DeployFile LocalName="Output\Win64\iBroadcast.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win64">
                         <RemoteName>iBroadcast.exe</RemoteName>
@@ -358,6 +353,18 @@
                 <DeployFile LocalName="Win32\Release\iBroadcast.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win32">
                         <RemoteName>iBroadcast.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="output\iBroadcast.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>iBroadcast.exe</RemoteName>
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="output\iBroadcast.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>iBroadcast.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

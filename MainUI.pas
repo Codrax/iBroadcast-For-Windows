@@ -1242,7 +1242,7 @@ end;
 
 procedure TUIForm.AddSongToHistory;
 var
-  Item: THistoryItem;
+  Item: TTrackHistoryItem;
 begin
   Item.TrackID := PlayID;
   Item.TimeStamp := Now;
@@ -4511,7 +4511,7 @@ var
   ADate: string;
 begin
   // Use legacy writing for TextFile.Append
-  if EnableLogging or AllowDebug then
+  if EnableLogging or DebugMode then
     begin
       // File logging
       if EnableLogging then
@@ -4534,7 +4534,7 @@ begin
         end;
 
       // UI logging
-      if AllowDebug then
+      if DebugMode then
         if (Logging <> nil) and Logging.Visible then
           Logging.Log.Lines.Add(ALog);
     end;
