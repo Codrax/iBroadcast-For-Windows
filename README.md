@@ -4,7 +4,7 @@
 ### Description
 This is a native Windows client for the [iBroadcast](https://ibroadcast.com) music uploading platform. The application is made with Embarcadero Delphi 12. This app connects to your account with an official app integration on the iBroadcast website.
 
-### Also try [iBroadcast for Linux](https://github.com/Codrax/iBroadcast-For-Linux)!
+### Also try the crossplatform [iBroadcast](https://github.com/Codrax/iBroadcast)!
 
 ## To obtain the login token:
 Go to media.ibroadcast.com -> Account -> Apps, and create a token for Cod's iBroadcast Player.
