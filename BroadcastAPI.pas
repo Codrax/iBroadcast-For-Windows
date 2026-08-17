@@ -569,10 +569,10 @@ begin
   ResponseStream := TStringStream.Create('', TEncoding.UTF8);
   try
     try
-      if DebugMode then AddToLog('POST: '+Endpoint);
+      {$IFDEF LOG}if DebugMode then AddToLog('POST: '+Endpoint);{$ENDIF}
       HTTP.Post(Endpoint, Body, ResponseStream);
-      if DebugMode then AddToLog('HEADERS:'+sLineBreak+string.Join(sLineBreak, HTTP.Request.RawHeaders.ToStringArray));
-      if DebugMode then AddToLog('BODY:'+sLineBreak+Body.Text);
+      {$IFDEF LOG}if DebugMode then AddToLog('HEADERS:'+sLineBreak+string.Join(sLineBreak, HTTP.Request.RawHeaders.ToStringArray)); {$ENDIF}
+      {$IFDEF LOG}if DebugMode then AddToLog('BODY:'+sLineBreak+Body.Text);{$ENDIF}
 
       // Parse response and extract numbers
       if (ResponseStream.Size > 0) then begin
@@ -580,7 +580,7 @@ begin
           Exit( TJNull.CreateNew );
         Result := TJValue.ParseJson(ResponseStream.DataString);
       end;
-      if DebugMode then AddToLog('RESPONSE:'+ResponseStream.DataString+sLineBreak+sLineBreak);
+      {$IFDEF LOG}if DebugMode then AddToLog('RESPONSE:'+ResponseStream.DataString+sLineBreak+sLineBreak);{$ENDIF}
     except
       on E: Exception do begin
         {$IFDEF LOG}AddToLog(E.ClassName+': '+E.Message);{$ENDIF}
@@ -763,11 +763,18 @@ end;
 
 procedure AddToArtworkStore(ID: string; Cache: TJpegImage; AType: TDataSource);
 var
-  Path: string;
+  LifeSaver: TSaveArtClass;
 begin
-  Path := GetArtworkStore(AType) + ID + ART_EXT;
+  // gud
+  LifeSaver := TSaveArtClass.Create;
+  try
+    LifeSaver.Image := Cache;
+    LifeSaver.FilePath:=GetArtStoreCachePath(ID, ART_EXT, AType);
 
-  Cache.SaveToFile(Path);
+    LifeSaver.Save;
+  finally
+    LifeSaver.Free;
+  end;
 end;
 
 function ExistsInStore(ID: string; AType: TDataSource): boolean;
@@ -777,9 +784,9 @@ begin
   if not ArtworkStore then
     Exit(false);
 
-  Path := GetArtworkStore(AType) + ID + ART_EXT;
+  Path := GetArtStoreCachePath(ID, ART_EXT, AType);
 
-  Result := TFile.Exists( Path );
+  Result := fileexists( Path );
 end;
 
 function GetArtStoreCachePath(ID: string; Extension: string; AType: TDataSource
@@ -796,7 +803,7 @@ function GetArtStoreCache(ID: string; AType: TDataSource): TJpegImage;
 var
   Path: string;
 begin
-  Path := GetArtworkStore(AType) + ID + ART_EXT;
+  Path := GetArtStoreCachePath(ID, ART_EXT, AType);
 
   Result := TJpegImage.Create;
   Result.LoadFromFile(Path);
@@ -806,10 +813,11 @@ function GetArtworkStore(AType: TDataSource): string;
 begin
   Result := IncludeTrailingPathDelimiter(MediaStoreLocation);
   case AType of
-    TDataSource.Tracks: Result := Result + 'Tracks';
-    TDataSource.Albums: Result := Result + 'Albums';
-    TDataSource.Artists: Result := Result + 'Artists';
-    TDataSource.Playlists: Result := Result + 'Playlists';
+    TDataSource.Tracks: Result := Result + 'tracks';
+    TDataSource.Albums: Result := Result + 'albums';
+    TDataSource.Artists: Result := Result + 'artists';
+    TDataSource.Playlists: Result := Result + 'playlists';
+    {$IFDEF GENRES}TDataSource.Genres: Result := Result + 'genres';{$ENDIF}
   end;
 
   Result := IncludeTrailingPathDelimiter(Result);
@@ -841,22 +849,29 @@ begin
   TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Albums));
   TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Artists));
   TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Playlists));
+  {$IFDEF GENRES}
+  TDirectory.CreateDirectory(GetArtworkStore(TDataSource.Genres));
+  {$ENDIF}
 end;
 
 function UpdateTrackRating(const HTTP: TIdHTTP; ID: string; Rating: integer; ReloadLibrary: boolean): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;       
   SetWorkStatus('Setting track rating');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'ratetrack');
   Body.Put('track_id', ID);
   Body.Put('rating', Rating);
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -871,13 +886,16 @@ begin
   // Search
   Result := [];
   for I := 0 to High(Playlists) do
-    if TArray.Contains<string>(Playlists[I].TracksID, ID) then
+
+    if TArrayUtils<string>.Contains(ID, Playlists[I].TracksID) then
       Result := Result + [Playlists[I].ID];
 end;
 
 function TrackRatingToLikedPlaylist(const HTTP: TIdHTTP; ID: string): boolean;
 var
   Index, SongIndex: integer;
+  Fav: boolean;
+  IsFav: boolean;
 begin
   Result := false;
 
@@ -886,8 +904,7 @@ begin
 
   if (Index <> -1) and (SongIndex <> -1) then
     begin
-      const Fav = TArray.Contains<string>(Playlists[Index].TracksID, ID);
-      var IsFav: boolean;
+      Fav := TArrayUtils<string>.Contains(ID, Playlists[Index].TracksID);
       if ValueRatingMode then
         IsFav := Tracks[SongIndex].Rating = 10
       else
@@ -921,19 +938,23 @@ begin
 end;
 
 function UpdateAlbumRating(const HTTP: TIdHTTP; ID: string; Rating: integer; ReloadLibrary: boolean): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;       
   SetWorkStatus('Setting album rating');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'ratealbum');
   Body.Put('album_id', ID);
   Body.Put('rating', Rating);
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -942,19 +963,23 @@ begin
 end;
 
 function UpdateArtistRating(const HTTP: TIdHTTP; ID: string; Rating: integer; ReloadLibrary: boolean): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;       
   SetWorkStatus('Setting artist rating');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'rateartist');
   Body.Put('name', ID);
   Body.Put('description', Rating);
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -963,21 +988,25 @@ begin
 end;
 
 function CreateNewPlayList(const HTTP: TIdHTTP; Name, Description: string; MakePublic: boolean; Tracks: TArray<string>): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;       
   SetWorkStatus('Creating playlist');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'createplaylist');
   Body.Put('name', Name);
   Body.Put('description', Name);
   Body.Put('make_public', MakePublic);
   Body.Put('tracks', ArrayToJArray(Tracks));
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -985,20 +1014,24 @@ begin
 end;
 
 function AppentToPlaylist(const HTTP: TIdHTTP; ID: string; Tracks: TArray<string>): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   SetWorkStatus('Appending tracks to playlist');
   
   Result := false;
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'appendplaylist');
   Body.Put('playlist', ID);
   Body.Put('tracks', ArrayToJArray(Tracks));
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -1011,19 +1044,23 @@ begin
 end;
 
 function ChangePlayList(const HTTP: TIdHTTP; ID: string; Tracks: TArray<string>): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;
   SetWorkStatus('Modifying playlist');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'updateplaylist');
   Body.Put('playlist', ID);
   Body.Put('tracks', ArrayToJArray(Tracks));
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -1050,20 +1087,24 @@ begin
 end;
 
 function UpdatePlayList(const HTTP: TIdHTTP; ID: string; Name, Description: string; ReloadLibrary: boolean): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;       
   SetWorkStatus('Updating playlist');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'updateplaylist');
   Body.Put('playlist', ID);
   Body.Put('name', Name);
   Body.Put('description', Description);
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -1072,18 +1113,22 @@ begin
 end;
 
 function DeletePlayList(const HTTP: TIdHTTP; ID: string): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;       
   SetWorkStatus('Deleting playlist');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'deleteplaylist');
   Body.Put('playlist', ID);
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -1091,18 +1136,22 @@ begin
 end;
 
 function DeleteTracks(const HTTP: TIdHTTP; Tracks: TArray<string>): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;       
   SetWorkStatus('Deleting tracjs');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'trash');
   Body.Put('tracks', ArrayToJArray(Tracks));
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -1110,18 +1159,22 @@ begin
 end;
 
 function RestoreTracks(const HTTP: TIdHTTP; Tracks: TArray<string>): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;       
   SetWorkStatus('Restoring tracks');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'restore');
   Body.Put('tracks', ArrayToJArray(Tracks));
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -1129,18 +1182,22 @@ begin
 end;
 
 function EmptyTrash(const HTTP: TIdHTTP; Tracks: TArray<string>): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;       
   SetWorkStatus('Restoring tracks');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'empty_trash');
   Body.Put('tracks', ArrayToJArray(Tracks));
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load
@@ -1209,6 +1266,10 @@ function PushHistory(const HTTP: TIdHTTP; Items: TArray<TTrackHistoryItem>): boo
 var
   PlaysMap: TDictionary<string, int64>;
   Day: TDate;
+
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;
   SetWorkStatus('Pushing history to server');
@@ -1216,7 +1277,7 @@ begin
   if Length(Items) = 0 then
     Exit;
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'status');
 
   // Calculate Count
@@ -1269,10 +1330,10 @@ begin
     PlaysMap.Free;
   end;
   
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Re-load (load history playlist)
@@ -1280,17 +1341,21 @@ begin
 end;
 
 function LoadStatus(const HTTP: TIdHTTP): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;
   SetWorkStatus('Contacting iBroadcast API servers...');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
   Body.Put('mode', 'status');
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Load status
@@ -1305,16 +1370,20 @@ begin
 end;
 
 function LoadLibrary(const HTTP: TIdHTTP; LoadSet: TLoadSet): boolean;
+var
+  Body: IJObject;
+  Response: IJValue;
+  Obj: IJObject;
 begin
   Result := false;
   SetWorkStatus('Downloading iBroadcast Library...');
   //
-  const Body = V2_GetBody;
+  Body := V2_GetBody;
 
-  const Response = V2_RequestPost(HTTP, Body, ENDPOINT_API_LIBRARY, OAuth2_AccessToken);
+  Response := V2_RequestPost(HTTP, Body, ENDPOINT_API_LIBRARY, OAuth2_AccessToken);
   if (Response = nil) or not Response.IsObject then
     Exit;
-  const Obj = Response.AsObject;
+  Obj := Response.AsObject;
   Result := Obj.KeyExists('result') and Obj.Memory['result'].AsBoolean;
 
   // Work
@@ -1545,60 +1614,21 @@ end;
 
 function SongArtCollage(ID1, ID2, ID3, ID4: string): TJpegImage;
 var
-  Temp: TBitMap;
-  IMG: TJpegImage;
+  CollageMaker: TCollageMaker;
 begin
-  Temp := TBitMap.Create;
-  with Temp.Canvas do
+  CollageMaker := TCollageMaker.Create;
   try
-    (* Set image size, 300 - iBroadcast Default *)
-    Temp.SetSize(300, 300);
+    // Get
+    CollageMaker.Image1 := GetSongArtwork( Tracks[GetTrack( ID1 )].ArtworkID, TArtSize.Small );
+    CollageMaker.Image2 := GetSongArtwork( Tracks[GetTrack( ID2 )].ArtworkID, TArtSize.Small );
+    CollageMaker.Image3 := GetSongArtwork( Tracks[GetTrack( ID3 )].ArtworkID, TArtSize.Small );
+    CollageMaker.Image4 := GetSongArtwork( Tracks[GetTrack( ID4 )].ArtworkID, TArtSize.Small );
 
-    (* TThread.Syncronise is required as drawing to a canvas requires GUI access! *)
-
-    (* Get each image individually *)
-    Img := GetSongArtwork( Tracks[GetTrack( ID1 )].ArtworkID, TArtSize.Small );
-    try
-      TThread.Synchronize(nil, procedure begin
-        StretchDraw(Rect(0,0,150,150), Img, 255);
-      end);
-    finally
-      Img.Free;
-    end;
-
-    Img := GetSongArtwork( Tracks[GetTrack( ID2 )].ArtworkID, TArtSize.Small );
-    try
-      TThread.Synchronize(nil, procedure begin
-        StretchDraw(Rect(150,0,300,150), Img, 255);
-      end);
-    finally
-      Img.Free;
-    end;
-
-    Img := GetSongArtwork( Tracks[GetTrack( ID3 )].ArtworkID, TArtSize.Small );
-    try
-      TThread.Synchronize(nil, procedure begin
-        StretchDraw(Rect(0,150,150,300), Img, 255);
-      end);
-    finally
-      Img.Free;
-    end;
-
-    Img := GetSongArtwork( Tracks[GetTrack( ID4 )].ArtworkID, TArtSize.Small );
-    try
-      TThread.Synchronize(nil, procedure begin
-        StretchDraw(Rect(150,150,300,300), Img, 255);
-      end);
-    finally
-      Img.Free;
-    end;
-
-    (* Assigne *)
-    Result := TJpegImage.Create;
-    Result.Assign(Temp);
+    // Make
+    Result := CollageMaker.Make;
   finally
     (* Free *)
-    Temp.Free;
+    CollageMaker.Free;
   end;
 end;
 
@@ -1641,6 +1671,123 @@ begin
     Result := IntToStrIncludePrefixZeros(Hours, 2) + ':' + Result;
 end;
 
+{ TGenreItem }
+
+{$IFDEF GENRES}
+function TGenreItem.ArtworkLoaded: boolean;
+begin
+  if TWorkItem.DownloadingImage in Status then
+    Exit(false);
+  Result := (CachedImage <> nil) and (not CachedImage.Empty);
+end;
+
+function TGenreItem.GetArtwork: TJPEGImage;
+var
+  AIndex: integer;
+begin
+  Status := Status + [TWorkItem.DownloadingImage];
+
+  if (CachedImage = nil) or CachedImage.Empty then
+    begin
+      if Length(TracksID) > 0 then
+        begin
+          // Load from Artwork Store
+          if ExistsInStore(ID, TDataSource.Albums)  then
+            CachedImage := GetArtStoreCache(ID, TDataSource.Genres)
+          else
+            // Load from server, save to artowork store
+            begin
+              AIndex := GetTrack( TracksID[0] );
+              if AIndex <> -1 then
+                begin
+                  CachedImage := Tracks[AIndex].GetArtwork();
+
+                  // Save artstore
+                  if ArtworkStore then
+                    AddToArtworkStore(ID, CachedImage, TDataSource.Genres);
+                end
+                  else
+                    CachedImage := DefaultPicture;
+            end;
+        end
+      else
+        CachedImage := DefaultPicture;
+    end;
+
+  Result := CachedImage;
+
+  Status := Status - [TWorkItem.DownloadingImage];
+end;
+{$ENDIF}
+
+{ TSaveArtClass }
+
+procedure TSaveArtClass.SaveFile;
+begin
+  Image.SaveToFile( FilePath );
+end;
+
+procedure TSaveArtClass.Save;
+begin
+  TThread.Synchronize(TThread.CurrentThread, SaveFile);
+end;
+
+{ TCollageMaker }
+
+procedure TCollageMaker.Build;
+{$IFNDEF FPC}
+var
+  B: TBitMap;
+{$ENDIF}
+begin
+  TempResult := TJPEGImage.Create;
+  {$IFDEF FPC}
+  TempResult.Width := 300;
+  TempResult.Height := 300;
+  {$ENDIF}
+
+  {$IFNDEF FPC}
+  B := TBitMap.Create(300, 300);
+  try
+  {$ENDIF}
+    with {$IFNDEF FPC}B{$ELSE}TempResult{$ENDIF}.Canvas do
+      begin
+        try
+          StretchDraw(Rect(0, 0, 150, 150), Image1);
+          Application.ProcessMessages;
+        except
+        end;
+        try
+          StretchDraw(Rect(150, 0, 300, 150), Image2);
+          Application.ProcessMessages;
+        except
+        end;
+        try
+          StretchDraw(Rect(0, 150, 150, 300), Image3);
+          Application.ProcessMessages;
+        except
+        end;
+        try
+          StretchDraw(Rect(150, 150, 300, 300), Image4);
+          Application.ProcessMessages;
+        except
+        end;
+      end;
+  {$IFNDEF FPC}
+  finally
+    TempResult.Assign(B);
+    B.Free;
+  end;
+  {$ENDIF}
+end;
+
+function TCollageMaker.Make: TJPEGImage;
+begin
+  TThread.Synchronize(TThread.CurrentThread, Build);
+
+  Result := TempResult;
+end;
+
 function GetTrack(ID: string): integer;
 var
   I: Integer;
@@ -1680,6 +1827,18 @@ begin
     if Playlists[I].ID = ID then
       Exit( I );
 end;
+
+{$IFDEF GENRES}
+function GetGenre(ID: string): integer;
+var
+  I: Integer;
+begin
+  Result := -1;
+  for I := 0 to High(Genres) do
+    if Genres[I].ID = ID then
+      Exit( I );
+end;
+{$ENDIF}
 
 function GetData(ID: string; Source: TDataSource): integer;
 begin
@@ -1724,12 +1883,13 @@ function StringToDateTime(const ADateTimeStr: string; CovertUTC: boolean = true)
 var
   DateTimeFormat: TFormatSettings;
 begin                     
-  DateTimeFormat := TFormatSettings.Create('en-us');
+  DateTimeFormat := {$IFDEF FPC}DefaultFormatSettings{$ELSE}TFormatSettings.Create{$ENDIF};
   DateTimeFormat.ShortDateFormat := 'yyyy-mm-dd';
   DateTimeFormat.LongDateFormat := 'yyyy-mm-dd';
   DateTimeFormat.LongTimeFormat := 'hh:nn:ss.zzzzzz';
   DateTimeFormat.ShortTimeFormat := 'hh:nn:ss.zzzzzz';
   DateTimeFormat.DateSeparator := '-';
+  DateTimeFormat.TimeSeparator := ':';
   Result := StrToDateTime(trim(ADateTimeStr), DateTimeFormat);
 
   // Unversal Coordinated Time
@@ -1744,7 +1904,8 @@ end;
 function StringToTime(const ADateTimeStr: string; CovertUTC: boolean = true): TTime;
 var
   DateTimeFormat: TFormatSettings;
-begin
+begin                 
+  DateTimeFormat := {$IFDEF FPC}DefaultFormatSettings{$ELSE}TFormatSettings.Create{$ENDIF};
   DateTimeFormat.ShortTimeFormat := 'hh:nn:ss';
   DateTimeFormat.LongTimeFormat := 'hh:nn:ss.zzzzzz';
   DateTimeFormat.DateSeparator := '-';
@@ -1763,8 +1924,8 @@ end;
 function DateTimeToString(ADateTime: TDateTime; CovertUTC: boolean = true): string;
 var
   DateTimeFormat: TFormatSettings;
-begin
-  DateTimeFormat := TFormatSettings.Create;
+begin                 
+  DateTimeFormat := {$IFDEF FPC}DefaultFormatSettings{$ELSE}TFormatSettings.Create{$ENDIF};
   DateTimeFormat.ShortDateFormat := 'yyyy-mm-dd';
   DateTimeFormat.LongTimeFormat := 'hh:nn:ss';
   DateTimeFormat.DateSeparator := '-';
@@ -1784,8 +1945,8 @@ end;
 function DateToString(ADateTime: TDate; CovertUTC: boolean = true): string;
 var
   DateTimeFormat: TFormatSettings;
-begin
-  DateTimeFormat := TFormatSettings.Create;
+begin                 
+  DateTimeFormat := {$IFDEF FPC}DefaultFormatSettings{$ELSE}TFormatSettings.Create{$ENDIF};
   DateTimeFormat.ShortDateFormat := 'yyyy-mm-dd';
   DateTimeFormat.LongTimeFormat := 'hh:nn:ss';
   DateTimeFormat.DateSeparator := '-';
@@ -1826,6 +1987,8 @@ end;
 
 function TTrackItem.ArtworkLoaded(Large: boolean): boolean;
 begin
+  if TWorkItem.DownloadingImage in Status then
+    Exit(false);
   if not Large then
     Result := (CachedImage <> nil) and (not CachedImage.Empty)
   else
@@ -1968,6 +2131,8 @@ end;
 
 function TAlbumItem.ArtworkLoaded: boolean;
 begin
+  if TWorkItem.DownloadingImage in Status then
+    Exit(false);
   Result := (CachedImage <> nil) and (not CachedImage.Empty);
 end;
 
@@ -2037,6 +2202,11 @@ end;
 
 { TArtistItem }
 
+function TArtistItem.HasArtwork: boolean;
+begin
+  Result := ArtworkID <> '';
+end;
+
 function TArtistItem.ArtworkLoaded(Large: boolean): boolean;
 begin
   if TWorkItem.DownloadingImage in Status then
@@ -2048,6 +2218,8 @@ begin
 end;
 
 function TArtistItem.GetArtwork(Large: boolean): TJPEGImage;
+var
+  AIndex: integer;
 begin
   Status := Status + [TWorkItem.DownloadingImage];
 
@@ -2060,31 +2232,46 @@ begin
     end
   else
     begin
-      if (CachedImage = nil) or ((CachedImage <> nil) and CachedImage.Empty) then
+      if (CachedImage = nil) or CachedImage.Empty then
         begin
           // Load from Artwork Store
-          if ExistsInStore(ID, TDataSource.Tracks) then
-            CachedImage := GetArtStoreCache(ID, TDataSource.Tracks)
+          if ExistsInStore(ID, TDataSource.Artists) then
+            CachedImage := GetArtStoreCache(ID, TDataSource.Artists)
           else
-            // Load from server, save to artowork store
+          // Load from server, save to artowork store
             begin
-              CachedImage := GetSongArtwork(ArtworkID, DefaultArtSize);
+              if HasArtwork then
+                // Get premade
+                CachedImage := GetSongArtwork(ArtworkID, DefaultArtSize)
+              else
+                begin
+                  if (Length(TracksID) >= 4) and AllowArtCollage then
+                    begin
+                      CachedImage := SongArtCollage(TracksID[0], TracksID[1], TracksID[2], TracksID[3]);
+                    end
+                  else
+                    if Length(TracksID) > 0 then
+                      begin
+                        AIndex := GetTrack( TracksID[0] );
+                        if AIndex <> -1 then
+                          CachedImage := Tracks[AIndex].GetArtwork()
+                        else
+                          CachedImage := DefaultPicture;
+                      end
+                        else
+                          CachedImage := DefaultPicture;
+                end;
 
               // Save artstore
-              if ArtworkStore then
-                AddToArtworkStore(ID, CachedImage, TDataSource.Tracks);
+              if ArtworkStore and (CachedImage <> DefaultPicture) then
+                AddToArtworkStore(ID, CachedImage, TDataSource.Artists);
             end;
         end;
 
       Result := CachedImage;
-    end;
+  end;
 
   Status := Status - [TWorkItem.DownloadingImage];
-end;
-
-function TArtistItem.HasArtwork: boolean;
-begin
-  Result := ArtworkID <> '';
 end;
 
 procedure TArtistItem.LoadFrom(Key: string; AArr: IJArray);
@@ -2113,6 +2300,11 @@ begin
 end;
 
 { TPlaylistItem }
+
+function TPlaylistItem.HasArtwork: boolean;
+begin
+  Result := ArtworkID <> '';
+end;
 
 function TPlaylistItem.ArtworkLoaded(Large: boolean): boolean;
 begin
@@ -2171,11 +2363,6 @@ begin
   Status := Status - [TWorkItem.DownloadingImage];
 end;
 
-function TPlaylistItem.HasArtwork: boolean;
-begin
-  Result := ArtworkID <> '';
-end;
-
 procedure TPlaylistItem.LoadFrom(Key: string; AArr: IJArray);
 begin
   SetDataWorkStatus(Format('Loading playlist with ID of %S', [ID]));
@@ -2207,30 +2394,6 @@ begin
     ArtworkID := AArr[7].AsString;
 
   // ?
-end;
-
-{ TCollageMaker }
-
-procedure TCollageMaker.Build;
-begin
-
-end;
-
-function TCollageMaker.Make: TJPEGImage;
-begin
-
-end;
-
-{ TSaveArtClass }
-
-procedure TSaveArtClass.Save;
-begin
-
-end;
-
-procedure TSaveArtClass.SaveFile;
-begin
-
 end;
 
 initialization

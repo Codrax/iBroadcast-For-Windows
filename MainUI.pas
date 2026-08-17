@@ -116,9 +116,17 @@ type
   end;
 
   // Threads
-  TPrimaryTaskThread = class(TThread)
+  THTTPClientThread = class(TThread)
   private
-    HTTP: TIdHTTP;
+    FHTTP: TIdHTTP;
+  protected
+    property HTTP: TIdHTTP read FHTTP;
+  public
+    constructor Create;
+    destructor Destroy; override;
+  end;
+  TPrimaryTaskThread = class(THTTPClientThread)
+
   protected
     procedure Execute; override;
     procedure Task; virtual;
@@ -8610,11 +8618,7 @@ var
 
 constructor TPrimaryTaskThread.Create;
 begin
-  inherited Create(false);
-  HTTP := V2_CreateHTTP;
-
-  FreeOnTerminate := true;
-
+  inherited Create;
   ThreadTaskError := '';
 
   // UI
@@ -8624,7 +8628,6 @@ end;
 
 destructor TPrimaryTaskThread.Destroy;
 begin
-  HTTP.Free;
   inherited;
 end;
 
@@ -8802,12 +8805,12 @@ begin
     // Get Status
     WORK_STATUS := 'Loading your account...';
     AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
-    LoadStatus(V2_HTTP);
+    LoadStatus(HTTP);
 
     // Get Library
     WORK_STATUS := 'Loading your library...';
     AddToLog('Form.ReloadLibrary Status:' + WORK_STATUS);
-    LoadLibrary(V2_HTTP);
+    LoadLibrary(HTTP);
 
     // No longer offline
     if IsOffline then
@@ -9026,6 +9029,22 @@ end;
 class function TCloudSongThread.SecondFile: string;
 begin
   Result:=AppData + TEMP_DIR + 'nextsong.mp3';
+end;
+
+{ THTTPClientThread }
+
+constructor THTTPClientThread.Create;
+begin
+  inherited Create(false);
+  FHTTP := V2_CreateHTTP;
+
+  FreeOnTerminate := true;
+end;
+
+destructor THTTPClientThread.Destroy;
+begin
+  HTTP.Free;
+  inherited Destroy;
 end;
 
 initialization
